@@ -41,6 +41,19 @@ def main():
             s = src.get(d.get("id"), {})
             d["loop"], d["twist"], d["source"], d["category"] = s.get("loop"), s.get("twist"), s.get("source"), s.get("category")
             rows.append(d)
+    ov_path = os.path.join(ROOT, "factcheck", "manual_overrides.json")
+    overrides = json.load(open(ov_path)) if os.path.exists(ov_path) else {}
+    for d in rows:
+        o = overrides.get(d.get("id"))
+        if not o:
+            continue
+        d["lane"], d["verdict"] = o[0], o[1]
+        d["competitors"] = "MANUAL RECHECK: " + o[2] + " || " + str(d.get("competitors", ""))
+        if d["lane"] == "CROWDED":
+            d["O"] = min(d["O"], 3)
+        if d["lane"] == "TAKEN":
+            d["O"] = 1
+        d["vscore"] = round(sum(d[k] * w for k, w in W.items()) + LANE.get(d["lane"], -2) + MONEY.get(d["money"], 0) + VERDICT.get(d["verdict"], 0), 2)
     best = {}
     for d in rows:
         if d["id"] not in best or d["vscore"] > best[d["id"]]["vscore"]:
