@@ -1,0 +1,279 @@
+[
+  {
+    "rank": 1,
+    "title": "Clip a Bag Charm",
+    "verdict": "PURSUE",
+    "speed_bet": true,
+    "ids_merged": [
+      "TRD-002",
+      "HOB-007",
+      "HOB-009(pivot)",
+      "RES-022(pivot)",
+      "TRD-008(mechanic)"
+    ],
+    "lane": "OPEN",
+    "money": "HIGH",
+    "mvp_weeks": "3",
+    "gates": {
+      "original": "PASS",
+      "demand": "PASS",
+      "psychology": "PASS",
+      "algorithm": "PASS",
+      "buildable": "PASS"
+    }
+  },
+  {
+    "rank": 2,
+    "title": "Freeze-Dry Your Candy",
+    "verdict": "PURSUE",
+    "speed_bet": true,
+    "ids_merged": [
+      "TRD-051",
+      "SSN-113"
+    ],
+    "lane": "OPEN",
+    "money": "HIGH",
+    "mvp_weeks": "2.5-3",
+    "gates": {
+      "original": "PASS",
+      "demand": "PASS",
+      "psychology": "PASS",
+      "algorithm": "PASS",
+      "buildable": "PASS"
+    }
+  },
+  {
+    "rank": 3,
+    "title": "Unwrap the Golden Ticket",
+    "verdict": "PURSUE",
+    "speed_bet": false,
+    "ids_merged": [
+      "TRD-132"
+    ],
+    "lane": "OPEN",
+    "money": "HIGH",
+    "mvp_weeks": "3",
+    "gates": {
+      "original": "PASS",
+      "demand": "PASS",
+      "psychology": "PASS",
+      "algorithm": "WEAK",
+      "buildable": "PASS"
+    }
+  },
+  {
+    "rank": 4,
+    "title": "Stock a Bird Feeder",
+    "verdict": "PURSUE",
+    "speed_bet": false,
+    "ids_merged": [
+      "HOB-080",
+      "SSN-052"
+    ],
+    "lane": "OPEN",
+    "money": "HIGH",
+    "mvp_weeks": "3-4",
+    "gates": {
+      "original": "PASS",
+      "demand": "WEAK",
+      "psychology": "PASS",
+      "algorithm": "PASS",
+      "buildable": "WEAK"
+    }
+  },
+  {
+    "rank": 5,
+    "title": "Scrub the Kaiju",
+    "verdict": "PURSUE",
+    "speed_bet": true,
+    "ids_merged": [
+      "MSH-028",
+      "TRD-082"
+    ],
+    "lane": "OPEN",
+    "money": "MID",
+    "mvp_weeks": "3",
+    "gates": {
+      "original": "PASS",
+      "demand": "PASS",
+      "psychology": "PASS",
+      "algorithm": "PASS",
+      "buildable": "WEAK"
+    }
+  },
+  {
+    "rank": 6,
+    "title": "Shoot the Pixel Art",
+    "verdict": "PURSUE (conditional on live Roblox search)",
+    "speed_bet": true,
+    "ids_merged": [
+      "WEB-002",
+      "RES-006"
+    ],
+    "lane": "OPEN (single check; clones likely)",
+    "money": "MID",
+    "mvp_weeks": "3",
+    "gates": {
+      "original": "WEAK",
+      "demand": "PASS",
+      "psychology": "PASS",
+      "algorithm": "PASS",
+      "buildable": "PASS"
+    }
+  },
+  {
+    "rank": 7,
+    "title": "Chop the World Tree",
+    "verdict": "PURSUE",
+    "speed_bet": false,
+    "ids_merged": [
+      "MSH-064"
+    ],
+    "lane": "CROWDED verb / open twist",
+    "money": "HIGH",
+    "mvp_weeks": "2",
+    "gates": {
+      "original": "WEAK",
+      "demand": "PASS",
+      "psychology": "PASS",
+      "algorithm": "PASS",
+      "buildable": "PASS"
+    }
+  },
+  {
+    "rank": 8,
+    "title": "Pass the Cursed Aura",
+    "verdict": "PURSUE",
+    "speed_bet": true,
+    "ids_merged": [
+      "MSH-050",
+      "MSH-072",
+      "MSH-126"
+    ],
+    "lane": "CROWDED parent / open twist",
+    "money": "HIGH",
+    "mvp_weeks": "2",
+    "gates": {
+      "original": "WEAK",
+      "demand": "PASS",
+      "psychology": "PASS",
+      "algorithm": "PASS",
+      "buildable": "PASS"
+    }
+  },
+  {
+    "rank": 9,
+    "title": "Slice the Sand Core",
+    "verdict": "PIVOT",
+    "speed_bet": true,
+    "ids_merged": [
+      "TRD-083"
+    ],
+    "lane": "OPEN theme / contested cut-to-reveal",
+    "money": "HIGH",
+    "mvp_weeks": "2",
+    "gates": {
+      "original": "WEAK",
+      "demand": "PASS",
+      "psychology": "PASS",
+      "algorithm": "WEAK",
+      "buildable": "PASS"
+    }
+  },
+  {
+    "rank": 10,
+    "title": "Never Walk Alone",
+    "verdict": "PIVOT",
+    "speed_bet": true,
+    "ids_merged": [
+      "SSN-027"
+    ],
+    "lane": "OPEN mechanic / busy genre",
+    "money": "MID",
+    "mvp_weeks": "3",
+    "gates": {
+      "original": "WEAK",
+      "demand": "PASS",
+      "psychology": "WEAK",
+      "algorithm": "PASS",
+      "buildable": "WEAK"
+    }
+  },
+  {
+    "rank": 11,
+    "title": "Break the Ball Pit",
+    "verdict": "PIVOT",
+    "speed_bet": false,
+    "ids_merged": [
+      "STM-028",
+      "MSH-094"
+    ],
+    "lane": "OPEN",
+    "money": "MID (HIGH with ball gacha)",
+    "mvp_weeks": "4",
+    "gates": {
+      "original": "PASS",
+      "demand": "PASS",
+      "psychology": "PASS",
+      "algorithm": "WEAK",
+      "buildable": "WEAK"
+    }
+  },
+  {
+    "rank": 12,
+    "title": "Feed a Creature",
+    "verdict": "PURSUE",
+    "speed_bet": false,
+    "ids_merged": [
+      "RES-002"
+    ],
+    "lane": "OPEN",
+    "money": "HIGH",
+    "mvp_weeks": "4",
+    "gates": {
+      "original": "PASS",
+      "demand": "WEAK",
+      "psychology": "PASS",
+      "algorithm": "PASS",
+      "buildable": "WEAK"
+    }
+  },
+  {
+    "rank": 13,
+    "title": "Bid for Fighters",
+    "verdict": "PIVOT",
+    "speed_bet": false,
+    "ids_merged": [
+      "MSH-105"
+    ],
+    "lane": "OPEN",
+    "money": "MID",
+    "mvp_weeks": "3-4",
+    "gates": {
+      "original": "PASS",
+      "demand": "WEAK",
+      "psychology": "PASS",
+      "algorithm": "PASS",
+      "buildable": "WEAK"
+    }
+  },
+  {
+    "rank": 14,
+    "title": "Find the Key, One of Us Hid It",
+    "verdict": "PIVOT",
+    "speed_bet": true,
+    "ids_merged": [
+      "MSH-004"
+    ],
+    "lane": "CROWDED / open twist",
+    "money": "MID",
+    "mvp_weeks": "2.5",
+    "gates": {
+      "original": "WEAK",
+      "demand": "PASS",
+      "psychology": "PASS",
+      "algorithm": "WEAK",
+      "buildable": "PASS"
+    }
+  }
+]
