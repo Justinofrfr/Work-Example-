@@ -16,3 +16,8 @@ Pets with a VISIBLE job (they act, not just multiply) · pets that create SOCIAL
 - 8–15 WebSearches first: pet trends 2025–2026 (real pets on TikTok, viral animals, toys like Bitzee/Furby/Tamagotchi revival, pet-tech, pet shows), then Roblox occupancy for your best 10 ideas (query `roblox "<noun> <verb>" game` and read the snippet; record visits/CCU if shown).
 - Write at least 60 distinct ideas. Append in batches of ~20.
 - Final reply ≤150 words: count, file path, top 8 ids with one line each.
+
+## Round 2 additions (2026-09-30)
+- NAMES: 2–4 short words, verb first, the object you own (Steal An Egg, Ride A Pet, Keep It Alive, Fish It!). Give 2 alternates in key "alt_titles".
+- Do not repeat anything in /home/user/Work-Example-/ideas/pets/EXISTING_TITLES.txt (read it) or the mechanics already used: permadeath, stranger pet-sitting, offline diary, decor-as-lure, damage-as-gacha, shared server baby, ugly contest, stealth taming, auction eggs, thief crows, bed monster, mud eggs.
+- Front page today (research/07-frontpage-snapshot-2026-09-30.md): Steal An Egg 1.87M CCU, Ride A Pet 195K, Build the Pyramid! 26K, Karinderya 29K, +1 runners, Illegal Soccer, Slayers 2. Use these FORMATS as parents where it helps (steal, +1, ride, shared goal, restaurant, short-loop PvP, survival countdown) but the pet must be the core and the combo must be new.
