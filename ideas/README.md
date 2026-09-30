@@ -1,5 +1,5 @@
 # Roblox Game Ideas — research & council (Sept 2026)
-Start here → **[FINAL-TOP-PICKS.md](FINAL-TOP-PICKS.md)** (14 ranked picks, build order) and **[DETAILED-BREAKDOWN.md](DETAILED-BREAKDOWN.md)** (full explanation, monetization tables, why each works).
+Start here → **[FINAL-TOP-PICKS.md](FINAL-TOP-PICKS.md)** (14 ranked picks, build order) and **[DETAILED-BREAKDOWN.md](DETAILED-BREAKDOWN.md)** (full explanation, monetization tables, why each works). Pet-specific picks: **[PET-PICKS.md](PET-PICKS.md)**.
 
 | File | What it is |
 |---|---|
