@@ -121,6 +121,7 @@ These are systems, numbers and structure, not their assets.
 - **Never reuse their art, colours or character.** That's the copycat filter's "same title and visuals" example.
 
 ## 6. SFX / VFX (Pyramid's are undocumented, so these are ours)
+Full spec covering every event (sound, particles, UI tweens, camera shake, performance budget): **[BUILD-AN-EGG-SFX-VFX.md](BUILD-AN-EGG-SFX-VFX.md)**. The short summary below is kept for reference.
 - **SFX:**
   - a pickup "clack" (pitch rises with piece rarity)
   - a place "thunk" with a ring sweep when a ring completes
