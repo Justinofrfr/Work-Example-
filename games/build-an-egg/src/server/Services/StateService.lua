@@ -13,11 +13,15 @@ local StateService = {
 
 local DataService
 local MonetizationService
+local BuildService
+local MovementGuardService
 local remotes
 
 function StateService:Init(modules, context)
 	DataService = modules.DataService
 	MonetizationService = modules.MonetizationService
+	BuildService = modules.BuildService
+	MovementGuardService = modules.MovementGuardService
 	remotes = context.Remotes
 end
 
@@ -119,9 +123,21 @@ function StateService:ApplyWalkSpeed(player)
 	local data = DataService:Get(player)
 	local character = player.Character
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	local runtime = self.Runtime[player]
 	if data and humanoid then
-		humanoid.WalkSpeed = Formulas.WalkSpeed(data.Speed)
+		humanoid.WalkSpeed = runtime and runtime.Training and 0 or Formulas.WalkSpeed(data.Speed)
 	end
+end
+
+function StateService:Teleport(player, cframe)
+	local character = player.Character
+	if not character then
+		return
+	end
+	if MovementGuardService then
+		MovementGuardService:Grace(player)
+	end
+	character:PivotTo(cframe)
 end
 
 function StateService:OnCharacter(player, character)
@@ -133,6 +149,9 @@ function StateService:OnCharacter(player, character)
 	if runtime then
 		runtime.Carry = 0
 		runtime.Training = nil
+	end
+	if MovementGuardService then
+		MovementGuardService:Grace(player)
 	end
 	self:ApplyWalkSpeed(player)
 	self:ApplyRankTag(player, character)
@@ -203,7 +222,10 @@ function StateService:Sync(player)
 		Upgrades = data.Upgrades,
 		BoostLevels = data.BoostLevels,
 		GiftClaimed = data.GiftClaimed,
-		Training = runtime.Training,
+		Training = runtime.Training and runtime.Training.Stat or nil,
+		TrainingTier = runtime.Training and runtime.Training.Tier or nil,
+		RoundPieces = BuildService and BuildService:Contribution(player) or 0,
+		Claimed = BuildService and BuildService.Claimed[player.UserId] == true or false,
 		Rank = rank.Name,
 		Passes = MonetizationService:OwnedPasses(player),
 	})

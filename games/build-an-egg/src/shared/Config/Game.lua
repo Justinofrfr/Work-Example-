@@ -14,12 +14,22 @@ return {
 	BasePromptDistance = 10,
 	DistanceTolerance = 6,
 	ActionCooldownFloor = 0.15,
+	ActionCooldownSlack = 0.1,
+	InteractRateLimit = 20,
+	InteractRateWindow = 1,
+	RequestRateLimit = 6,
+	RequestRateWindow = 5,
 
 	StateSyncInterval = 0.25,
 	ServerProgressSyncInterval = 0.5,
 
-	InteriorDuration = 180,
 	CompletionCutsceneTime = 6,
+	InteriorDuration = 180,
+	HatchAutoClaimDelay = 15,
+	InteriorMinContribution = 1,
+	Milestones = { 0.25, 0.5, 0.75, 0.9 },
 
 	RingCount = 20,
+	CarryVisualMax = 10,
+	CodeMaxLength = 32,
 }

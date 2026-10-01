@@ -5,9 +5,11 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local ProductsConfig = require(Shared.Config.Products)
 local Names = require(Shared.Config.Names)
+local Signal = require(Shared.Util.Signal)
 
 local MonetizationService = {
 	PassCache = {},
+	PassChanged = Signal.new(),
 }
 
 local DataService
@@ -53,6 +55,7 @@ function MonetizationService:Start()
 					self.PassCache[player] = self.PassCache[player] or {}
 					self.PassCache[player][key] = true
 					StateService:Dirty(player)
+					self.PassChanged:Fire(player, key)
 					remotes[Names.Remotes.Notify]:FireClient(player, "PassOwned", key)
 				end
 			end
@@ -75,6 +78,7 @@ function MonetizationService:RefreshPasses(player)
 	end
 	self.PassCache[player] = owned
 	StateService:Dirty(player)
+	self.PassChanged:Fire(player)
 end
 
 function MonetizationService:OwnsPass(player, key)
@@ -123,6 +127,9 @@ function MonetizationService:ProcessReceipt(receipt)
 		BuildService:AddPieces(player, product.Pieces, true)
 		data.Coins += product.Coins or 0
 		remotes[Names.Remotes.Notify]:FireAllClients("ServerPack", player.DisplayName, product.Pieces)
+	end
+	if product.Tiers then
+		StateService:ApplyWalkSpeed(player)
 	end
 	table.insert(data.Purchases, receipt.PurchaseId)
 	while #data.Purchases > ProductsConfig.PurchaseHistoryCap do
