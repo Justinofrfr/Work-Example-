@@ -33,9 +33,9 @@ end
 local function part(props)
 	local base = {
 		Anchored = true,
-		TopSurface = Enum.SurfaceType.Smooth,
-		BottomSurface = Enum.SurfaceType.Smooth,
-		Material = Enum.Material.SmoothPlastic,
+		TopSurface = Enum.SurfaceType.Studs,
+		BottomSurface = Enum.SurfaceType.Inlet,
+		Material = Enum.Material.Plastic,
 	}
 	for key, value in props do
 		base[key] = value
@@ -129,28 +129,88 @@ end
 
 local root = make("Folder", { Name = W.Root, Parent = Workspace })
 
-local terrain = Workspace.Terrain
-terrain:Clear()
-local groundSize = MapConfig.GroundSize
-terrain:FillBlock(CFrame.new(0, MapConfig.GroundTop - groundSize.Y / 2, 0), groundSize, Enum.Material.Grass)
-terrain:FillBlock(CFrame.new(0, MapConfig.GroundTop - groundSize.Y / 2 - groundSize.Y, 0), groundSize, Enum.Material.Ground)
-terrain:SetMaterialColor(Enum.Material.Grass, P.Grass)
-terrain:SetMaterialColor(Enum.Material.Ground, P.Dirt)
-terrain:SetMaterialColor(Enum.Material.Sandstone, P.Path)
+Workspace.Terrain:Clear()
 local random = Random.new(7)
-for index = 1, 26 do
-	local angle = index / 26 * math.pi * 2
-	local radius = groundSize.X / 2 - 60 + random:NextNumber(-20, 20)
-	terrain:FillBall(Vector3.new(math.cos(angle) * radius, -10, math.sin(angle) * radius), random:NextNumber(70, 120), Enum.Material.Grass)
+local groundSize = MapConfig.GroundSize
+local groundFolder = make("Folder", { Name = "Ground", Parent = root })
+
+local function studded(props)
+	props.TopSurface = Enum.SurfaceType.Studs
+	props.BottomSurface = Enum.SurfaceType.Inlet
+	props.Material = props.Material or Enum.Material.Plastic
+	return part(props)
+end
+
+local function slab(name, x0, x1, z0, z1, top, thickness, color)
+	if x1 - x0 <= 0 or z1 - z0 <= 0 then
+		return nil
+	end
+	return studded({
+		Name = name,
+		Size = Vector3.new(x1 - x0, thickness, z1 - z0),
+		CFrame = CFrame.new((x0 + x1) / 2, top - thickness / 2, (z0 + z1) / 2),
+		Color = color,
+		Parent = groundFolder,
+	})
 end
 
 local quarryConfig = MapConfig.Quarry
 local quarryFolder = make("Folder", { Name = W.Quarry, Parent = root })
 local pitCenter = quarryConfig.Center
 local pitSize = quarryConfig.Size
-terrain:FillBlock(CFrame.new(pitCenter + Vector3.new(0, -pitSize.Y / 2 + 0.01, 0)), pitSize + Vector3.new(0, 0.02, 0), Enum.Material.Air)
-terrain:FillBlock(CFrame.new(pitCenter + Vector3.new(0, -pitSize.Y - 2, 0)), Vector3.new(pitSize.X, 4, pitSize.Z), Enum.Material.Sandstone)
 local rampLength = 22
+local rampHalf = 12
+local half = groundSize.X / 2
+local top = MapConfig.GroundTop
+local thick = groundSize.Y
+local px0, px1 = pitCenter.X - pitSize.X / 2, pitCenter.X + pitSize.X / 2
+local pz0, pz1 = pitCenter.Z - pitSize.Z / 2, pitCenter.Z + pitSize.Z / 2
+local rz1 = pz1 + rampLength
+slab("Ground", -half, half, rz1, half, top, thick, P.Grass)
+slab("Ground", -half, half, -half, pz0, top, thick, P.Grass)
+slab("Ground", -half, px0, pz0, rz1, top, thick, P.Grass)
+slab("Ground", px1, half, pz0, rz1, top, thick, P.Grass)
+slab("Ground", px0, pitCenter.X - rampHalf, pz1, rz1, top, thick, P.Grass)
+slab("Ground", pitCenter.X + rampHalf, px1, pz1, rz1, top, thick, P.Grass)
+slab("PitFloor", px0, px1, pz0, pz1, top - pitSize.Y, 4, P.Path).Parent = quarryFolder
+for side = -1, 1, 2 do
+	for index = 1, 6 do
+		local x = side < 0 and px0 or px1
+		studded({
+			Name = "PitRock",
+			Size = Vector3.new(random:NextNumber(6, 10), random:NextNumber(6, 11), random:NextNumber(8, 12)),
+			CFrame = CFrame.new(x, top - pitSize.Y / 2, pz0 + (index - 0.5) * pitSize.Z / 6) * CFrame.Angles(random:NextNumber(-0.3, 0.3), random:NextNumber(0, math.pi), random:NextNumber(-0.3, 0.3)),
+			Color = index % 2 == 0 and P.Rock or P.RockDark,
+			Parent = quarryFolder,
+		})
+	end
+end
+
+for index = 1, MapConfig.Hills.Count do
+	local angle = index / MapConfig.Hills.Count * math.pi * 2
+	local radius = MapConfig.Hills.Radius + random:NextNumber(-30, 30)
+	local height = random:NextNumber(MapConfig.Hills.Height[1], MapConfig.Hills.Height[2])
+	local width = random:NextNumber(MapConfig.Hills.Width[1], MapConfig.Hills.Width[2])
+	local position = Vector3.new(math.cos(angle) * radius, top + height / 2 - 0.5, math.sin(angle) * radius)
+	local wedge = Instance.new("WedgePart")
+	wedge.Name = "Hill"
+	wedge.Anchored = true
+	wedge.Size = Vector3.new(width, height, MapConfig.Hills.Depth)
+	wedge.CFrame = CFrame.lookAt(position, Vector3.new(0, position.Y, 0))
+	wedge.Color = index % 3 == 0 and P.GrassDark or (index % 3 == 1 and P.Grass or P.GrassLight)
+	wedge.Material = Enum.Material.Plastic
+	wedge.TopSurface = Enum.SurfaceType.Studs
+	wedge.BottomSurface = Enum.SurfaceType.Smooth
+	wedge.Parent = groundFolder
+	studded({
+		Name = "HillTop",
+		Size = Vector3.new(width, height, MapConfig.Hills.Depth),
+		CFrame = wedge.CFrame * CFrame.new(0, 0, MapConfig.Hills.Depth),
+		Color = wedge.Color,
+		Parent = groundFolder,
+	})
+end
+
 part({
 	Name = "PitRamp",
 	Size = Vector3.new(24, 1, math.sqrt(rampLength ^ 2 + pitSize.Y ^ 2)),
@@ -159,7 +219,6 @@ part({
 	Material = Enum.Material.Sandstone,
 	Parent = quarryFolder,
 })
-terrain:FillBlock(CFrame.new(pitCenter + Vector3.new(0, -pitSize.Y / 2, pitSize.Z / 2 + rampLength / 2)), Vector3.new(24, pitSize.Y + 0.1, rampLength), Enum.Material.Air)
 zone({
 	Name = W.QuarryZone,
 	Size = Vector3.new(pitSize.X, pitSize.Y + 10, pitSize.Z),
@@ -269,6 +328,8 @@ for _, ring in EggShape.Rings() do
 		local position = center + outward * ring.Radius + Vector3.new(0, (ring.Bottom + ring.Top) / 2 - center.Y, 0)
 		local segment = part({
 			Name = tostring(index),
+			TopSurface = Enum.SurfaceType.Smooth,
+			BottomSurface = Enum.SurfaceType.Smooth,
 			Size = Vector3.new(width, slant * 1.04, EggConfig.ShellThickness),
 			CFrame = CFrame.fromMatrix(position, tangent, up),
 			Color = P.Shell,
@@ -393,7 +454,7 @@ local startPoint = pitCenter + Vector3.new(0, 0.3, pitSize.Z / 2 + rampLength)
 local endPoint = EggShape.ScaffoldPoint(center.Y + 0.6)
 local pathVector = Vector3.new(endPoint.X, 0.3, endPoint.Z) - startPoint
 local distance = pathVector.Magnitude
-terrain:FillBlock(CFrame.lookAt(startPoint + pathVector / 2 - Vector3.new(0, 4.3, 0), startPoint + pathVector - Vector3.new(0, 4.3, 0)), Vector3.new(14, 8, distance), Enum.Material.Sandstone)
+studded({ Name = "Path", Size = Vector3.new(14, 1, distance), CFrame = CFrame.lookAt(startPoint + pathVector / 2 - Vector3.new(0, 0.75, 0), startPoint + pathVector - Vector3.new(0, 0.75, 0)), Color = P.Path, Parent = groundFolder })
 for index = 0, math.floor(distance / 18) do
 	local position = startPoint + pathVector.Unit * (index * 18 + 6) + Vector3.new(0, 0.2, 0)
 	local arrow = part({
@@ -565,15 +626,33 @@ Lighting.GeographicLatitude = L.GeographicLatitude
 Lighting.Brightness = L.Brightness
 Lighting.Ambient = L.Ambient
 Lighting.OutdoorAmbient = L.OutdoorAmbient
+Lighting.ExposureCompensation = L.ExposureCompensation
+Lighting.ColorShift_Top = L.ColorShiftTop
+Lighting.ColorShift_Bottom = L.ColorShiftBottom
+Lighting.EnvironmentDiffuseScale = L.EnvironmentDiffuseScale
+Lighting.EnvironmentSpecularScale = L.EnvironmentSpecularScale
+Lighting.GlobalShadows = true
 local atmosphere = Lighting:FindFirstChildOfClass("Atmosphere") or make("Atmosphere", { Parent = Lighting })
 atmosphere.Density = L.AtmosphereDensity
 atmosphere.Haze = L.AtmosphereHaze
+atmosphere.Glare = L.AtmosphereGlare
 atmosphere.Color = L.AtmosphereColor
 atmosphere.Decay = L.AtmosphereDecay
 local grading = Lighting:FindFirstChild("Grading") or make("ColorCorrectionEffect", { Name = "Grading", Parent = Lighting })
-grading.Saturation = 0.12
-grading.Contrast = 0.06
-grading.TintColor = Color3.fromRGB(255, 244, 232)
+grading.Saturation = L.Saturation
+grading.Contrast = L.Contrast
+grading.Brightness = L.ColorBrightness
+grading.TintColor = L.Tint
+local bloom = Lighting:FindFirstChildOfClass("BloomEffect") or make("BloomEffect", { Parent = Lighting })
+bloom.Intensity = L.BloomIntensity
+bloom.Size = L.BloomSize
+bloom.Threshold = L.BloomThreshold
+local rays = Lighting:FindFirstChildOfClass("SunRaysEffect") or make("SunRaysEffect", { Parent = Lighting })
+rays.Intensity = L.SunRaysIntensity
+local depth = Lighting:FindFirstChildOfClass("DepthOfFieldEffect")
+if depth then
+	depth.Enabled = false
+end
 Workspace.FallenPartsDestroyHeight = -600
 
 print("Map built")
