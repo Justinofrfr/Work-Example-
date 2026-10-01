@@ -27,6 +27,19 @@ end)
 local ok, err = pcall(function()
 	local player = Players:GetPlayers()[1] or Players.PlayerAdded:Wait()
 	local character = player.Character or player.CharacterAdded:Wait()
+	local function watch(char)
+		local humanoid = char:WaitForChild("Humanoid")
+		humanoid.Died:Connect(function()
+			local root = char:FindFirstChild("HumanoidRootPart")
+			note("DIED at", root and root.Position, "seat", humanoid.SeatPart, "state", humanoid:GetState())
+		end)
+	end
+	watch(character)
+	player.CharacterAdded:Connect(function(char)
+		note("respawned")
+		character = char
+		watch(char)
+	end)
 	local Services = ServerScriptService.Server.Services
 	local DataService = require(Services.DataService)
 	local StateService = require(Services.StateService)
@@ -53,6 +66,7 @@ local ok, err = pcall(function()
 	local quarry = MapConfig.Quarry.Center
 	StateService:Teleport(player, CFrame.new(quarry + Vector3.new(0, -3, 0)))
 	task.wait(0.5)
+	note("at quarry", character.HumanoidRootPart.Position, "health", character.Humanoid.Health, "inQuarry", CarryService:InQuarry(character.HumanoidRootPart.Position))
 	for _ = 1, 3 do
 		runtime.LastPickup = 0
 		CarryService:Interact(player)
@@ -114,6 +128,10 @@ local ok, err = pcall(function()
 	note("locked gym training", runtime.Training)
 
 	StateService:Teleport(player, CFrame.new(point + Vector3.new(0, 4, 0)))
+	local forced = workspace:GetAttribute("TestProjectIndex")
+	if forced then
+		BuildService.ProjectIndex = forced
+	end
 	BuildService:AddPieces(player, BuildService:Target(), true)
 	note("phase after fill", BuildService.Phase)
 	task.wait(6.5)

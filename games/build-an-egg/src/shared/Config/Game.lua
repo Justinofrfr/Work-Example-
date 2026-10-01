@@ -1,8 +1,9 @@
 return {
 	GameName = "Build an Egg!",
-	GroupId = 0,
+	GroupId = 433842257,
 	DataStoreName = "BuildAnEgg_Player_v1",
 	GlobalStoreName = "BuildAnEgg_Global_v1",
+	SaveInStudio = false,
 	AutosaveInterval = 120,
 	SessionLockTimeout = 1800,
 	DataLoadRetries = 6,

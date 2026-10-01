@@ -68,6 +68,16 @@ local function syncFolder(path, instance)
 				local scriptInstance = ensure(instance, name, className)
 				local source = fetch(path .. entry)
 				if scriptInstance.Source ~= source then
+					if className == "ModuleScript" then
+						local replacement = Instance.new("ModuleScript")
+						replacement.Name = name
+						for _, child in scriptInstance:GetChildren() do
+							child.Parent = replacement
+						end
+						scriptInstance:Destroy()
+						scriptInstance = replacement
+						scriptInstance.Parent = instance
+					end
 					scriptInstance.Source = source
 					stats.Written += 1
 				end

@@ -9,6 +9,7 @@ local EggConfig = require(Shared.Config.Egg)
 local MapConfig = require(Shared.Config.Map)
 local ProjectsConfig = require(Shared.Config.Projects)
 local EffectsConfig = require(Shared.Config.Effects)
+local PropsConfig = require(Shared.Config.Props)
 local UIConfig = require(Shared.Config.UI)
 local Format = require(Shared.Util.Format)
 local EggShape = require(Shared.Util.EggShape)
@@ -112,6 +113,12 @@ function EggController:Render(server, previous)
 	if previous and previous.Round ~= server.Round then
 		self:Restore()
 	end
+	if server.Phase == "Interior" and not self.Hatchling and not self.InCutscene then
+		self:Crack(3)
+		self:SpawnHatchling(server.Project, false)
+	elseif server.Phase == "Building" and self.Hatchling then
+		self:RemoveHatchling()
+	end
 	if visible ~= self.Visible or ring ~= self.Ring or projectChanged then
 		local before = self.Visible
 		for index, segment in segments do
@@ -178,6 +185,7 @@ function EggController:RenderTrail(state)
 end
 
 function EggController:Animate()
+	self:AnimateHatchling()
 	local t = os.clock()
 	local pulse = 0.55 + 0.2 * math.sin(t * EffectsConfig.BandPulseSpeed * math.pi)
 	local ring = ringModels[self.Ring]
@@ -334,6 +342,91 @@ function EggController:Burst()
 	EffectController:Fireworks(5)
 	self:SetGlow(0)
 	self:Crack(3)
+	if ClientState.Server then
+		self:SpawnHatchling(ClientState.Server.Project, true)
+	end
+end
+
+function EggController:HatchlingBase()
+	local ring = EggShape.Rings()[GameConfig.RingCount - 3]
+	return CFrame.new(EggConfig.Center.X, ring.Top - PropsConfig.HatchlingHeight * 0.15, EggConfig.Center.Z)
+end
+
+function EggController:SpawnHatchling(project, animated)
+	self:RemoveHatchling()
+	local folder = ReplicatedStorage:FindFirstChild("Hatchlings")
+	local template = folder and folder:FindFirstChild(project)
+	if not template then
+		return
+	end
+	local model = template:Clone()
+	local baseScale = model:GetScale()
+	local full = PropsConfig.HatchlingHeight / PropsConfig.HatchlingBaseHeight
+	local base = self:HatchlingBase() * template:GetPivot().Rotation
+	model:PivotTo(base)
+	model.Parent = Workspace
+	local state = { Model = model, Base = base, Wings = {}, Ready = false, Started = os.clock() }
+	self.Hatchling = state
+	local function capture()
+		local pivot = model:GetPivot()
+		for name in string.gmatch(model:GetAttribute("Wings") or "", "[^,]+") do
+			for _, part in model:GetDescendants() do
+				if part:IsA("BasePart") and part.Name == name then
+					local rel = pivot:ToObjectSpace(part.CFrame)
+					local side = rel.Position.X >= 0 and 1 or -1
+					local hinge = Vector3.new(rel.Position.X - side * math.abs(rel.Position.X) * 0.45, rel.Position.Y, rel.Position.Z)
+					table.insert(state.Wings, { Part = part, Rel = rel, Side = side, Hinge = hinge })
+				end
+			end
+		end
+		state.Ready = true
+	end
+	if animated then
+		model:ScaleTo(baseScale * full * 0.05)
+		task.spawn(function()
+			local started = os.clock()
+			while os.clock() - started < PropsConfig.HatchlingRise and model.Parent do
+				local alpha = (os.clock() - started) / PropsConfig.HatchlingRise
+				local eased = 1 - (1 - alpha) ^ 3
+				model:ScaleTo(baseScale * full * math.max(0.05, eased * (1 + 0.12 * math.sin(alpha * math.pi))))
+				model:PivotTo(base)
+				RunService.RenderStepped:Wait()
+			end
+			if model.Parent then
+				model:ScaleTo(baseScale * full)
+				model:PivotTo(base)
+				Audio.Play("Hatch")
+				EffectController:Burst("Sparkle", base.Position + Vector3.new(0, PropsConfig.HatchlingHeight * 0.6, 0), 30)
+				capture()
+			end
+		end)
+	else
+		model:ScaleTo(baseScale * full)
+		model:PivotTo(base)
+		capture()
+	end
+end
+
+function EggController:RemoveHatchling()
+	if self.Hatchling then
+		self.Hatchling.Model:Destroy()
+		self.Hatchling = nil
+	end
+end
+
+function EggController:AnimateHatchling()
+	local state = self.Hatchling
+	if not state or not state.Ready then
+		return
+	end
+	local t = os.clock() - state.Started
+	local pivot = state.Base * CFrame.new(0, math.abs(math.sin(t * 2)) * PropsConfig.HatchlingBob, 0) * CFrame.Angles(0, math.sin(t * 0.7) * 0.35, math.sin(t * 2) * 0.04)
+	state.Model:PivotTo(pivot)
+	local flap = math.rad(PropsConfig.HatchlingFlap) * math.sin(t * 7)
+	for _, wing in state.Wings do
+		local hinge = CFrame.new(wing.Hinge)
+		wing.Part.CFrame = pivot * hinge * CFrame.Angles(0, 0, wing.Side * flap) * hinge:Inverse() * wing.Rel
+	end
 end
 
 return EggController

@@ -48,3 +48,18 @@ task.delay(8, function()
 		glowingSteps
 	))
 end)
+
+workspace.ChildAdded:Connect(function(child)
+	local hatchlings = ReplicatedStorage:FindFirstChild("Hatchlings")
+	if hatchlings and hatchlings:FindFirstChild(child.Name) and child:IsA("Model") then
+		task.wait(2.5)
+		if child.Parent then
+			local _, size = child:GetBoundingBox()
+			local wings = 0
+			for name in string.gmatch(child:GetAttribute("Wings") or "", "[^,]+") do
+				wings += 1
+			end
+			clientLog:FireServer(("hatchling %s size %s at %s wings %d | wanderers %d"):format(child.Name, tostring(size), tostring(child:GetPivot().Position), wings, #game:GetService("CollectionService"):GetTagged("Wander")))
+		end
+	end
+end)

@@ -69,6 +69,10 @@ local function key(player)
 end
 
 function DataService:Init()
+	if RunService:IsStudio() and not GameConfig.SaveInStudio then
+		store = nil
+		return
+	end
 	local ok, result = pcall(function()
 		local candidate = DataStoreService:GetDataStore(GameConfig.DataStoreName)
 		if RunService:IsStudio() then
