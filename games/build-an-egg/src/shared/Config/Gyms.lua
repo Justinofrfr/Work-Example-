@@ -1,0 +1,16 @@
+return {
+	Tiers = {
+		{ Key = "Gym1", Multiplier = 1, RequiredEggs = 0, PassKey = nil },
+		{ Key = "Gym2", Multiplier = 2, RequiredEggs = 1, PassKey = "Gym2" },
+		{ Key = "Gym5", Multiplier = 5, RequiredEggs = 3, PassKey = "Gym5" },
+		{ Key = "Gym10", Multiplier = 10, RequiredEggs = 8, PassKey = "Gym10" },
+		{ Key = "Gym25", Multiplier = 25, RequiredEggs = 15, PassKey = "Gym25" },
+		{ Key = "Gym50", Multiplier = 50, RequiredEggs = 25, PassKey = "Gym50" },
+		{ Key = "Gym75", Multiplier = 75, RequiredEggs = 50, PassKey = "Gym75" },
+		{ Key = "Gym100", Multiplier = 100, RequiredEggs = 100, PassKey = "Gym100" },
+		{ Key = "GymAdmin", Multiplier = 250, RequiredEggs = math.huge, PassKey = "GymAdmin" },
+	},
+	InteriorMultiplier = 2,
+	PadMargin = 1.5,
+	PadCheckInterval = 0.25,
+}
