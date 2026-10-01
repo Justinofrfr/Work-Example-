@@ -452,6 +452,92 @@ for _, old in stack.Pieces:GetChildren() do
 	end
 end
 
+local npcs = world:FindFirstChild(Names.World.NPCs)
+if npcs then
+	npcs:Destroy()
+end
+npcs = make("Folder", { Name = Names.World.NPCs, Parent = world })
+local ProductsConfig = require(Shared.Config.Products)
+for _, def in PropsConfig.NPCs do
+	local description = Instance.new("HumanoidDescription")
+	description.HeadColor = def.Body.Skin
+	description.LeftArmColor = def.Body.Skin
+	description.RightArmColor = def.Body.Skin
+	description.TorsoColor = def.Body.Torso
+	description.LeftLegColor = def.Body.Legs
+	description.RightLegColor = def.Body.Legs
+	local ok, npc = pcall(function()
+		return game:GetService("Players"):CreateHumanoidModelFromDescription(description, Enum.HumanoidRigType.R15)
+	end)
+	if ok and npc then
+		npc.Name = def.Name
+		local humanoid = npc:FindFirstChildOfClass("Humanoid")
+		humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+		local root = npc:FindFirstChild("HumanoidRootPart")
+		npc.PrimaryPart = root
+		npc:PivotTo(CFrame.lookAt(def.Position + Vector3.new(0, 3, 0), Vector3.new(def.FaceTarget.X, 3, def.FaceTarget.Z)))
+		for _, part in npc:GetDescendants() do
+			if part:IsA("BasePart") then
+				part.Anchored = part == root
+			end
+		end
+		make("Part", {
+			Name = "Ring",
+			Shape = Enum.PartType.Cylinder,
+			Size = Vector3.new(0.3, 9, 9),
+			CFrame = CFrame.new(def.Position + Vector3.new(0, 0.15, 0)) * CFrame.Angles(0, 0, math.rad(90)),
+			Color = def.RingColor,
+			Material = Enum.Material.Neon,
+			Transparency = 0.25,
+			Anchored = true,
+			CanCollide = false,
+			Parent = npc,
+		})
+		local tag = make("BillboardGui", {
+			Name = "Tag",
+			Size = UDim2.fromScale(12, 3.6),
+			StudsOffset = Vector3.new(0, 5.2, 0),
+			MaxDistance = 160,
+			LightInfluence = 0,
+			Parent = root,
+		})
+		local title = make("TextLabel", { Name = "Title", Size = UDim2.fromScale(1, 0.55), BackgroundTransparency = 1, Font = Enum.Font.FredokaOne, TextScaled = true, Text = def.Title, TextColor3 = def.TitleColor, Parent = tag })
+		make("UIStroke", { Thickness = 3, Color = Color3.fromRGB(30, 20, 15), Parent = title })
+		local subtitle = make("TextLabel", { Name = "Subtitle", Size = UDim2.fromScale(1, 0.3), Position = UDim2.fromScale(0, 0.55), BackgroundTransparency = 1, Font = Enum.Font.FredokaOne, TextScaled = true, Text = def.Subtitle, TextColor3 = Color3.new(1, 1, 1), Parent = tag })
+		make("UIStroke", { Thickness = 2, Color = Color3.fromRGB(30, 20, 15), Parent = subtitle })
+		if def.PriceTag then
+			local price = make("TextLabel", { Name = "Price", Size = UDim2.fromScale(0.4, 0.25), Position = UDim2.fromScale(0.3, -0.27), BackgroundTransparency = 1, Font = Enum.Font.FredokaOne, TextScaled = true, Text = "R$ " .. ProductsConfig.GamePasses[def.PriceTag].Price, TextColor3 = Color3.fromRGB(120, 255, 120), Parent = tag })
+			make("UIStroke", { Thickness = 2, Color = Color3.fromRGB(30, 20, 15), Parent = price })
+		end
+		local prompt = make("ProximityPrompt", {
+			Name = def.Prompt.Name,
+			ActionText = def.Prompt.Action,
+			ObjectText = def.Title,
+			HoldDuration = 0,
+			KeyboardKeyCode = Enum.KeyCode.E,
+			MaxActivationDistance = 12,
+			RequiresLineOfSight = false,
+			Parent = root,
+		})
+		if def.Prompt.Panel then
+			prompt:SetAttribute("Panel", def.Prompt.Panel)
+		end
+		if def.Prompt.Pass then
+			prompt:SetAttribute("Pass", def.Prompt.Pass)
+		end
+		if def.Aura then
+			local aura = ReplicatedStorage:WaitForChild(Names.Templates.Folder):FindFirstChild(Names.Templates.GooseAura)
+			if aura then
+				aura:Clone().Parent = root
+			end
+		end
+		CollectionService:AddTag(npc, "NPC")
+		npc.Parent = npcs
+	else
+		warn("NPC build failed: " .. tostring(npc))
+	end
+end
+
 for _, rootName in MapConfig.PersistentRoots do
 	local container = world:FindFirstChild(rootName)
 	if container and not container:IsA("Model") then

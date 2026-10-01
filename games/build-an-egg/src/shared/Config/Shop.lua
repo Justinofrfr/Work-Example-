@@ -4,14 +4,16 @@ return {
 			Title = "BOOSTS",
 			Items = {
 				{ Key = "SpeedBoost", Kind = "Product", Icon = "⚡", Name = "1.5x Speed", Desc = "Permanent, stacks every buy" },
-				{ Key = "StrengthBoost", Kind = "Product", Icon = "💪", Name = "1.5x Strength", Desc = "Permanent, stacks every buy" },
+				{ Key = "StrengthBoost", Kind = "Product", Icon = "💪", Name = "2x Strength", Desc = "Permanent, stacks every buy" },
 			},
 		},
 		{
 			Title = "SERVER DROPS",
 			Items = {
-				{ Key = "ServerPack5K", Kind = "Product", Icon = "📦", Name = "5K Shell Drop", Desc = "+5,000 pieces for everyone" },
-				{ Key = "ServerPack50K", Kind = "Product", Icon = "🎁", Name = "50K Mega Drop", Desc = "+50,000 pieces for everyone" },
+				{ Key = "ServerPack1K", Kind = "Product", Icon = "📦", Name = "+1,000 Shells", Desc = "Adds 1,000 to the egg for everyone" },
+				{ Key = "ServerPack5K", Kind = "Product", Icon = "📦", Name = "+5,000 Shells", Desc = "Adds 5,000 to the egg for everyone" },
+				{ Key = "ServerPack10K", Kind = "Product", Icon = "🎁", Name = "+10,000 Shells", Desc = "Adds 10,000 to the egg for everyone" },
+				{ Key = "ServerPack50K", Kind = "Product", Icon = "🎁", Name = "+50,000 Shells", Desc = "Adds 50,000 to the egg for everyone" },
 			},
 		},
 		{

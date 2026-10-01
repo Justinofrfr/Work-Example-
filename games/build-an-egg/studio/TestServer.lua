@@ -61,7 +61,7 @@ local ok, err = pcall(function()
 	local data = DataService:Get(player)
 	local runtime = StateService:Get(player)
 	note("loaded", data ~= nil, "runtime", runtime ~= nil, "walk", character.Humanoid.WalkSpeed)
-	note("stack", character:FindFirstChild("CarryStack") ~= nil, "rank", character.Head:FindFirstChild("RankTag") ~= nil)
+	note("block", character:FindFirstChild("CarryBlock") ~= nil, "rank", character.Head:FindFirstChild("RankTag") ~= nil)
 
 	local quarry = MapConfig.Quarry.Center
 	StateService:Teleport(player, CFrame.new(quarry + Vector3.new(0, -3, 0)))
@@ -97,6 +97,16 @@ local ok, err = pcall(function()
 	runtime.LastPlace = 0
 	CarryService:Interact(player)
 	note("place from quarry blocked: progress", BuildService.Progress)
+	StateService:Teleport(player, CFrame.new(MapConfig.SpawnPosition + Vector3.new(20, 4, 20)))
+	task.wait(0.4)
+	runtime.Carry = 3
+	CarryService:Drop(player)
+	local piles = workspace.Game.Piles:GetChildren()
+	note("drop: carry", runtime.Carry, "piles", #piles, "pile pieces", piles[1] and piles[1]:GetAttribute("Pieces"))
+	runtime.LastPickup = 0
+	CarryService:Interact(player)
+	note("took pile: carry", runtime.Carry, "piles left", #workspace.Game.Piles:GetChildren())
+	runtime.Carry = 0
 
 	data.Coins = 1000
 	note("buy BulkPickup", UpgradeService:Buy(player, "BulkPickup"))
@@ -116,7 +126,7 @@ local ok, err = pcall(function()
 	local speedBefore = data.Speed
 	StateService:Teleport(player, pad.CFrame)
 	task.wait(2.6)
-	note("training", runtime.Training and runtime.Training.Stat, "walk", character.Humanoid.WalkSpeed, "speed +", data.Speed - speedBefore)
+	note("training", runtime.Training and runtime.Training.Stat, "anchored", character.HumanoidRootPart.Anchored, "walk", character.Humanoid.WalkSpeed, "speed +", data.Speed - speedBefore)
 	GymService:Stop(player, true)
 	note("after stop training", runtime.Training, "walk", character.Humanoid.WalkSpeed)
 

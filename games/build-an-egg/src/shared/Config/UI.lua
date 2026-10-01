@@ -35,6 +35,8 @@ return {
 	},
 	Messages = {
 		Full = "You can't carry any more!",
+		DropQuarry = "Shells don't stay in the quarry!",
+		Purchased = "Purchased %s!",
 		NoPieces = "Grab shell pieces at the quarry first!",
 		NotBuilding = "The egg is hatching! Wait for the next egg.",
 		TooFar = "Get closer to the glowing band!",

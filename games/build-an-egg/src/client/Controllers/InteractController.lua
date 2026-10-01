@@ -26,6 +26,8 @@ local ClientState
 local remotes
 local player
 local button
+local dropButton
+local pileFolder
 local quarryZone
 local prompts = {}
 
@@ -34,11 +36,13 @@ function InteractController:Init(modules, context)
 	remotes = context.Remotes
 	player = context.Player
 	button = context.Gui:WaitForChild("Hud"):WaitForChild("Interact")
+	dropButton = context.Gui.Hud:WaitForChild("DropButton")
 end
 
 function InteractController:Start()
 	local world = Workspace:WaitForChild(W.Root)
 	quarryZone = world:WaitForChild(W.Quarry):WaitForChild(W.QuarryZone)
+	pileFolder = world:WaitForChild(W.Piles)
 	world:WaitForChild(W.Site):WaitForChild(W.Band)
 	UserInputService.InputEnded:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.Touch then
@@ -51,7 +55,7 @@ function InteractController:Start()
 		end
 	end
 	ProximityPromptService.PromptTriggered:Connect(function(prompt)
-		if prompt.Name == W.PickupPrompt or prompt.Name == W.PlacePrompt then
+		if prompt.Name == W.PickupPrompt or prompt.Name == W.PlacePrompt or prompt.Name == "PilePrompt" then
 			self.LastPrompt = os.clock()
 			self:Fire(true)
 		end
@@ -83,6 +87,15 @@ function InteractController:Start()
 	end)
 	ClientState.StateChanged:Connect(function(state)
 		self:TunePrompts(state)
+		dropButton.Visible = UserInputService.TouchEnabled and state.Carry > 0
+	end)
+	UserInputService.InputBegan:Connect(function(input, processed)
+		if not processed and table.find(InputConfig.DropKeys, input.KeyCode) then
+			remotes[Names.Remotes.Drop]:FireServer()
+		end
+	end)
+	dropButton.Activated:Connect(function()
+		remotes[Names.Remotes.Drop]:FireServer()
 	end)
 	if ClientState.State then
 		self:TunePrompts(ClientState.State)
@@ -105,7 +118,7 @@ function InteractController:Interval()
 	if ClientState:OwnsPass("GoldenGoose") then
 		return GameConfig.ActionCooldownFloor + 0.05
 	end
-	return self.Mode == "Place" and GameConfig.PlaceHoldTime or GameConfig.PickupHoldTime
+	return self.Mode == "Place" and GameConfig.PlaceRepeat or GameConfig.PickupRepeat
 end
 
 function InteractController:Fire(immediate)
@@ -118,6 +131,18 @@ function InteractController:Fire(immediate)
 	end
 	self.LastFire = now
 	remotes[Names.Remotes.Interact]:FireServer()
+end
+
+function InteractController:NearPile(position)
+	if not pileFolder then
+		return false
+	end
+	for _, pile in pileFolder:GetChildren() do
+		if pile:IsA("BasePart") and (pile.Position - position).Magnitude <= GameConfig.BasePromptDistance then
+			return true
+		end
+	end
+	return false
 end
 
 function InteractController:InQuarry(position)
@@ -134,7 +159,9 @@ function InteractController:UpdateMode()
 	local server = ClientState.Server
 	local mode
 	if rootPart and state and not state.Training then
-		if self:InQuarry(rootPart.Position) then
+		if self:NearPile(rootPart.Position) and state.Carry < state.Capacity then
+			mode = "Pickup"
+		elseif self:InQuarry(rootPart.Position) then
 			mode = "Pickup"
 		elseif server and server.Phase == "Building" and state.Carry > 0 then
 			local reach = 1 + Formulas.UpgradeValue("Range", state.Upgrades.Range or 0)

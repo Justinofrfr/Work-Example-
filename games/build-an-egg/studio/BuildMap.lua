@@ -128,6 +128,7 @@ for _, child in Workspace:GetChildren() do
 end
 
 local root = make("Folder", { Name = W.Root, Parent = Workspace })
+make("Folder", { Name = W.Piles, Parent = root })
 
 Workspace.Terrain:Clear()
 local random = Random.new(7)
@@ -243,8 +244,6 @@ sign(quarryFolder, "QuarrySign", CFrame.new(pitCenter + Vector3.new(0, 16, -pitS
 local stands = MapConfig.Stands
 local codesSign = sign(quarryFolder, "CodesSign", facing(stands.Codes + Vector3.new(0, 6, 0), pitCenter), Vector3.new(14, 8, 1), "CODES", "Press E to enter", P.Wood)
 make("ProximityPrompt", { Name = W.StandPrompt, ActionText = "Codes", ObjectText = "Codes", KeyboardKeyCode = Enum.KeyCode.E, MaxActivationDistance = 12, RequiresLineOfSight = false, Parent = codesSign }):SetAttribute("Panel", "Codes")
-local upgradeSign = sign(quarryFolder, W.UpgradeStand, facing(stands.Upgrades + Vector3.new(0, 6, 0), pitCenter), Vector3.new(14, 8, 1), "UPGRADES", "Spend coins", Color3.fromRGB(70, 120, 60))
-make("ProximityPrompt", { Name = W.StandPrompt, ActionText = "Upgrades", ObjectText = "Upgrades", KeyboardKeyCode = Enum.KeyCode.E, MaxActivationDistance = 12, RequiresLineOfSight = false, Parent = upgradeSign }):SetAttribute("Panel", "Upgrades")
 
 local spawnFolder = make("Folder", { Name = W.Spawn, Parent = root })
 make("SpawnLocation", {

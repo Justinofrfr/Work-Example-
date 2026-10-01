@@ -168,71 +168,90 @@ end
 
 local stats = make("Frame", {
 	Name = "Stats",
-	Size = UDim2.fromScale(0.17, 0.3),
-	Position = UDim2.fromScale(0.01, 0.3),
+	Size = UDim2.fromScale(0.2, 0.42),
+	Position = UDim2.fromScale(0.008, 0.3),
 	BackgroundTransparency = 1,
 	Parent = hud,
 }, {
-	make("UIListLayout", { Padding = UDim.new(0.04, 0), SortOrder = Enum.SortOrder.LayoutOrder }),
-	aspect(1),
+	make("UIListLayout", { Padding = UDim.new(0.03, 0), SortOrder = Enum.SortOrder.LayoutOrder }),
+	aspect(0.78),
 })
-for index, def in { { "Coins", "🪙", C.Coins }, { "Speed", "⚡", C.Speed }, { "Strength", "💪", C.Strength }, { "Eggs", "🥚", C.Eggs } } do
+for index, def in { { "Coins", "💰", C.Coins }, { "Speed", "⚡", C.Speed, "Walk Speed: 16" }, { "Strength", "💪", C.Strength, "Capacity: 0/1" }, { "Eggs", "🥚", C.Eggs } } do
 	local row = make("Frame", {
 		Name = def[1],
-		Size = UDim2.fromScale(1, 0.21),
-		BackgroundColor3 = Color3.fromRGB(30, 22, 18),
-		BackgroundTransparency = 0.35,
+		Size = UDim2.fromScale(1, 0.22),
+		BackgroundTransparency = 1,
 		LayoutOrder = index,
 		Parent = stats,
-	}, { corner(0.5), stroke(2.5) })
-	label({ Name = "Icon", Text = def[2], Size = UDim2.fromScale(0.22, 1.15), Position = UDim2.fromScale(-0.04, -0.075), Parent = row })
-	label({ Name = "Value", Text = "0", TextColor3 = def[3], TextXAlignment = Enum.TextXAlignment.Left, Size = UDim2.fromScale(0.72, 0.8), Position = UDim2.fromScale(0.22, 0.1), Parent = row })
+	})
+	label({ Name = "Icon", Text = def[2], Size = UDim2.fromScale(0.3, 1), Parent = row }).Parent = row
+	aspect(1).Parent = row.Icon
+	label({ Name = "Value", Text = "0", TextColor3 = Color3.new(1, 1, 1), TextXAlignment = Enum.TextXAlignment.Left, Size = UDim2.fromScale(0.66, def[4] and 0.66 or 0.9), Position = UDim2.fromScale(0.32, def[4] and 0 or 0.05), StrokeThickness = 3, Parent = row })
+	if def[4] then
+		label({ Name = "Sub", Text = def[4], TextColor3 = Color3.fromRGB(235, 235, 235), TextXAlignment = Enum.TextXAlignment.Left, Size = UDim2.fromScale(0.66, 0.3), Position = UDim2.fromScale(0.32, 0.66), StrokeThickness = 2, Parent = row })
+	end
 end
 
-local rankLabel = label({ Name = "Rank", Text = "Hatchling", Size = UDim2.fromScale(1, 0.12), Position = UDim2.fromScale(0, -0.15), TextColor3 = Color3.fromRGB(220, 220, 220), Parent = stats })
+local rankLabel = label({ Name = "Rank", Text = "Hatchling", Size = UDim2.fromScale(1, 0.08), Position = UDim2.fromScale(0, -0.09), TextColor3 = Color3.fromRGB(220, 220, 220), Parent = stats })
 rankLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 local right = make("Frame", {
 	Name = "Right",
-	Size = UDim2.fromScale(0.09, 0.36),
-	Position = UDim2.fromScale(0.99, 0.5),
-	AnchorPoint = Vector2.new(1, 0.5),
+	Size = UDim2.fromScale(0.09, 0.5),
+	Position = UDim2.fromScale(0.992, 0.24),
+	AnchorPoint = Vector2.new(1, 0),
 	BackgroundTransparency = 1,
 	Parent = hud,
 }, {
-	make("UIListLayout", { Padding = UDim.new(0.04, 0), SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Right }),
-	aspect(0.47),
+	make("UIListLayout", { Padding = UDim.new(0.03, 0), SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Right }),
+	aspect(0.32),
 })
-for index, def in { { "Shop", "🛒", "SHOP", Color3.fromRGB(90, 210, 90) }, { "Upgrades", "⬆️", "UPGRADES", Color3.fromRGB(255, 165, 50) } } do
-	local b = button({ Name = def[1], Icon = def[2], Text = def[3], Color = def[4], Size = UDim2.fromScale(1, 0.45), LayoutOrder = index, Parent = right })
+local function priceBadge(parent, text)
+	local badge = make("Frame", {
+		Name = "Badge",
+		Size = UDim2.fromScale(0.5, 0.26),
+		Position = UDim2.fromScale(0.98, 0.02),
+		AnchorPoint = Vector2.new(1, 0),
+		BackgroundColor3 = Color3.fromRGB(40, 170, 70),
+		ZIndex = 4,
+		Parent = parent,
+	}, { corner(0.5), stroke(2) })
+	label({ Name = "Text", Text = text, Size = UDim2.fromScale(0.86, 0.8), Position = UDim2.fromScale(0.07, 0.1), ZIndex = 5, StrokeThickness = 1.5, Parent = badge })
+	return badge
+end
+for index, def in { { "Shop", "🧺", "SHOP", Color3.fromRGB(255, 90, 140) }, { "SpeedBoost", "⚡", "1.5x Speed", Color3.fromRGB(80, 160, 255) }, { "StrengthBoost", "💪", "2x Strength", Color3.fromRGB(255, 160, 40) } } do
+	local b = button({ Name = def[1], Icon = def[2], Text = def[3], Color = def[4], Size = UDim2.fromScale(1, 0.3), LayoutOrder = index, Parent = right })
 	aspect(1).Parent = b
+	if index > 1 then
+		priceBadge(b, "R$0")
+	end
 end
 
 local progress = make("Frame", {
 	Name = "Progress",
-	Size = UDim2.fromScale(0.42, 0.13),
+	Size = UDim2.fromScale(0.36, 0.2),
 	Position = UDim2.fromScale(0.5, 0.012),
 	AnchorPoint = Vector2.new(0.5, 0),
 	BackgroundTransparency = 1,
 	Parent = hud,
-}, { aspect(5.2) })
-label({ Name = "Title", Text = "COMMON EGG", Size = UDim2.fromScale(1, 0.3), Parent = progress })
+}, { aspect(3.2) })
+label({ Name = "Title", Text = "COMMON EGG", Size = UDim2.fromScale(0.6, 0.16), Position = UDim2.fromScale(0.2, 0), TextColor3 = Color3.fromRGB(255, 240, 200), Parent = progress })
 local bar = make("Frame", {
 	Name = "Bar",
-	Size = UDim2.fromScale(1, 0.34),
-	Position = UDim2.fromScale(0, 0.32),
-	BackgroundColor3 = Color3.fromRGB(40, 30, 24),
+	Size = UDim2.fromScale(1, 0.38),
+	Position = UDim2.fromScale(0, 0.17),
+	BackgroundColor3 = Color3.fromRGB(70, 56, 46),
 	ClipsDescendants = true,
 	Parent = progress,
-}, { corner(0.5), stroke(3.5) })
-local fill = make("Frame", {
+}, { corner(0.35), stroke(4) })
+make("Frame", {
 	Name = "Fill",
 	Size = UDim2.fromScale(0, 1),
 	BackgroundColor3 = Color3.new(1, 1, 1),
 	Parent = bar,
 }, {
-	corner(0.5),
-	make("UIGradient", { Color = ColorSequence.new(Color3.fromRGB(140, 255, 120), Color3.fromRGB(40, 190, 70)), Rotation = 90 }),
+	corner(0.35),
+	make("UIGradient", { Color = ColorSequence.new(Color3.fromRGB(255, 248, 225), Color3.fromRGB(240, 205, 140)), Rotation = 90 }),
 })
 make("Frame", {
 	Name = "Shine",
@@ -243,21 +262,49 @@ make("Frame", {
 	BorderSizePixel = 0,
 	Parent = bar,
 }, { make("UIGradient", { Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.5, 0.2), NumberSequenceKeypoint.new(1, 1) }) }) })
-label({ Name = "Percent", Text = "0%", Size = UDim2.fromScale(1, 0.86), Position = UDim2.fromScale(0, 0.07), ZIndex = 3, Parent = bar })
-label({ Name = "Count", Text = "0 / 171,700", Size = UDim2.fromScale(0.5, 0.22), Position = UDim2.fromScale(0, 0.7), TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.fromRGB(255, 240, 200), Parent = progress })
-label({ Name = "Contribution", Text = "You: 0", Size = UDim2.fromScale(0.5, 0.22), Position = UDim2.fromScale(0.5, 0.7), TextXAlignment = Enum.TextXAlignment.Right, TextColor3 = Color3.fromRGB(160, 230, 255), Parent = progress })
-label({ Name = "Phase", Text = "", Visible = false, Size = UDim2.fromScale(1, 0.3), Position = UDim2.fromScale(0, 1), TextColor3 = Color3.fromRGB(255, 220, 90), Parent = progress })
+label({ Name = "Percent", Text = "0 / 171,700", Size = UDim2.fromScale(0.94, 0.8), Position = UDim2.fromScale(0.03, 0.1), ZIndex = 3, StrokeThickness = 3, Parent = bar })
+local packs = make("Frame", {
+	Name = "Packs",
+	Size = UDim2.fromScale(0.9, 0.24),
+	Position = UDim2.fromScale(0.05, 0.6),
+	BackgroundTransparency = 1,
+	Parent = progress,
+}, {
+	make("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Center, Padding = UDim.new(0.02, 0), SortOrder = Enum.SortOrder.LayoutOrder }),
+})
+local ProductsConfig = require(Shared.Config.Products)
+for index, key in ProductsConfig.QuickPacks do
+	local product = ProductsConfig.DevProducts[key]
+	local b = button({ Name = key, Text = "+" .. string.format("%d", product.Pieces):reverse():gsub("(%d%d%d)", "%1,"):reverse():gsub("^,", ""), Color = product.Color, Size = UDim2.fromScale(0.235, 1), LayoutOrder = index, Radius = 0.2, Parent = packs })
+	local badge = priceBadge(b, "R$" .. product.Price)
+	badge.Size = UDim2.fromScale(0.42, 0.62)
+	badge.Position = UDim2.fromScale(1.04, -0.32)
+end
+label({ Name = "Count", Text = "", Visible = false, Size = UDim2.fromScale(0.5, 0.12), Position = UDim2.fromScale(0, 0.86), TextXAlignment = Enum.TextXAlignment.Left, Parent = progress })
+label({ Name = "Contribution", Text = "You: 0", Size = UDim2.fromScale(0.5, 0.12), Position = UDim2.fromScale(0.25, 0.86), TextColor3 = Color3.fromRGB(160, 230, 255), Parent = progress })
+label({ Name = "Phase", Text = "", Visible = false, Size = UDim2.fromScale(1, 0.16), Position = UDim2.fromScale(0, 1), TextColor3 = Color3.fromRGB(255, 220, 90), Parent = progress })
 
-local carry = make("Frame", {
-	Name = "Carry",
-	Size = UDim2.fromScale(0.16, 0.06),
-	Position = UDim2.fromScale(0.5, 0.86),
-	AnchorPoint = Vector2.new(0.5, 1),
-	BackgroundColor3 = Color3.fromRGB(30, 22, 18),
-	BackgroundTransparency = 0.3,
+local friend = make("Frame", {
+	Name = "FriendBoost",
+	Size = UDim2.fromScale(0.2, 0.05),
+	Position = UDim2.fromScale(0.008, 0.985),
+	AnchorPoint = Vector2.new(0, 1),
+	BackgroundTransparency = 1,
 	Parent = hud,
-}, { corner(0.5), stroke(3), aspect(4.6) })
-label({ Name = "Text", Text = "🥚 0 / 1", Size = UDim2.fromScale(0.9, 0.8), Position = UDim2.fromScale(0.05, 0.1), Parent = carry })
+}, { aspect(6) })
+label({ Name = "Icon", Text = "👥", Size = UDim2.fromScale(0.17, 1), Parent = friend })
+label({ Name = "Text", Text = "Friend Boost: +0%", Size = UDim2.fromScale(0.8, 0.8), Position = UDim2.fromScale(0.19, 0.1), TextXAlignment = Enum.TextXAlignment.Left, Parent = friend })
+
+local keys = make("Frame", {
+	Name = "KeyHints",
+	Size = UDim2.fromScale(0.09, 0.07),
+	Position = UDim2.fromScale(0.992, 0.985),
+	AnchorPoint = Vector2.new(1, 1),
+	BackgroundTransparency = 1,
+	Parent = hud,
+}, { aspect(2.4) })
+label({ Name = "Pickup", Text = "[E] Pick Up", Size = UDim2.fromScale(1, 0.48), TextXAlignment = Enum.TextXAlignment.Right, Parent = keys })
+label({ Name = "Drop", Text = "[Q] Drop", Size = UDim2.fromScale(1, 0.48), Position = UDim2.fromScale(0, 0.52), TextXAlignment = Enum.TextXAlignment.Right, Parent = keys })
 
 local interact = button({
 	Name = "Interact",
@@ -273,6 +320,20 @@ local interact = button({
 interact.Visible = false
 aspect(1).Parent = interact
 
+local dropButton = button({
+	Name = "DropButton",
+	Icon = "⬇️",
+	Text = "DROP",
+	Color = Color3.fromRGB(200, 90, 80),
+	Size = UDim2.fromScale(0.08, 0.08),
+	Position = UDim2.fromScale(0.74, 0.72),
+	AnchorPoint = Vector2.new(1, 1),
+	Radius = 0.5,
+	Parent = hud,
+})
+dropButton.Visible = false
+aspect(1).Parent = dropButton
+
 local function addHint(target)
 	local hint = make("Frame", {
 		Name = "Hint",
@@ -286,7 +347,7 @@ local function addHint(target)
 	}, { corner(1), stroke(2, Color3.new(1, 1, 1)), aspect(1) })
 	label({ Name = "Text", Text = "Y", Size = UDim2.fromScale(0.8, 0.8), Position = UDim2.fromScale(0.1, 0.1), ZIndex = 6, Parent = hint })
 end
-for _, target in { hud.TopLeft.Codes, hud.TopLeft.Settings, hud.Right.Shop, hud.Right.Upgrades, interact } do
+for _, target in { hud.TopLeft.Codes, hud.TopLeft.Settings, hud.Right.Shop, interact } do
 	addHint(target)
 end
 
@@ -450,6 +511,27 @@ make("Frame", { Name = "Top", Size = UDim2.fromScale(1, 0.12), Position = UDim2.
 make("Frame", { Name = "Bottom", Size = UDim2.fromScale(1, 0.12), Position = UDim2.fromScale(0, 1), BackgroundColor3 = Color3.new(0, 0, 0), BorderSizePixel = 0, Parent = cutscene })
 label({ Name = "Caption", Text = "", Size = UDim2.fromScale(0.8, 0.09), Position = UDim2.fromScale(0.1, 0.8), Parent = cutscene })
 button({ Name = "Skip", Text = "SKIP", Color = Color3.fromRGB(150, 150, 160), Size = UDim2.fromScale(0.09, 0.06), Position = UDim2.fromScale(0.985, 0.03), AnchorPoint = Vector2.new(1, 0), Parent = cutscene })
+
+local tutorial = make("Frame", { Name = "Tutorial", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Visible = false, ZIndex = 40, Parent = gui })
+for _, side in { "Top", "Bottom", "Left", "Right" } do
+	make("Frame", { Name = side, BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 0.45, BorderSizePixel = 0, ZIndex = 40, Size = UDim2.fromScale(0, 0), Parent = tutorial })
+end
+make("Frame", { Name = "Ring", BackgroundTransparency = 1, ZIndex = 41, Size = UDim2.fromScale(0, 0), Parent = tutorial }, { corner(0.3), stroke(4, Color3.fromRGB(255, 230, 90)) })
+label({ Name = "Finger", Text = "👆", Size = UDim2.fromScale(0.07, 0.07), AnchorPoint = Vector2.new(0.5, 0), ZIndex = 45, Parent = tutorial }).Parent = tutorial
+aspect(1).Parent = tutorial.Finger
+local tutorialCard = panelFrame({
+	Name = "Card",
+	Size = UDim2.fromScale(0.42, 0.12),
+	Position = UDim2.fromScale(0.5, 0.2),
+	AnchorPoint = Vector2.new(0.5, 0),
+	ZIndex = 42,
+	Parent = tutorial,
+})
+aspect(5.5).Parent = tutorialCard
+label({ Name = "Step", Text = "STEP 1/6", Size = UDim2.fromScale(0.3, 0.3), Position = UDim2.fromScale(0.04, 0.06), TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.fromRGB(255, 220, 90), ZIndex = 43, Parent = tutorialCard })
+label({ Name = "Text", Text = "Walk to the quarry", Size = UDim2.fromScale(0.72, 0.55), Position = UDim2.fromScale(0.04, 0.38), TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 43, Parent = tutorialCard })
+local skip = button({ Name = "Skip", Text = "SKIP", Color = Color3.fromRGB(150, 150, 160), Size = UDim2.fromScale(0.18, 0.5), Position = UDim2.fromScale(0.97, 0.5), AnchorPoint = Vector2.new(1, 0.5), Parent = tutorialCard })
+skip.ZIndex = 43
 
 make("Frame", { Name = "Flash", Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(1, 1, 1), BackgroundTransparency = 1, BorderSizePixel = 0, ZIndex = 50, Parent = gui })
 

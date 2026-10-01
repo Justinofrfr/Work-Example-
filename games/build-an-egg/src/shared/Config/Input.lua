@@ -17,4 +17,5 @@ return {
 		Hatch = "▲",
 	},
 	HatchKeys = { Enum.KeyCode.DPadUp },
+	DropKeys = { Enum.KeyCode.Q, Enum.KeyCode.ButtonL1 },
 }

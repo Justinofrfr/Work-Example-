@@ -278,6 +278,11 @@ function EffectController:Handle(kind, a, b)
 				self:Burst("Sparkle", target, 6)
 			end)
 		end
+	elseif kind == "Drop" then
+		if root then
+			Audio.PlayAt("Place", root.Position, 0.8)
+			self:Burst("Dust", root.Position - Vector3.new(0, 2.5, 0), 10)
+		end
 	elseif kind == "TrainStart" then
 		Audio.Play("TrainStart")
 		if root then

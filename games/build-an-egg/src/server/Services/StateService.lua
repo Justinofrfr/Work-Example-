@@ -89,7 +89,8 @@ function StateService:AwardStat(player, stat, amount)
 	if not data or (stat ~= "Speed" and stat ~= "Strength") then
 		return
 	end
-	local gain = amount * self:BoostMultiplier(player, stat)
+	local runtime = self.Runtime[player]
+	local gain = amount * self:BoostMultiplier(player, stat) * (1 + (runtime and runtime.FriendBoost or 0))
 	data[stat] += gain
 	DataService:MarkDirty(player)
 	if stat == "Speed" then
@@ -228,6 +229,8 @@ function StateService:Sync(player)
 		Claimed = BuildService and BuildService.Claimed[player.UserId] == true or false,
 		Rank = rank.Name,
 		Passes = MonetizationService:OwnedPasses(player),
+		FriendBoost = runtime.FriendBoost or 0,
+		TutorialStep = data.TutorialStep or 0,
 	})
 end
 

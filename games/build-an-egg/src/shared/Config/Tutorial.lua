@@ -1,0 +1,20 @@
+return {
+	Steps = {
+		{ Key = "Quarry", Text = "Walk to the SHELL QUARRY", Target = "World", World = "Quarry" },
+		{ Key = "Pickup", Text = "Hold E to grab shell pieces", MobileText = "Hold PICK UP to grab shell pieces", Target = "Gui", Gui = "Interact", World = "Quarry" },
+		{ Key = "Place", Text = "Carry them to the glowing ring on the egg", Target = "World", World = "Band" },
+		{ Key = "Upgrades", Text = "Spend your coins at the UPGRADES NPC", Target = "World", World = "UpgradesNPC" },
+		{ Key = "Gym", Text = "Step on a treadmill to train your Speed", Target = "World", World = "Gym" },
+		{ Key = "Shop", Text = "Check the SHOP for boosts and passes", Target = "Gui", Gui = "Shop", AutoAdvance = 6 },
+	},
+	BeamTexture = "rbxassetid://116501023309975",
+	BeamColor = Color3.fromRGB(90, 255, 120),
+	BeamWidth = 3,
+	BeamTextureLength = 4,
+	BeamTextureSpeed = 1.2,
+	SpotlightTransparency = 0.45,
+	SpotlightPadding = 0.02,
+	FingerBob = 0.015,
+	FingerSpeed = 5,
+	MarkerHeight = 12,
+}

@@ -1,9 +1,11 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local UIConfig = require(Shared.Config.UI)
+local ProductsConfig = require(Shared.Config.Products)
 local Format = require(Shared.Util.Format)
 local Formulas = require(Shared.Util.Formulas)
 
@@ -14,6 +16,7 @@ local HudController = {}
 
 local ClientState
 local PanelController
+local ShopController
 local gui
 local hud
 local progress
@@ -22,6 +25,7 @@ local shown = {}
 function HudController:Init(modules, context)
 	ClientState = modules.ClientState
 	PanelController = modules.PanelController
+	ShopController = modules.ShopController
 	gui = context.Gui
 	hud = gui:WaitForChild("Hud")
 	progress = hud:WaitForChild("Progress")
@@ -33,10 +37,24 @@ function HudController:Start()
 			PanelController:Toggle(name)
 		end)
 	end
-	for _, name in { "Shop", "Upgrades" } do
-		hud.Right[name].Activated:Connect(function()
-			PanelController:Toggle(name)
-		end)
+	hud.Right.Shop.Activated:Connect(function()
+		PanelController:Toggle("Shop")
+	end)
+	for _, key in ProductsConfig.QuickBoosts do
+		local quickButton = hud.Right:FindFirstChild(key)
+		if quickButton then
+			quickButton.Activated:Connect(function()
+				ShopController:BuyKey(key)
+			end)
+		end
+	end
+	for _, key in ProductsConfig.QuickPacks do
+		local packButton = progress.Packs:FindFirstChild(key)
+		if packButton then
+			packButton.Activated:Connect(function()
+				ShopController:BuyKey(key)
+			end)
+		end
 	end
 	ClientState.StateChanged:Connect(function(state, previous)
 		self:RenderState(state, previous)
@@ -44,6 +62,17 @@ function HudController:Start()
 	ClientState.ServerChanged:Connect(function(server, previous)
 		self:RenderServer(server, previous)
 	end)
+	if ClientState.State then
+		self:RenderState(ClientState.State, nil)
+	end
+	if ClientState.Server then
+		self:RenderServer(ClientState.Server, nil)
+	end
+	local function renderHints()
+		hud.KeyHints.Visible = UserInputService.KeyboardEnabled and not UserInputService.TouchEnabled
+	end
+	renderHints()
+	UserInputService.LastInputTypeChanged:Connect(renderHints)
 	RunService.Heartbeat:Connect(function()
 		self:RenderTimer()
 	end)
@@ -78,26 +107,34 @@ function HudController:RenderState(state, previous)
 	self:SetStat("Speed", state.Speed)
 	self:SetStat("Strength", state.Strength)
 	self:SetStat("Eggs", state.Eggs)
-	local rank = Formulas.Rank(state.Eggs)
-	local rankLabel = hud.Stats.Rank
-	rankLabel.Text = rank.Name
-	rankLabel.TextColor3 = rank.Color
-	local carry = hud.Carry
-	carry.Text.Text = ("🥚 %s / %s"):format(Format.Short(state.Carry), Format.Short(state.Capacity))
-	carry.Text.TextColor3 = state.Carry >= state.Capacity and UIConfig.Colors.Bad or Color3.new(1, 1, 1)
+	local stats = hud.Stats
+	stats.Speed.Sub.Text = ("Walk Speed: %d"):format(math.floor(Formulas.WalkSpeed(state.Speed)))
+	stats.Strength.Sub.Text = ("Capacity: %s/%s"):format(Format.Short(state.Carry), Format.Short(state.Capacity))
+	stats.Strength.Sub.TextColor3 = state.Carry >= state.Capacity and state.Carry > 0 and UIConfig.Colors.Bad or Color3.fromRGB(235, 235, 235)
 	if previous and state.Carry ~= previous.Carry then
-		Ui.Pop(carry, 1.1)
+		Ui.Pop(stats.Strength.Sub, 1.12)
 	end
+	local rank = Formulas.Rank(state.Eggs)
+	stats.Rank.Text = rank.Name
+	stats.Rank.TextColor3 = rank.Color
 	progress.Contribution.Text = ("You: %s"):format(Ui.Comma(state.RoundPieces or 0))
+	hud.FriendBoost.Text.Text = ("Friend Boost: +%d%%"):format(math.floor((state.FriendBoost or 0) * 100 + 0.5))
 	gui.TrainHint.Visible = state.Training ~= nil
+	for _, key in ProductsConfig.QuickBoosts do
+		local quickButton = hud.Right:FindFirstChild(key)
+		local badge = quickButton and quickButton:FindFirstChild("Badge")
+		if badge then
+			local _, price = ShopController:ProductInfo({ Key = key, Kind = "Product" })
+			badge.Text.Text = "R$" .. tostring(price)
+		end
+	end
 end
 
 function HudController:RenderServer(server)
 	local fraction = server.Target > 0 and server.Progress / server.Target or 0
 	progress.Title.Text = string.upper(server.ProjectName)
 	Ui.Tween(progress.Bar.Fill, UIConfig.BarTweenTime, { Size = UDim2.fromScale(math.clamp(fraction, 0, 1), 1) })
-	progress.Bar.Percent.Text = Format.Percent(fraction)
-	progress.Count.Text = ("%s / %s"):format(Ui.Comma(server.Progress), Ui.Comma(server.Target))
+	progress.Bar.Percent.Text = ("%s / %s"):format(Ui.Comma(server.Progress), Ui.Comma(server.Target))
 end
 
 function HudController:RenderTimer()

@@ -1,3 +1,4 @@
+local Debris = game:GetService("Debris")
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -5,6 +6,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local ProductsConfig = require(Shared.Config.Products)
 local Names = require(Shared.Config.Names)
+local UIConfig = require(Shared.Config.UI)
+local GameConfig = require(Shared.Config.Game)
 local Signal = require(Shared.Util.Signal)
 
 local MonetizationService = {
@@ -56,6 +59,7 @@ function MonetizationService:Start()
 					self.PassCache[player][key] = true
 					StateService:Dirty(player)
 					self.PassChanged:Fire(player, key)
+					self:ShowPurchase(player, pass.Name or key)
 					remotes[Names.Remotes.Notify]:FireClient(player, "PassOwned", key)
 				end
 			end
@@ -154,8 +158,26 @@ function MonetizationService:ProcessReceipt(receipt)
 		BuildService:AddPieces(player, product.Pieces, true)
 		remotes[Names.Remotes.Notify]:FireAllClients("ServerPack", player.DisplayName, product.Pieces)
 	end
+	self:ShowPurchase(player, product.Name or entry.Key)
 	StateService:Dirty(player)
 	return Enum.ProductPurchaseDecision.PurchaseGranted
+end
+
+function MonetizationService:ShowPurchase(player, itemName)
+	local character = player.Character
+	local head = character and character:FindFirstChild("Head")
+	local templates = ReplicatedStorage:FindFirstChild(Names.Templates.Folder)
+	local template = templates and templates:FindFirstChild(Names.Templates.PurchaseTag)
+	if not head or not template then
+		return
+	end
+	local tag = template:Clone()
+	local label = tag:FindFirstChild("Text")
+	if label then
+		label.Text = UIConfig.Messages.Purchased:format(itemName)
+	end
+	tag.Parent = head
+	Debris:AddItem(tag, GameConfig.PurchaseTagTime)
 end
 
 return MonetizationService

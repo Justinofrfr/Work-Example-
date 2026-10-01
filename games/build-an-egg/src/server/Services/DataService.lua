@@ -28,6 +28,7 @@ local function template()
 		BoostLevels = { SpeedBoost = 0, StrengthBoost = 0 },
 		Codes = {},
 		GiftClaimed = false,
+		TutorialStep = 0,
 		Purchases = {},
 	}
 end

@@ -43,6 +43,24 @@ function AmbientController:Start()
 	for _, model in CollectionService:GetTagged("Wander") do
 		addWander(model)
 	end
+	local function addNPC(npc)
+		local humanoid = npc:FindFirstChildOfClass("Humanoid")
+		local animator = humanoid and (humanoid:FindFirstChildOfClass("Animator") or humanoid:WaitForChild("Animator", 5))
+		if not animator or PropsConfig.NPCIdleAnimation == "" then
+			return
+		end
+		local animation = Instance.new("Animation")
+		animation.AnimationId = PropsConfig.NPCIdleAnimation
+		local ok, track = pcall(animator.LoadAnimation, animator, animation)
+		if ok and track then
+			track.Looped = true
+			track:Play()
+		end
+	end
+	for _, npc in CollectionService:GetTagged("NPC") do
+		task.spawn(addNPC, npc)
+	end
+	CollectionService:GetInstanceAddedSignal("NPC"):Connect(addNPC)
 	CollectionService:GetInstanceAddedSignal("Wobble"):Connect(addWobble)
 	CollectionService:GetInstanceAddedSignal("Wander"):Connect(addWander)
 	RunService.Heartbeat:Connect(function(dt)

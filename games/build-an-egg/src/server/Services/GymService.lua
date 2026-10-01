@@ -177,9 +177,42 @@ function GymService:Begin(player, runtime, pad)
 	if character then
 		character:SetAttribute(A.Training, stat)
 	end
+	if rootPart and stat ~= "Both" then
+		self:Snap(player, rootPart, pad, stat)
+	end
 	StateService:ApplyWalkSpeed(player)
 	StateService:Dirty(player)
 	remotes[Names.Remotes.Effect]:FireClient(player, "TrainStart", stat, tierKey)
+end
+
+function GymService:Snap(player, rootPart, pad, stat)
+	local floor = pad.CFrame * CFrame.new(0, -pad.Size.Y / 2, 0)
+	local target
+	if stat == "Strength" then
+		local seat = pad.Parent:FindFirstChildWhichIsA("Seat", true)
+		local top = seat and (seat.Position.Y + seat.Size.Y / 2) or (floor.Position.Y + GymsConfig.BenchHeight)
+		local position = Vector3.new(floor.Position.X, top + GymsConfig.LieHeightOffset, floor.Position.Z)
+		target = CFrame.fromMatrix(position, -pad.CFrame.RightVector, pad.CFrame.LookVector)
+	else
+		local position = floor.Position + Vector3.new(0, GymsConfig.TreadmillStandHeight, 0)
+		target = CFrame.lookAt(position, position + pad.CFrame.LookVector)
+	end
+	StateService:Teleport(player, target)
+	rootPart.AssemblyLinearVelocity = Vector3.zero
+	rootPart.Anchored = true
+end
+
+function GymService:Release(player, pad)
+	local character = player.Character
+	local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+	if not rootPart or not rootPart.Anchored then
+		return
+	end
+	rootPart.Anchored = false
+	if pad then
+		local side = pad.CFrame * CFrame.new(pad.Size.X / 2 + GymsConfig.StepOffDistance, -pad.Size.Y / 2 + 3, 0)
+		StateService:Teleport(player, CFrame.lookAt(side.Position, side.Position + pad.CFrame.RightVector))
+	end
 end
 
 function GymService:Stop(player, byJump)
@@ -187,10 +220,12 @@ function GymService:Stop(player, byJump)
 	if not runtime or not runtime.Training then
 		return
 	end
+	local pad = runtime.Training.Pad
 	if byJump then
-		self.Stopped[player] = runtime.Training.Pad
+		self.Stopped[player] = pad
 	end
 	runtime.Training = nil
+	self:Release(player, pad)
 	local character = player.Character
 	local rootPart = character and character:FindFirstChild("HumanoidRootPart")
 	local aura = rootPart and rootPart:FindFirstChild(Names.Templates.TrainAura)

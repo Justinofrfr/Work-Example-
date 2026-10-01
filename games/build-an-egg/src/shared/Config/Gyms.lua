@@ -13,4 +13,8 @@ return {
 	InteriorMultiplier = 2,
 	PadMargin = 1.5,
 	PadCheckInterval = 0.25,
+	BenchHeight = 2.2,
+	LieHeightOffset = 0.6,
+	TreadmillStandHeight = 4.4,
+	StepOffDistance = 3,
 }

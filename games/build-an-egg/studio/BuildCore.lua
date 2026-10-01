@@ -113,6 +113,125 @@ make("BillboardGui", {
 	label({ Name = "Text", Text = "0" }),
 })
 
+local imported = game:GetService("ServerStorage"):FindFirstChild("Imported")
+local eggMesh = imported and imported:FindFirstChild("Egg") and imported.Egg:FindFirstChildWhichIsA("MeshPart", true)
+local function shellChunk(name)
+	local chunk
+	if eggMesh then
+		chunk = eggMesh:Clone()
+		for _, child in chunk:GetChildren() do
+			child:Destroy()
+		end
+	else
+		chunk = Instance.new("Part")
+		chunk.Shape = Enum.PartType.Ball
+	end
+	chunk.Name = name
+	chunk.Size = Vector3.new(2.2, 2.6, 2.2)
+	chunk.Color = MapConfig.Palette.Shell
+	chunk.Material = Enum.Material.SmoothPlastic
+	chunk.CanCollide = false
+	chunk.CanQuery = false
+	chunk.CanTouch = false
+	return chunk
+end
+
+local carryBlock = shellChunk(Names.Templates.CarryBlock)
+carryBlock.Massless = true
+carryBlock.Transparency = 1
+carryBlock.Parent = templates
+make("Weld", { Name = "Weld", Part1 = carryBlock, Parent = carryBlock })
+make("BillboardGui", {
+	Name = "Count",
+	Size = UDim2.fromScale(3, 1.2),
+	StudsOffsetWorldSpace = Vector3.new(0, 4, 0),
+	MaxDistance = 70,
+	LightInfluence = 0,
+	Enabled = false,
+	Parent = carryBlock,
+}, {
+	label({ Name = "Text", Text = "0" }),
+})
+
+local pile = shellChunk(Names.Templates.DroppedPile)
+pile.Anchored = true
+pile.CanCollide = true
+pile.CanQuery = true
+pile.Parent = templates
+make("ProximityPrompt", {
+	Name = "PilePrompt",
+	ActionText = "Pick Up",
+	ObjectText = "Shells",
+	HoldDuration = 0,
+	KeyboardKeyCode = Enum.KeyCode.E,
+	MaxActivationDistance = 10,
+	RequiresLineOfSight = false,
+	Parent = pile,
+})
+make("BillboardGui", {
+	Name = "Count",
+	Size = UDim2.fromScale(3, 1.2),
+	StudsOffsetWorldSpace = Vector3.new(0, 4, 0),
+	MaxDistance = 80,
+	LightInfluence = 0,
+	Parent = pile,
+}, {
+	label({ Name = "Text", Text = "0" }),
+})
+
+make("BillboardGui", {
+	Name = Names.Templates.PurchaseTag,
+	Size = UDim2.fromScale(10, 1.6),
+	StudsOffset = Vector3.new(0, 5.5, 0),
+	MaxDistance = 150,
+	LightInfluence = 0,
+	AlwaysOnTop = true,
+	Parent = templates,
+}, {
+	label({ Name = "Text", Text = "Purchased!", TextColor3 = Color3.fromRGB(255, 225, 90) }),
+})
+
+local TutorialConfig = require(Shared.Config.Tutorial)
+make("Beam", {
+	Name = "GuideBeam",
+	Texture = TutorialConfig.BeamTexture,
+	TextureMode = Enum.TextureMode.Static,
+	TextureLength = TutorialConfig.BeamTextureLength,
+	TextureSpeed = TutorialConfig.BeamTextureSpeed,
+	Color = ColorSequence.new(TutorialConfig.BeamColor),
+	LightEmission = 1,
+	LightInfluence = 0,
+	Width0 = TutorialConfig.BeamWidth,
+	Width1 = TutorialConfig.BeamWidth,
+	FaceCamera = true,
+	Segments = 20,
+	Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.6), NumberSequenceKeypoint.new(0.15, 0.1), NumberSequenceKeypoint.new(1, 0.2) }),
+	Parent = templates,
+})
+make("Attachment", { Name = "GuideAttachment", Position = Vector3.new(0, -2.6, 0), Parent = templates })
+local guideTarget = make("Part", {
+	Name = "GuideTarget",
+	Size = Vector3.new(1, 1, 1),
+	Transparency = 1,
+	Anchored = true,
+	CanCollide = false,
+	CanQuery = false,
+	CanTouch = false,
+	Parent = templates,
+})
+make("Attachment", { Name = "Target", Parent = guideTarget })
+make("BillboardGui", {
+	Name = "Marker",
+	Size = UDim2.fromScale(6, 6),
+	StudsOffsetWorldSpace = Vector3.new(0, TutorialConfig.MarkerHeight, 0),
+	AlwaysOnTop = true,
+	LightInfluence = 0,
+	MaxDistance = 2000,
+	Parent = guideTarget,
+}, {
+	label({ Name = "Arrow", Text = "⬇", TextColor3 = TutorialConfig.BeamColor }),
+})
+
 local auraAttachment = make("Attachment", { Name = Names.Templates.GooseAura, Parent = templates })
 make("ParticleEmitter", {
 	Name = "Aura",

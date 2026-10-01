@@ -1,3 +1,4 @@
+local ProximityPromptService = game:GetService("ProximityPromptService")
 local MarketplaceService = game:GetService("MarketplaceService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -5,6 +6,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local ProductsConfig = require(Shared.Config.Products)
 local ShopConfig = require(Shared.Config.Shop)
 local UIConfig = require(Shared.Config.UI)
+local Names = require(Shared.Config.Names)
 
 local Ui = require(script.Parent.Parent.Util.Ui)
 
@@ -55,6 +57,14 @@ function ShopController:Start()
 	ClientState.StateChanged:Connect(function()
 		self:Refresh()
 	end)
+	ProximityPromptService.PromptTriggered:Connect(function(prompt)
+		if prompt.Name == Names.World.GoosePrompt then
+			local pass = prompt:GetAttribute("Pass")
+			if pass then
+				self:BuyKey(pass)
+			end
+		end
+	end)
 end
 
 function ShopController:ProductInfo(item)
@@ -100,6 +110,11 @@ function ShopController:Buy(item)
 	else
 		MarketplaceService:PromptProductPurchase(player, id)
 	end
+end
+
+function ShopController:BuyKey(key)
+	local kind = ProductsConfig.GamePasses[key] and "Pass" or "Product"
+	self:Buy({ Key = key, Kind = kind })
 end
 
 function ShopController:PromptPass(key)

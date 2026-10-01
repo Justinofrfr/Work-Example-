@@ -162,13 +162,14 @@ function BuildService:TryPlace(player, rootPart)
 		end
 	end
 	local instant = MonetizationService:OwnsPass(player, "GoldenGoose") and ProductsConfig.GamePasses.GoldenGoose.InstantActions
-	local cooldown = instant and GameConfig.ActionCooldownFloor or math.max(GameConfig.PlaceHoldTime - GameConfig.ActionCooldownSlack, GameConfig.ActionCooldownFloor)
+	local cooldown = instant and GameConfig.ActionCooldownFloor or math.max(GameConfig.PlaceRepeat - GameConfig.ActionCooldownSlack, GameConfig.ActionCooldownFloor)
 	local clock = os.clock()
 	if clock - runtime.LastPlace < cooldown then
 		return false
 	end
 	runtime.LastPlace = clock
-	local amount = math.min(runtime.Carry, Formulas.PlaceAmount(data.Upgrades.BulkPlace or 0))
+	local quick = MonetizationService:OwnsPass(player, "GoldenGoose") and ProductsConfig.GamePasses.GoldenGoose.QuickPlace
+	local amount = quick and runtime.Carry or math.min(runtime.Carry, Formulas.PlaceAmount(data.Upgrades.BulkPlace or 0))
 	amount = math.min(amount, self:Target() - self.Progress)
 	if amount <= 0 then
 		return false

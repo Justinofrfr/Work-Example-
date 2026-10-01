@@ -38,7 +38,7 @@ task.delay(8, function()
 		hud.Stats.Coins.Value.Text,
 		hud.Stats.Speed.Value.Text,
 		hud.Stats.Eggs.Value.Text,
-		hud.Carry.Text.Text,
+		hud.Stats.Strength.Sub.Text,
 		hud.Progress.Title.Text,
 		hud.Progress.Bar.Percent.Text,
 		shopCards,
