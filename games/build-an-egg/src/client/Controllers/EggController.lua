@@ -292,7 +292,7 @@ function EggController:PlayCutscene()
 		camera.CameraType = Enum.CameraType.Scriptable
 	end
 	local started = os.clock()
-	local focus = EggConfig.Center + Vector3.new(0, EggConfig.Height * 0.5, 0)
+	local focus = EggConfig.Center + Vector3.new(0, EggShape.ScaffoldHeight() * 0.5, 0)
 	local glowSound = Audio.Play("EggGlow")
 	local cracked = false
 	local burst = false
@@ -339,7 +339,7 @@ function EggController:Burst()
 	local flash = gui.Flash
 	flash.BackgroundTransparency = 0.2
 	Ui.Tween(flash, 0.6, { BackgroundTransparency = 1 })
-	local top = EggConfig.Center + Vector3.new(0, EggConfig.Height, 0)
+	local top = EggConfig.Center + Vector3.new(0, EggShape.ScaffoldHeight(), 0)
 	EffectController:Burst("Shards", top, 30)
 	EffectController:Burst("Confetti", top + Vector3.new(0, 10, 0), 30)
 	EffectController:Fireworks(5)

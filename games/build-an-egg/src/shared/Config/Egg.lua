@@ -6,7 +6,7 @@ return {
 	ShellThickness = 3,
 	SegmentArcLength = 14,
 	MinSegments = 6,
-	BaseOffset = 2,
+	BaseOffset = 12,
 
 	ScaffoldRadius = 74,
 	ScaffoldWidth = 14,

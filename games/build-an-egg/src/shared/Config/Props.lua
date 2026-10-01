@@ -51,6 +51,7 @@ return {
 	ShellPieceScale = 1,
 	NestWidth = 120,
 	NestSink = -8,
+	NestBed = { Radius = 46, Height = 4, Top = 12, Color = Color3.fromRGB(196, 150, 78) },
 	Displays = {
 		Origin = Vector3.new(0, 0, -408),
 		Spacing = 22,
@@ -69,7 +70,7 @@ return {
 	TreadmillSource = "Treadmills",
 	TreadmillVariant = "x1",
 	TreadmillLength = 9,
-	TreadmillYaw = 0,
+	TreadmillYaw = 90,
 	BenchSource = "Bench",
 	BenchLength = 7,
 	BenchYaw = 90,

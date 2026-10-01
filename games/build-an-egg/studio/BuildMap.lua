@@ -283,7 +283,7 @@ end
 make("BillboardGui", {
 	Name = W.EggBoard,
 	Size = UDim2.fromOffset(420, 120),
-	StudsOffsetWorldSpace = Vector3.new(0, EggConfig.Height + 30, 0),
+	StudsOffsetWorldSpace = Vector3.new(0, EggShape.ScaffoldHeight() + 30, 0),
 	LightInfluence = 0,
 	MaxDistance = 2000,
 	Parent = zone({ Name = "BoardAnchor", Size = Vector3.new(1, 1, 1), CFrame = CFrame.new(center), Parent = egg }),
@@ -319,7 +319,7 @@ end
 
 local scaffold = make("Model", { Name = W.Scaffold, Parent = site })
 local steps = EggConfig.ScaffoldTurns * EggConfig.ScaffoldStepsPerTurn
-local rise = EggConfig.Height / steps
+local rise = EggShape.ScaffoldHeight() / steps
 local stepAngle = 2 * math.pi / EggConfig.ScaffoldStepsPerTurn
 local arc = stepAngle * EggConfig.ScaffoldRadius
 for index = 1, steps do
@@ -367,7 +367,7 @@ for index = 1, steps do
 		end
 	end
 end
-local topPoint = EggShape.ScaffoldPoint(center.Y + EggConfig.Height)
+local topPoint = EggShape.ScaffoldPoint(center.Y + EggShape.ScaffoldHeight())
 part({
 	Name = "TopDeck",
 	Size = Vector3.new(EggConfig.ScaffoldWidth + 6, 1.2, EggConfig.ScaffoldWidth + 6),

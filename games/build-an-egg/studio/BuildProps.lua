@@ -158,6 +158,17 @@ end
 local nest = prepare(imported.Nest, true)
 nest.Name = "Nest"
 fit(nest, "Width", PropsConfig.NestWidth, CFrame.new(EggConfig.Center + Vector3.new(0, PropsConfig.NestSink, 0)))
+local bed = PropsConfig.NestBed
+make("Part", {
+	Name = "Bed",
+	Shape = Enum.PartType.Cylinder,
+	Size = Vector3.new(bed.Height, bed.Radius * 2, bed.Radius * 2),
+	CFrame = CFrame.new(EggConfig.Center + Vector3.new(0, bed.Top - bed.Height / 2, 0)) * CFrame.Angles(0, 0, math.rad(90)),
+	Color = bed.Color,
+	Material = Enum.Material.Fabric,
+	Anchored = true,
+	Parent = nest,
+})
 nest.Parent = site
 
 local displays = world:FindFirstChild("EggDisplays")

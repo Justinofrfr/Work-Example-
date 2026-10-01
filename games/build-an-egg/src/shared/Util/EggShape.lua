@@ -78,8 +78,12 @@ function EggShape.BandHeight(ringIndex: number): number
 	return (ring.Bottom + ring.Top) / 2
 end
 
+function EggShape.ScaffoldHeight(): number
+	return EggConfig.Height + EggConfig.BaseOffset
+end
+
 function EggShape.ScaffoldPoint(height: number): (Vector3, number)
-	local fraction = math.clamp((height - EggConfig.Center.Y) / EggConfig.Height, 0, 1)
+	local fraction = math.clamp((height - EggConfig.Center.Y) / EggShape.ScaffoldHeight(), 0, 1)
 	local angle = EggConfig.ScaffoldStartAngle + fraction * EggConfig.ScaffoldTurns * 2 * math.pi
 	local center = EggConfig.Center
 	local point = Vector3.new(center.X + math.cos(angle) * EggConfig.ScaffoldRadius, height, center.Z + math.sin(angle) * EggConfig.ScaffoldRadius)
