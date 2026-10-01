@@ -204,6 +204,53 @@ prompt(giftBoard, W.GiftPrompt, "Claim", "Free Gift", 0)
 local shopBoard = sign(spawnFolder, W.ShopStand, facing(stands.Shop + Vector3.new(0, 7, 0), stands.Shop + Vector3.new(0, 7, 60)), Vector3.new(16, 10, 1.2), "SHOP", "Boosts and passes", Color3.fromRGB(60, 140, 70))
 make("ProximityPrompt", { Name = W.StandPrompt, ActionText = "Shop", ObjectText = "Shop", KeyboardKeyCode = Enum.KeyCode.E, MaxActivationDistance = 12, RequiresLineOfSight = false, Parent = shopBoard }):SetAttribute("Panel", "Shop")
 
+local LeaderboardsConfig = require(Shared.Config.Leaderboards)
+local boardsFolder = make("Folder", { Name = "Leaderboards", Parent = spawnFolder })
+for index, def in LeaderboardsConfig.Boards do
+	local size = LeaderboardsConfig.BoardSize
+	local position = LeaderboardsConfig.Origin + Vector3.new((index - 1) * LeaderboardsConfig.Spacing, size.Y / 2 + 2, 0)
+	local board = part({
+		Name = def.Key,
+		Size = size,
+		CFrame = facing(position, LeaderboardsConfig.FacingTarget),
+		Color = P.WoodDark,
+		Material = Enum.Material.Wood,
+		Parent = boardsFolder,
+	})
+	part({
+		Name = "Post",
+		Size = Vector3.new(2, size.Y / 2 + 2, 2),
+		CFrame = CFrame.new(position.X, (size.Y / 2 + 2) / 2, position.Z) * facing(position, LeaderboardsConfig.FacingTarget).Rotation * CFrame.new(0, 0, 1.5),
+		Color = P.WoodDark,
+		Material = Enum.Material.Wood,
+		Parent = boardsFolder,
+	})
+	local gui = make("SurfaceGui", {
+		Name = "Gui",
+		Face = Enum.NormalId.Front,
+		SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud,
+		PixelsPerStud = 25,
+		LightInfluence = 0.1,
+		Parent = board,
+	})
+	text({ Name = "Title", Text = def.Title, Size = UDim2.fromScale(0.94, 0.11), Position = UDim2.fromScale(0.03, 0.02), TextColor3 = def.Color, Parent = gui })
+	local list = make("Frame", { Name = "List", Size = UDim2.fromScale(0.92, 0.82), Position = UDim2.fromScale(0.04, 0.15), BackgroundTransparency = 1, Parent = gui }, {
+		make("UIListLayout", { Padding = UDim.new(0.01, 0), SortOrder = Enum.SortOrder.LayoutOrder }),
+	})
+	for rank = 1, LeaderboardsConfig.Rows do
+		local row = make("Frame", {
+			Name = "Row" .. rank,
+			Size = UDim2.fromScale(1, 0.09),
+			BackgroundColor3 = rank % 2 == 0 and Color3.fromRGB(90, 60, 38) or Color3.fromRGB(110, 74, 46),
+			LayoutOrder = rank,
+			Visible = false,
+			Parent = list,
+		}, { make("UICorner", { CornerRadius = UDim.new(0.3, 0) }) })
+		text({ Name = "Player", Text = "#" .. rank, Size = UDim2.fromScale(0.66, 0.8), Position = UDim2.fromScale(0.03, 0.1), TextXAlignment = Enum.TextXAlignment.Left, Parent = row })
+		text({ Name = "Value", Text = "0", Size = UDim2.fromScale(0.28, 0.8), Position = UDim2.fromScale(0.69, 0.1), TextXAlignment = Enum.TextXAlignment.Right, TextColor3 = def.Color, Parent = row })
+	end
+end
+
 local site = make("Folder", { Name = W.Site, Parent = root })
 local center = EggConfig.Center
 local egg = make("Model", { Name = W.Egg, Parent = site })

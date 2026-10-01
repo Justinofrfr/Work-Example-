@@ -92,6 +92,7 @@ return {
 		Keepout = {
 			{ Center = Vector3.new(0, 0, -270), Radius = 95 },
 			{ Center = Vector3.new(0, 0, -385), Radius = 80 },
+			{ Center = Vector3.new(-71, 0, -400), Radius = 60 },
 			{ Center = Vector3.new(0, 0, -160), Radius = 45 },
 			{ Center = Vector3.new(0, 0, 0), Radius = 215 },
 		},
