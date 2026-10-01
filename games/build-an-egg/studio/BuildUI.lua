@@ -65,6 +65,20 @@ local function label(props)
 	return make("TextLabel", base, { textStroke(props.StrokeThickness) })
 end
 
+local function studs(radius, transparency, color)
+	return make("ImageLabel", {
+		Name = "Studs",
+		Size = UDim2.fromScale(1, 1),
+		BackgroundTransparency = 1,
+		Image = UIConfig.Studs.Texture,
+		ImageColor3 = color or UIConfig.Studs.Color,
+		ImageTransparency = transparency or UIConfig.Studs.Transparency,
+		ScaleType = Enum.ScaleType.Tile,
+		TileSize = UDim2.fromOffset(UIConfig.Studs.TileSize, UIConfig.Studs.TileSize),
+		ZIndex = 0,
+	}, { corner(radius) })
+end
+
 local function panelFrame(props)
 	local base = {
 		BackgroundColor3 = Color3.fromRGB(255, 244, 222),
@@ -73,7 +87,7 @@ local function panelFrame(props)
 	for key, value in props do
 		base[key] = value
 	end
-	return make("Frame", base, { corner(0.06), stroke(4) })
+	return make("Frame", base, { corner(0.06), stroke(4), studs(0.06, UIConfig.Studs.PanelTransparency, UIConfig.Studs.PanelColor) })
 end
 
 local function button(props)
@@ -92,6 +106,7 @@ local function button(props)
 		corner(props.Radius or 0.25),
 		stroke(props.Stroke or 3.5),
 		gradient(color),
+		studs(props.Radius or 0.25),
 	})
 	instance:SetAttribute("Feel", true)
 	if props.Icon then
@@ -139,11 +154,12 @@ local hud = make("Frame", { Name = "Hud", Size = UDim2.fromScale(1, 1), Backgrou
 local topLeft = make("Frame", {
 	Name = "TopLeft",
 	Size = UDim2.fromScale(0.16, 0.09),
-	Position = UDim2.new(0, 8, 0, 6),
+	Position = UDim2.fromScale(0.008, 0.012),
 	BackgroundTransparency = 1,
 	Parent = hud,
 }, {
-	make("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder }),
+	make("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0.04, 0), SortOrder = Enum.SortOrder.LayoutOrder }),
+	aspect(3.4),
 })
 for index, def in { { "Codes", "🎟️", Color3.fromRGB(80, 170, 255) }, { "Settings", "⚙️", Color3.fromRGB(150, 150, 160) } } do
 	local b = button({ Name = def[1], Icon = def[2], Color = def[3], Size = UDim2.fromScale(0.3, 1), LayoutOrder = index, Parent = topLeft })
@@ -153,12 +169,12 @@ end
 local stats = make("Frame", {
 	Name = "Stats",
 	Size = UDim2.fromScale(0.17, 0.3),
-	Position = UDim2.new(0, 10, 0.3, 0),
+	Position = UDim2.fromScale(0.01, 0.3),
 	BackgroundTransparency = 1,
 	Parent = hud,
 }, {
 	make("UIListLayout", { Padding = UDim.new(0.04, 0), SortOrder = Enum.SortOrder.LayoutOrder }),
-	make("UISizeConstraint", { MaxSize = Vector2.new(260, 260) }),
+	aspect(1),
 })
 for index, def in { { "Coins", "🪙", C.Coins }, { "Speed", "⚡", C.Speed }, { "Strength", "💪", C.Strength }, { "Eggs", "🥚", C.Eggs } } do
 	local row = make("Frame", {
@@ -179,12 +195,13 @@ rankLabel.TextXAlignment = Enum.TextXAlignment.Left
 local right = make("Frame", {
 	Name = "Right",
 	Size = UDim2.fromScale(0.09, 0.36),
-	Position = UDim2.new(1, -10, 0.5, 0),
+	Position = UDim2.fromScale(0.99, 0.5),
 	AnchorPoint = Vector2.new(1, 0.5),
 	BackgroundTransparency = 1,
 	Parent = hud,
 }, {
-	make("UIListLayout", { Padding = UDim.new(0, 10), SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Right }),
+	make("UIListLayout", { Padding = UDim.new(0.04, 0), SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Right }),
+	aspect(0.47),
 })
 for index, def in { { "Shop", "🛒", "SHOP", Color3.fromRGB(90, 210, 90) }, { "Upgrades", "⬆️", "UPGRADES", Color3.fromRGB(255, 165, 50) } } do
 	local b = button({ Name = def[1], Icon = def[2], Text = def[3], Color = def[4], Size = UDim2.fromScale(1, 0.45), LayoutOrder = index, Parent = right })
@@ -194,11 +211,11 @@ end
 local progress = make("Frame", {
 	Name = "Progress",
 	Size = UDim2.fromScale(0.42, 0.13),
-	Position = UDim2.new(0.5, 0, 0, 6),
+	Position = UDim2.fromScale(0.5, 0.012),
 	AnchorPoint = Vector2.new(0.5, 0),
 	BackgroundTransparency = 1,
 	Parent = hud,
-}, { make("UISizeConstraint", { MaxSize = Vector2.new(620, 120) }) })
+}, { aspect(5.2) })
 label({ Name = "Title", Text = "COMMON EGG", Size = UDim2.fromScale(1, 0.3), Parent = progress })
 local bar = make("Frame", {
 	Name = "Bar",
@@ -234,12 +251,12 @@ label({ Name = "Phase", Text = "", Visible = false, Size = UDim2.fromScale(1, 0.
 local carry = make("Frame", {
 	Name = "Carry",
 	Size = UDim2.fromScale(0.16, 0.06),
-	Position = UDim2.new(0.5, 0, 1, -100),
+	Position = UDim2.fromScale(0.5, 0.86),
 	AnchorPoint = Vector2.new(0.5, 1),
 	BackgroundColor3 = Color3.fromRGB(30, 22, 18),
 	BackgroundTransparency = 0.3,
 	Parent = hud,
-}, { corner(0.5), stroke(3), make("UISizeConstraint", { MinSize = Vector2.new(150, 34), MaxSize = Vector2.new(260, 54) }) })
+}, { corner(0.5), stroke(3), aspect(4.6) })
 label({ Name = "Text", Text = "🥚 0 / 1", Size = UDim2.fromScale(0.9, 0.8), Position = UDim2.fromScale(0.05, 0.1), Parent = carry })
 
 local interact = button({
@@ -248,14 +265,13 @@ local interact = button({
 	Text = "PICK UP",
 	Color = Color3.fromRGB(255, 200, 60),
 	Size = UDim2.fromScale(0.13, 0.13),
-	Position = UDim2.new(1, -130, 1, -220),
+	Position = UDim2.fromScale(0.86, 0.72),
 	AnchorPoint = Vector2.new(1, 1),
 	Radius = 0.5,
 	Parent = hud,
 })
 interact.Visible = false
 aspect(1).Parent = interact
-make("UISizeConstraint", { MinSize = Vector2.new(84, 84), MaxSize = Vector2.new(130, 130), Parent = interact })
 
 local function addHint(target)
 	local hint = make("Frame", {
@@ -276,7 +292,7 @@ end
 
 local panels = make("Folder", { Name = "Panels", Parent = gui })
 
-local function panel(name, titleText, size, color)
+local function panel(name, titleText, size, color, ratio)
 	local frame = panelFrame({
 		Name = name,
 		Size = size,
@@ -285,20 +301,20 @@ local function panel(name, titleText, size, color)
 		Visible = false,
 		Parent = panels,
 	})
-	make("UISizeConstraint", { MaxSize = Vector2.new(760, 560) }).Parent = frame
+	aspect(ratio or 1.5).Parent = frame
 	local header = make("Frame", {
 		Name = "Header",
-		Size = UDim2.new(1, 0, 0.15, 0),
+		Size = UDim2.fromScale(1, 0.15),
 		BackgroundColor3 = Color3.new(1, 1, 1),
 		Parent = frame,
-	}, { corner(0.3), stroke(4), gradient(color) })
+	}, { corner(0.3), stroke(4), gradient(color), studs(0.3) })
 	label({ Name = "Title", Text = titleText, Size = UDim2.fromScale(0.7, 0.8), Position = UDim2.fromScale(0.15, 0.1), Parent = header })
 	local close = button({
 		Name = "Close",
 		Text = "X",
 		Color = C.Bad,
 		Size = UDim2.fromScale(0.12, 1.1),
-		Position = UDim2.new(1, 8, 0, -12),
+		Position = UDim2.fromScale(1.02, -0.2),
 		AnchorPoint = Vector2.new(1, 0),
 		Radius = 0.3,
 		Parent = header,
@@ -314,7 +330,7 @@ local function panel(name, titleText, size, color)
 	return frame, body
 end
 
-local _, shopBody = panel("Shop", "SHOP", UDim2.fromScale(0.6, 0.7), Color3.fromRGB(90, 210, 90))
+local _, shopBody = panel("Shop", "SHOP", UDim2.fromScale(0.62, 0.72), Color3.fromRGB(90, 210, 90), 1.45)
 make("ScrollingFrame", {
 	Name = "List",
 	Size = UDim2.fromScale(1, 1),
@@ -325,16 +341,16 @@ make("ScrollingFrame", {
 	CanvasSize = UDim2.new(),
 	Parent = shopBody,
 }, {
-	make("UIListLayout", { Padding = UDim.new(0, 10), SortOrder = Enum.SortOrder.LayoutOrder }),
-	make("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingLeft = UDim.new(0, 6), PaddingRight = UDim.new(0, 14), PaddingBottom = UDim.new(0, 10) }),
+	make("UIListLayout", { Padding = UDim.new(0.015, 0), SortOrder = Enum.SortOrder.LayoutOrder }),
+	make("UIPadding", { PaddingTop = UDim.new(0.01, 0), PaddingLeft = UDim.new(0.01, 0), PaddingRight = UDim.new(0.03, 0), PaddingBottom = UDim.new(0.02, 0) }),
 })
 
-local _, upgradeBody = panel("Upgrades", "UPGRADES", UDim2.fromScale(0.55, 0.6), Color3.fromRGB(255, 165, 50))
+local _, upgradeBody = panel("Upgrades", "UPGRADES", UDim2.fromScale(0.56, 0.62), Color3.fromRGB(255, 165, 50), 1.5)
 make("Frame", { Name = "List", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Parent = upgradeBody }, {
 	make("UIListLayout", { Padding = UDim.new(0.03, 0), SortOrder = Enum.SortOrder.LayoutOrder }),
 })
 
-local _, codesBody = panel("Codes", "CODES", UDim2.fromScale(0.4, 0.42), Color3.fromRGB(80, 170, 255))
+local _, codesBody = panel("Codes", "CODES", UDim2.fromScale(0.42, 0.42), Color3.fromRGB(80, 170, 255), 1.7)
 make("TextBox", {
 	Name = "Input",
 	Size = UDim2.fromScale(1, 0.3),
@@ -352,30 +368,30 @@ make("TextBox", {
 button({ Name = "Redeem", Text = "REDEEM", Color = C.Good, Size = UDim2.fromScale(0.5, 0.3), Position = UDim2.fromScale(0.5, 0.48), AnchorPoint = Vector2.new(0.5, 0), Parent = codesBody })
 label({ Name = "Status", Text = "", Size = UDim2.fromScale(1, 0.18), Position = UDim2.fromScale(0, 0.82), TextColor3 = C.Good, Parent = codesBody })
 
-local _, settingsBody = panel("Settings", "SETTINGS", UDim2.fromScale(0.42, 0.55), Color3.fromRGB(150, 150, 160))
+local _, settingsBody = panel("Settings", "SETTINGS", UDim2.fromScale(0.44, 0.56), Color3.fromRGB(150, 150, 160), 1.35)
 make("Frame", { Name = "List", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Parent = settingsBody }, {
 	make("UIListLayout", { Padding = UDim.new(0.04, 0), SortOrder = Enum.SortOrder.LayoutOrder }),
 })
 
-local _, lockedBody = panel("Locked", "GYM LOCKED", UDim2.fromScale(0.4, 0.42), Color3.fromRGB(120, 120, 130))
+local _, lockedBody = panel("Locked", "GYM LOCKED", UDim2.fromScale(0.42, 0.42), Color3.fromRGB(120, 120, 130), 1.6)
 label({ Name = "Lock", Text = "🔒", Size = UDim2.fromScale(0.25, 0.4), Position = UDim2.fromScale(0.375, 0), Parent = lockedBody })
 label({ Name = "Desc", Text = "Hatch 1 egg or unlock now!", Size = UDim2.fromScale(1, 0.2), Position = UDim2.fromScale(0, 0.42), Parent = lockedBody })
 button({ Name = "Buy", Text = "UNLOCK R$29", Color = C.Robux, Size = UDim2.fromScale(0.6, 0.28), Position = UDim2.fromScale(0.5, 0.7), AnchorPoint = Vector2.new(0.5, 0), Parent = lockedBody })
 
 local templates = make("Folder", { Name = "Templates", Parent = gui })
 
-local item = panelFrame({ Name = "ShopItem", Size = UDim2.new(0.31, 0, 0, 150), BackgroundColor3 = Color3.fromRGB(255, 252, 240), Parent = templates })
+local item = panelFrame({ Name = "ShopItem", Size = UDim2.fromScale(0.31, 0.4), BackgroundColor3 = Color3.fromRGB(255, 252, 240), Parent = templates })
 label({ Name = "Icon", Text = "⚡", Size = UDim2.fromScale(0.4, 0.34), Position = UDim2.fromScale(0.3, 0.04), Parent = item })
 label({ Name = "Title", Text = "Item", Size = UDim2.fromScale(0.92, 0.17), Position = UDim2.fromScale(0.04, 0.38), TextColor3 = Color3.fromRGB(255, 255, 255), Parent = item })
 label({ Name = "Desc", Text = "Description", Size = UDim2.fromScale(0.92, 0.14), Position = UDim2.fromScale(0.04, 0.55), TextColor3 = Color3.fromRGB(255, 236, 190), StrokeThickness = 1.5, Parent = item })
 button({ Name = "Buy", Text = "R$0", Color = C.Robux, Size = UDim2.fromScale(0.8, 0.22), Position = UDim2.fromScale(0.5, 0.74), AnchorPoint = Vector2.new(0.5, 0), Parent = item })
 
-local section = make("Frame", { Name = "ShopSection", Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, Parent = templates }, {
-	make("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder }),
+local section = make("Frame", { Name = "ShopSection", Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, Parent = templates }, {
+	make("UIListLayout", { Padding = UDim.new(0.01, 0), SortOrder = Enum.SortOrder.LayoutOrder }),
 })
-label({ Name = "Title", Text = "SECTION", Size = UDim2.new(1, 0, 0, 34), TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.fromRGB(255, 220, 120), LayoutOrder = 1, Parent = section })
-make("Frame", { Name = "Grid", Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = 2, Parent = section }, {
-	make("UIGridLayout", { CellSize = UDim2.new(0.31, 0, 0, 150), CellPadding = UDim2.new(0.02, 0, 0, 12), SortOrder = Enum.SortOrder.LayoutOrder }),
+aspect(16).Parent = label({ Name = "Title", Text = "SECTION", Size = UDim2.fromScale(1, 1), TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.fromRGB(255, 220, 120), LayoutOrder = 1, Parent = section })
+make("Frame", { Name = "Grid", Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = 2, Parent = section }, {
+	make("UIGridLayout", { CellSize = UDim2.fromScale(0.31, 1), CellPadding = UDim2.fromScale(0.02, 0.02), SortOrder = Enum.SortOrder.LayoutOrder }, { make("UIAspectRatioConstraint", { AspectRatio = 0.95, DominantAxis = Enum.DominantAxis.Width }) }),
 })
 
 local card = panelFrame({ Name = "UpgradeCard", Size = UDim2.fromScale(1, 0.3), BackgroundColor3 = Color3.fromRGB(255, 252, 240), Parent = templates })
@@ -396,7 +412,7 @@ toast.Parent = templates
 local toasts = make("Frame", {
 	Name = "Toasts",
 	Size = UDim2.fromScale(0.34, 0.2),
-	Position = UDim2.new(0.5, 0, 1, -160),
+	Position = UDim2.fromScale(0.5, 0.8),
 	AnchorPoint = Vector2.new(0.5, 1),
 	BackgroundTransparency = 1,
 	Parent = gui,
@@ -412,7 +428,7 @@ local banner = make("Frame", {
 	BackgroundColor3 = Color3.new(1, 1, 1),
 	Visible = false,
 	Parent = gui,
-}, { corner(0.4), stroke(4), gradient(Color3.fromRGB(255, 190, 60)), make("UISizeConstraint", { MaxSize = Vector2.new(720, 90) }) })
+}, { corner(0.4), stroke(4), gradient(Color3.fromRGB(255, 190, 60)), studs(0.4), aspect(7) })
 label({ Name = "Text", Text = "50% BUILT!", Size = UDim2.fromScale(0.94, 0.8), Position = UDim2.fromScale(0.03, 0.1), Parent = banner })
 
 local hatch = make("Frame", {
@@ -433,11 +449,11 @@ local cutscene = make("Frame", { Name = "Cutscene", Size = UDim2.fromScale(1, 1)
 make("Frame", { Name = "Top", Size = UDim2.fromScale(1, 0.12), Position = UDim2.fromScale(0, -0.12), BackgroundColor3 = Color3.new(0, 0, 0), BorderSizePixel = 0, Parent = cutscene })
 make("Frame", { Name = "Bottom", Size = UDim2.fromScale(1, 0.12), Position = UDim2.fromScale(0, 1), BackgroundColor3 = Color3.new(0, 0, 0), BorderSizePixel = 0, Parent = cutscene })
 label({ Name = "Caption", Text = "", Size = UDim2.fromScale(0.8, 0.09), Position = UDim2.fromScale(0.1, 0.8), Parent = cutscene })
-button({ Name = "Skip", Text = "SKIP", Color = Color3.fromRGB(150, 150, 160), Size = UDim2.fromScale(0.09, 0.06), Position = UDim2.new(1, -16, 0, 16), AnchorPoint = Vector2.new(1, 0), Parent = cutscene })
+button({ Name = "Skip", Text = "SKIP", Color = Color3.fromRGB(150, 150, 160), Size = UDim2.fromScale(0.09, 0.06), Position = UDim2.fromScale(0.985, 0.03), AnchorPoint = Vector2.new(1, 0), Parent = cutscene })
 
 make("Frame", { Name = "Flash", Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(1, 1, 1), BackgroundTransparency = 1, BorderSizePixel = 0, ZIndex = 50, Parent = gui })
 
-local trainHint = label({ Name = "TrainHint", Text = "Jump to stop training", Visible = false, Size = UDim2.fromScale(0.3, 0.04), Position = UDim2.new(0.5, 0, 1, -60), AnchorPoint = Vector2.new(0.5, 1), TextColor3 = Color3.fromRGB(255, 240, 200), Parent = gui })
+local trainHint = label({ Name = "TrainHint", Text = "Jump to stop training", Visible = false, Size = UDim2.fromScale(0.3, 0.04), Position = UDim2.fromScale(0.5, 0.94), AnchorPoint = Vector2.new(0.5, 1), TextColor3 = Color3.fromRGB(255, 240, 200), Parent = gui })
 trainHint.ZIndex = 2
 
 for _, descendant in gui:GetDescendants() do

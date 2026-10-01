@@ -15,6 +15,14 @@ return {
 	ToastHold = 2.5,
 	ToastMax = 4,
 	StatPulseScale = 1.15,
+	Studs = {
+		Texture = "rbxassetid://18878365966",
+		TileSize = 36,
+		Color = Color3.new(1, 1, 1),
+		Transparency = 0.78,
+		PanelColor = Color3.fromRGB(235, 210, 170),
+		PanelTransparency = 0.55,
+	},
 	Colors = {
 		Good = Color3.fromRGB(90, 220, 110),
 		Bad = Color3.fromRGB(255, 90, 90),
