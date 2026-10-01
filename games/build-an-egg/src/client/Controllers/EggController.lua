@@ -29,6 +29,7 @@ local W = Names.World
 local A = Names.Attributes
 local ClientState
 local EffectController
+local InputController
 local remotes
 local player
 local gui
@@ -43,6 +44,7 @@ local camera = Workspace.CurrentCamera
 function EggController:Init(modules, context)
 	ClientState = modules.ClientState
 	EffectController = modules.EffectController
+	InputController = modules.InputController
 	remotes = context.Remotes
 	player = context.Player
 	gui = context.Gui
@@ -219,6 +221,7 @@ function EggController:RenderHatch()
 	if show and not hatch.Visible then
 		hatch.Visible = true
 		Ui.Pop(hatch.Button, 1.15)
+		InputController:Select(hatch.Button)
 	elseif not show then
 		hatch.Visible = false
 	end

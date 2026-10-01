@@ -1,4 +1,5 @@
 return {
+	PersistentRoots = { "Quarry", "Spawn", "Site", "Gyms", "Interior", "EggDisplays", "Ambient" },
 	GroundSize = Vector3.new(1400, 8, 1400),
 	GroundTop = 0,
 	SpawnPosition = Vector3.new(0, 0, -370),

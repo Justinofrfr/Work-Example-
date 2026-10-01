@@ -248,13 +248,28 @@ local interact = button({
 	Text = "PICK UP",
 	Color = Color3.fromRGB(255, 200, 60),
 	Size = UDim2.fromScale(0.13, 0.13),
-	Position = UDim2.new(1, -20, 1, -150),
+	Position = UDim2.new(1, -130, 1, -220),
 	AnchorPoint = Vector2.new(1, 1),
 	Radius = 0.5,
 	Parent = hud,
 })
 interact.Visible = false
 aspect(1).Parent = interact
+make("UISizeConstraint", { MinSize = Vector2.new(84, 84), MaxSize = Vector2.new(130, 130), Parent = interact })
+
+for _, target in { hud.TopLeft.Codes, hud.TopLeft.Settings, hud.Right.Shop, hud.Right.Upgrades, interact } do
+	local hint = make("Frame", {
+		Name = "Hint",
+		Size = UDim2.fromScale(0.4, 0.4),
+		Position = UDim2.fromScale(1, 0),
+		AnchorPoint = Vector2.new(0.7, 0.3),
+		BackgroundColor3 = Color3.fromRGB(30, 30, 35),
+		Visible = false,
+		ZIndex = 5,
+		Parent = target,
+	}, { corner(1), stroke(2, Color3.new(1, 1, 1)), aspect(1) })
+	label({ Name = "Text", Text = "Y", Size = UDim2.fromScale(0.8, 0.8), Position = UDim2.fromScale(0.1, 0.1), ZIndex = 6, Parent = hint })
+end
 
 local panels = make("Folder", { Name = "Panels", Parent = gui })
 

@@ -7,6 +7,7 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Names = require(Shared.Config.Names)
 local GameConfig = require(Shared.Config.Game)
+local InputConfig = require(Shared.Config.Input)
 local Formulas = require(Shared.Util.Formulas)
 local EggShape = require(Shared.Util.EggShape)
 
@@ -50,12 +51,16 @@ function InteractController:Start()
 		end
 	end)
 	UserInputService.InputBegan:Connect(function(input, processed)
-		if input.KeyCode == Enum.KeyCode.E and not processed then
+		if table.find(InputConfig.InteractKeys, input.KeyCode) and not processed then
 			self.HoldingKey = true
+			if input.KeyCode == Enum.KeyCode.ButtonR2 and self.Mode then
+				self.LastPrompt = os.clock()
+				self:Fire(true)
+			end
 		end
 	end)
 	UserInputService.InputEnded:Connect(function(input)
-		if input.KeyCode == Enum.KeyCode.E then
+		if table.find(InputConfig.InteractKeys, input.KeyCode) then
 			self.HoldingKey = false
 		end
 	end)
@@ -143,6 +148,7 @@ function InteractController:TunePrompts(state)
 	local goose = ClientState:OwnsPass("GoldenGoose")
 	local range = Formulas.PromptDistance(state.Upgrades and state.Upgrades.Range or 0)
 	for _, prompt in prompts do
+		prompt.GamepadKeyCode = InputConfig.PromptGamepadKey
 		if prompt.Name == W.PickupPrompt then
 			prompt.HoldDuration = goose and 0 or GameConfig.PickupHoldTime
 		else

@@ -441,4 +441,26 @@ for _, old in stack.Pieces:GetChildren() do
 	end
 end
 
+for _, rootName in MapConfig.PersistentRoots do
+	local container = world:FindFirstChild(rootName)
+	if container and not container:IsA("Model") then
+		local model = Instance.new("Model")
+		model.Name = rootName
+		for _, child in container:GetChildren() do
+			child.Parent = model
+		end
+		container:Destroy()
+		model.Parent = world
+		container = model
+	end
+	if container then
+		container.ModelStreamingMode = Enum.ModelStreamingMode.Persistent
+	end
+end
+for _, model in scenery:GetChildren() do
+	if model:IsA("Model") then
+		model.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
+	end
+end
+
 print(("Props built: trees=%d rocks=%d bushes=%d"):format(trees, rocks, bushes))
