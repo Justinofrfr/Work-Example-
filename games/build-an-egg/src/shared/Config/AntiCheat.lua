@@ -7,4 +7,6 @@ return {
 	StrikesBeforeRewind = 2,
 	TeleportGrace = 2,
 	MaxRemoteArgLength = 64,
+	TravelSlack = 0.5,
+	MinWalkSpeed = 16,
 }

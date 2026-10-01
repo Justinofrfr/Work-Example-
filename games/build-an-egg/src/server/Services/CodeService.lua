@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 local DataStoreService = game:GetService("DataStoreService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -33,7 +34,7 @@ function CodeService:Start()
 		end
 		return self:Redeem(player, text)
 	end
-	DataService.Releasing:Connect(function(player)
+	Players.PlayerRemoving:Connect(function(player)
 		limiter:Remove(player)
 		self.Pending[player] = nil
 	end)

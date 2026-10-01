@@ -11,6 +11,10 @@ local Names = require(Shared.Config.Names)
 local Formulas = require(Shared.Util.Formulas)
 local EggShape = require(Shared.Util.EggShape)
 local Signal = require(Shared.Util.Signal)
+local RateLimiter = require(Shared.Util.RateLimiter)
+local AntiCheatConfig = require(Shared.Config.AntiCheat)
+
+local claimLimiter = RateLimiter.new(GameConfig.RequestRateLimit, GameConfig.RequestRateWindow)
 
 local BuildService = {
 	Phase = "Building",
@@ -54,10 +58,14 @@ end
 function BuildService:Start()
 	world = Workspace:WaitForChild(Names.World.Root)
 	remotes[Names.Remotes.ClaimHatch].OnServerInvoke = function(player)
+		if not claimLimiter:Check(player) then
+			return false, "Busy"
+		end
 		return self:ClaimHatch(player)
 	end
 	Players.PlayerRemoving:Connect(function(player)
 		self.Placements[tostring(player.UserId)] = nil
+		claimLimiter:Remove(player)
 	end)
 	task.spawn(function()
 		while true do
@@ -143,6 +151,15 @@ function BuildService:TryPlace(player, rootPart)
 	end
 	if not self:CanPlaceAt(player, rootPart.Position) then
 		return false
+	end
+	if runtime.PickupPosition then
+		local humanoid = rootPart.Parent:FindFirstChildOfClass("Humanoid")
+		local delta = rootPart.Position - runtime.PickupPosition
+		local travel = Vector2.new(delta.X, delta.Z).Magnitude
+		local minimum = travel / math.max(humanoid and humanoid.WalkSpeed or 0, AntiCheatConfig.MinWalkSpeed) * AntiCheatConfig.TravelSlack
+		if os.clock() - runtime.LastPickup < minimum then
+			return false
+		end
 	end
 	local instant = MonetizationService:OwnsPass(player, "GoldenGoose") and ProductsConfig.GamePasses.GoldenGoose.InstantActions
 	local cooldown = instant and GameConfig.ActionCooldownFloor or math.max(GameConfig.PlaceHoldTime - GameConfig.ActionCooldownSlack, GameConfig.ActionCooldownFloor)

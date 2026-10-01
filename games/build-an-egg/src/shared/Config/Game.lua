@@ -6,6 +6,8 @@ return {
 	SaveInStudio = false,
 	AutosaveInterval = 120,
 	SessionLockTimeout = 1800,
+	ForeignLockWait = 10,
+	ForeignLockRetryDelay = 2,
 	DataLoadRetries = 6,
 	DataRetryDelay = 1,
 

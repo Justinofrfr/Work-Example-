@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -6,7 +7,9 @@ local GiftConfig = require(Shared.Config.Gift)
 local Names = require(Shared.Config.Names)
 local RateLimiter = require(Shared.Util.RateLimiter)
 
-local GiftService = {}
+local GiftService = {
+	Pending = {},
+}
 
 local DataService
 local StateService
@@ -27,8 +30,9 @@ function GiftService:Start()
 		end
 		return self:Claim(player)
 	end
-	DataService.Releasing:Connect(function(player)
+	Players.PlayerRemoving:Connect(function(player)
 		limiter:Remove(player)
+		self.Pending[player] = nil
 	end)
 end
 
@@ -45,11 +49,17 @@ function GiftService:Claim(player)
 	if not data then
 		return false, "Busy"
 	end
-	if data.GiftClaimed then
+	if data.GiftClaimed or self.Pending[player] then
 		return false, "Claimed"
 	end
-	if not self:InGroup(player) then
+	self.Pending[player] = true
+	local inGroup = self:InGroup(player)
+	self.Pending[player] = nil
+	if not inGroup then
 		return false, "Group"
+	end
+	if data.GiftClaimed or DataService:Get(player) ~= data then
+		return false, "Claimed"
 	end
 	data.GiftClaimed = true
 	StateService:Grant(player, GiftConfig.Rewards)

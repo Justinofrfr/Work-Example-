@@ -257,7 +257,7 @@ interact.Visible = false
 aspect(1).Parent = interact
 make("UISizeConstraint", { MinSize = Vector2.new(84, 84), MaxSize = Vector2.new(130, 130), Parent = interact })
 
-for _, target in { hud.TopLeft.Codes, hud.TopLeft.Settings, hud.Right.Shop, hud.Right.Upgrades, interact } do
+local function addHint(target)
 	local hint = make("Frame", {
 		Name = "Hint",
 		Size = UDim2.fromScale(0.4, 0.4),
@@ -269,6 +269,9 @@ for _, target in { hud.TopLeft.Codes, hud.TopLeft.Settings, hud.Right.Shop, hud.
 		Parent = target,
 	}, { corner(1), stroke(2, Color3.new(1, 1, 1)), aspect(1) })
 	label({ Name = "Text", Text = "Y", Size = UDim2.fromScale(0.8, 0.8), Position = UDim2.fromScale(0.1, 0.1), ZIndex = 6, Parent = hint })
+end
+for _, target in { hud.TopLeft.Codes, hud.TopLeft.Settings, hud.Right.Shop, hud.Right.Upgrades, interact } do
+	addHint(target)
 end
 
 local panels = make("Folder", { Name = "Panels", Parent = gui })
@@ -423,6 +426,7 @@ local hatch = make("Frame", {
 }, { aspect(1.2) })
 local hatchButton = button({ Name = "Button", Icon = "🥚", Text = "HATCH!", Color = Color3.fromRGB(255, 200, 60), Size = UDim2.fromScale(0.7, 0.75), Position = UDim2.fromScale(0.5, 0.4), AnchorPoint = Vector2.new(0.5, 0.5), Radius = 0.3, Parent = hatch })
 hatchButton.ZIndex = 2
+addHint(hatchButton)
 label({ Name = "Timer", Text = "", Size = UDim2.fromScale(1, 0.18), Position = UDim2.fromScale(0, 0.82), Parent = hatch })
 
 local cutscene = make("Frame", { Name = "Cutscene", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Visible = false, Parent = gui })

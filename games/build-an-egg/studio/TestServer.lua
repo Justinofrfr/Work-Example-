@@ -83,6 +83,10 @@ local ok, err = pcall(function()
 	StateService:Teleport(player, CFrame.new(point + Vector3.new(0, 4, 0)))
 	task.wait(0.6)
 	note("in band", BuildService:CanPlaceAt(player, character.HumanoidRootPart.Position), "pos", character.HumanoidRootPart.Position)
+	runtime.LastPlace = 0
+	CarryService:Interact(player)
+	note("instant teleport place blocked: progress", BuildService.Progress)
+	runtime.LastPickup = os.clock() - 60
 	local coinsBefore = data.Coins
 	runtime.LastPlace = 0
 	CarryService:Interact(player)

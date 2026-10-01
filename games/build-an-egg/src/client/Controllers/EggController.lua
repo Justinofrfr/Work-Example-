@@ -29,7 +29,6 @@ local W = Names.World
 local A = Names.Attributes
 local ClientState
 local EffectController
-local InputController
 local remotes
 local player
 local gui
@@ -44,7 +43,6 @@ local camera = Workspace.CurrentCamera
 function EggController:Init(modules, context)
 	ClientState = modules.ClientState
 	EffectController = modules.EffectController
-	InputController = modules.InputController
 	remotes = context.Remotes
 	player = context.Player
 	gui = context.Gui
@@ -85,6 +83,12 @@ function EggController:Start()
 		self:RenderTrail(state)
 		self:RenderHatch()
 	end)
+	if ClientState.Server then
+		self:Render(ClientState.Server, nil)
+	end
+	if ClientState.State then
+		self:RenderTrail(ClientState.State)
+	end
 	remotes[Names.Remotes.Notify].OnClientEvent:Connect(function(kind)
 		if kind == "EggComplete" then
 			task.spawn(self.PlayCutscene, self)
@@ -189,6 +193,10 @@ end
 function EggController:Animate()
 	self:AnimateHatchling()
 	local t = os.clock()
+	if t - (self.LastHatchRender or 0) > 0.5 then
+		self.LastHatchRender = t
+		self:RenderHatch()
+	end
 	local pulse = 0.55 + 0.2 * math.sin(t * EffectsConfig.BandPulseSpeed * math.pi)
 	local ring = ringModels[self.Ring]
 	if ring and ClientState.Server and ClientState.Server.Phase == "Building" then
@@ -217,17 +225,24 @@ function EggController:RenderHatch()
 	if not hatch or not server or not state then
 		return
 	end
-	local show = server.Phase == "Interior" and self:IsContributor() and not state.Claimed and not self.InCutscene
+	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+	local inside = root ~= nil and root.Position.Y < MapConfig.Interior.Center.Y + MapConfig.Interior.Height + 20
+	local show = server.Phase == "Interior" and self:IsContributor() and not self.InCutscene and not (state.Claimed and inside)
 	if show and not hatch.Visible then
 		hatch.Visible = true
 		Ui.Pop(hatch.Button, 1.15)
-		InputController:Select(hatch.Button)
 	elseif not show then
 		hatch.Visible = false
 	end
 	if show then
-		local remaining = math.max(0, math.ceil(server.PhaseEndsAt - GameConfig.InteriorDuration + GameConfig.HatchAutoClaimDelay - Workspace:GetServerTimeNow()))
-		hatch.Timer.Text = remaining > 0 and ("Auto-hatch in %ds"):format(remaining) or ""
+		Ui.SetText(hatch.Button, state.Claimed and UIConfig.Messages.EnterPrompt or UIConfig.Messages.HatchPrompt)
+		hatch.Button.Icon.Text = state.Claimed and "🚪" or "🥚"
+		if state.Claimed then
+			hatch.Timer.Text = UIConfig.Messages.EnterHint
+		else
+			local remaining = math.max(0, math.ceil(server.PhaseEndsAt - GameConfig.InteriorDuration + GameConfig.HatchAutoClaimDelay - Workspace:GetServerTimeNow()))
+			hatch.Timer.Text = remaining > 0 and ("Auto-hatch in %ds"):format(remaining) or ""
+		end
 	end
 end
 

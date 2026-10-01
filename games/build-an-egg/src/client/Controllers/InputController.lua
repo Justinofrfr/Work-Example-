@@ -12,6 +12,8 @@ local InputController = {
 }
 
 local PanelController
+local EggController
+local gui
 local hud
 
 local GAMEPAD_INPUTS = {
@@ -23,7 +25,9 @@ local GAMEPAD_INPUTS = {
 
 function InputController:Init(modules, context)
 	PanelController = modules.PanelController
-	hud = context.Gui:WaitForChild("Hud")
+	EggController = modules.EggController
+	gui = context.Gui
+	hud = gui:WaitForChild("Hud")
 end
 
 function InputController:Start()
@@ -47,6 +51,10 @@ function InputController:Start()
 		if processed and GuiService.SelectedObject then
 			return
 		end
+		if table.find(InputConfig.HatchKeys, input.KeyCode) and gui.Hatch.Visible then
+			EggController:Claim()
+			return
+		end
 		for panel, keys in InputConfig.PanelKeys do
 			if table.find(keys, input.KeyCode) then
 				PanelController:Toggle(panel)
@@ -67,7 +75,7 @@ function InputController:SetGamepad(enabled)
 	end
 	self.Gamepad = enabled
 	for name, text in InputConfig.GamepadHints do
-		local target = hud:FindFirstChild(name, true)
+		local target = name == "Hatch" and gui.Hatch.Button or hud:FindFirstChild(name, true)
 		local hint = target and target:FindFirstChild("Hint")
 		if hint then
 			hint.Visible = enabled

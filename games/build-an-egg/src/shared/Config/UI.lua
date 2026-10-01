@@ -49,6 +49,8 @@ return {
 		NextEgg = "NEXT: %s",
 		Hatched = "+%d Egg hatched!",
 		HatchPrompt = "HATCH!",
+		EnterPrompt = "ENTER",
+		EnterHint = "2X TRAINING INSIDE",
 		NotContributor = "Place shell pieces to hatch the next egg!",
 		ComingSoon = "Coming soon!",
 		PassOwned = "Unlocked!",

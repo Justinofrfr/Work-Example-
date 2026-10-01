@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -28,7 +29,7 @@ function UpgradeService:Start()
 		end
 		return self:Buy(player, key)
 	end
-	DataService.Releasing:Connect(function(player)
+	Players.PlayerRemoving:Connect(function(player)
 		limiter:Remove(player)
 	end)
 end

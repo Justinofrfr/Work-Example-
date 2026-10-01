@@ -39,6 +39,12 @@ end
 function InteractController:Start()
 	local world = Workspace:WaitForChild(W.Root)
 	quarryZone = world:WaitForChild(W.Quarry):WaitForChild(W.QuarryZone)
+	world:WaitForChild(W.Site):WaitForChild(W.Band)
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.Touch then
+			self.HoldingButton = false
+		end
+	end)
 	for _, descendant in world:GetDescendants() do
 		if descendant:IsA("ProximityPrompt") and (descendant.Name == W.PickupPrompt or descendant.Name == W.PlacePrompt) then
 			table.insert(prompts, descendant)
@@ -78,6 +84,9 @@ function InteractController:Start()
 	ClientState.StateChanged:Connect(function(state)
 		self:TunePrompts(state)
 	end)
+	if ClientState.State then
+		self:TunePrompts(ClientState.State)
+	end
 	local accumulator = 0
 	RunService.Heartbeat:Connect(function(dt)
 		accumulator += dt
@@ -142,6 +151,9 @@ function InteractController:UpdateMode()
 		end
 	end
 	button.Visible = UserInputService.TouchEnabled and mode ~= nil
+	if not button.Visible then
+		self.HoldingButton = false
+	end
 end
 
 function InteractController:TunePrompts(state)

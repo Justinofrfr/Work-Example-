@@ -95,8 +95,8 @@ function EffectController:Burst(name, position, count)
 		return
 	end
 	local attachment = Instance.new("Attachment")
-	attachment.WorldPosition = position
 	attachment.Parent = fxPart
+	attachment.WorldPosition = position
 	local emitter = template:Clone()
 	emitter.Parent = attachment
 	emitter:Emit(math.max(1, math.floor(math.min(count, EffectsConfig.Particles.MaxPerBurst) * scale)))

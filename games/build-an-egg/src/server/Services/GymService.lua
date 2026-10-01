@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
@@ -48,7 +49,7 @@ function GymService:Start()
 			self:Stop(player, true)
 		end
 	end)
-	DataService.Releasing:Connect(function(player)
+	Players.PlayerRemoving:Connect(function(player)
 		self.Stopped[player] = nil
 		self.LockNotified[player] = nil
 		stopLimiter:Remove(player)
@@ -113,7 +114,7 @@ function GymService:CheckPlayer(player, runtime)
 		return
 	end
 	local pad = self:PadAt(rootPart.Position)
-	if self.Stopped[player] and self.Stopped[player] ~= pad then
+	if self.Stopped[player] and self.Stopped[player] ~= pad and humanoid.FloorMaterial ~= Enum.Material.Air then
 		self.Stopped[player] = nil
 	end
 	if self.LockNotified[player] and self.LockNotified[player] ~= pad then

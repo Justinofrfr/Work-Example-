@@ -14,6 +14,7 @@ return {
 		Codes = "◀",
 		Settings = "☰",
 		Interact = "X",
+		Hatch = "▲",
 	},
-	HatchKeys = { Enum.KeyCode.ButtonA, Enum.KeyCode.ButtonX },
+	HatchKeys = { Enum.KeyCode.DPadUp },
 }

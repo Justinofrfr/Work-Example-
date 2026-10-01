@@ -103,6 +103,7 @@ for index = 1, 10 do
 end
 make("BillboardGui", {
 	Name = "Count",
+	Enabled = false,
 	Size = UDim2.fromOffset(90, 30),
 	StudsOffsetWorldSpace = Vector3.new(0, 13, 0),
 	MaxDistance = 70,

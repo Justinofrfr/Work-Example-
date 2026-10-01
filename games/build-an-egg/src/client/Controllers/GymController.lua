@@ -52,6 +52,9 @@ function GymController:Start()
 	ClientState.StateChanged:Connect(function(state)
 		self:OnState(state)
 	end)
+	if ClientState.State then
+		self:OnState(ClientState.State)
+	end
 	remotes[Names.Remotes.Notify].OnClientEvent:Connect(function(kind, key)
 		if kind == "GymLocked" then
 			self:ShowLocked(key)

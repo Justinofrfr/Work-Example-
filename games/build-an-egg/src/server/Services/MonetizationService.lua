@@ -76,6 +76,9 @@ function MonetizationService:RefreshPasses(player)
 			owned[key] = false
 		end
 	end
+	if not player.Parent then
+		return
+	end
 	self.PassCache[player] = owned
 	StateService:Dirty(player)
 	self.PassChanged:Fire(player)
@@ -121,22 +124,36 @@ function MonetizationService:ProcessReceipt(receipt)
 		return Enum.ProductPurchaseDecision.NotProcessedYet
 	end
 	local product = ProductsConfig.DevProducts[entry.Key]
+	local previousLevel = data.BoostLevels[entry.Key]
+	local coinsGranted = 0
 	if product.Tiers then
-		data.BoostLevels[entry.Key] = (data.BoostLevels[entry.Key] or 0) + 1
+		data.BoostLevels[entry.Key] = (previousLevel or 0) + 1
 	elseif product.Pieces then
-		BuildService:AddPieces(player, product.Pieces, true)
-		data.Coins += product.Coins or 0
-		remotes[Names.Remotes.Notify]:FireAllClients("ServerPack", player.DisplayName, product.Pieces)
-	end
-	if product.Tiers then
-		StateService:ApplyWalkSpeed(player)
+		coinsGranted = product.Coins or 0
+		data.Coins += coinsGranted
 	end
 	table.insert(data.Purchases, receipt.PurchaseId)
 	while #data.Purchases > ProductsConfig.PurchaseHistoryCap do
 		table.remove(data.Purchases, 1)
 	end
 	DataService:MarkDirty(player)
-	DataService:Save(player, false)
+	if not DataService:Save(player, false) then
+		local index = table.find(data.Purchases, receipt.PurchaseId)
+		if index then
+			table.remove(data.Purchases, index)
+		end
+		if product.Tiers then
+			data.BoostLevels[entry.Key] = previousLevel
+		else
+			data.Coins -= coinsGranted
+		end
+		StateService:Dirty(player)
+		return Enum.ProductPurchaseDecision.NotProcessedYet
+	end
+	if product.Pieces then
+		BuildService:AddPieces(player, product.Pieces, true)
+		remotes[Names.Remotes.Notify]:FireAllClients("ServerPack", player.DisplayName, product.Pieces)
+	end
 	StateService:Dirty(player)
 	return Enum.ProductPurchaseDecision.PurchaseGranted
 end

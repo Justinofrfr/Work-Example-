@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
@@ -59,7 +60,7 @@ function CarryService:Start()
 			self:OnCharacter(player, player.Character)
 		end
 	end)
-	DataService.Releasing:Connect(function(player)
+	Players.PlayerRemoving:Connect(function(player)
 		limiter:Remove(player)
 		self.Stacks[player] = nil
 	end)
@@ -106,7 +107,9 @@ function CarryService:Pickup(player)
 		return false
 	end
 	runtime.LastPickup = clock
-	local amount = math.min(Formulas.PickupAmount(data.Upgrades.BulkPickup or 0), capacity - runtime.Carry)
+	local rootPart = rootOf(player)
+	runtime.PickupPosition = rootPart and rootPart.Position or runtime.PickupPosition
+	local amount =math.min(Formulas.PickupAmount(data.Upgrades.BulkPickup or 0), capacity - runtime.Carry)
 	runtime.Carry += amount
 	self:UpdateVisual(player)
 	StateService:Dirty(player)
