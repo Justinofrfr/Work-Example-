@@ -401,7 +401,7 @@ label({ Name = "Effect", Text = "1 → 2 per grab", Size = UDim2.fromScale(0.5, 
 label({ Name = "Level", Text = "Lv 0/5", Size = UDim2.fromScale(0.14, 0.4), Position = UDim2.fromScale(0.6, 0.3), TextColor3 = Color3.fromRGB(200, 240, 255), Parent = card })
 button({ Name = "Buy", Text = "🪙 50", Color = C.Coins, Size = UDim2.fromScale(0.22, 0.64), Position = UDim2.fromScale(0.97, 0.5), AnchorPoint = Vector2.new(1, 0.5), Parent = card })
 
-local toggle = panelFrame({ Name = "Toggle", Size = UDim2.fromScale(1, 0.2), BackgroundColor3 = Color3.fromRGB(255, 252, 240), Parent = templates })
+local toggle = panelFrame({ Name = "Toggle", Size = UDim2.fromScale(1, 0.165), BackgroundColor3 = Color3.fromRGB(255, 252, 240), Parent = templates })
 label({ Name = "Title", Text = "Music", Size = UDim2.fromScale(0.6, 0.7), Position = UDim2.fromScale(0.04, 0.15), TextXAlignment = Enum.TextXAlignment.Left, Parent = toggle })
 button({ Name = "Button", Text = "ON", Color = C.Good, Size = UDim2.fromScale(0.28, 0.75), Position = UDim2.fromScale(0.97, 0.5), AnchorPoint = Vector2.new(1, 0.5), Parent = toggle })
 

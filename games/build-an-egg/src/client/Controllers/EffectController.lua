@@ -133,6 +133,54 @@ function EffectController:CoinPopup(position, amount)
 	entry.Gui:SetAttribute("Token", started)
 end
 
+function EffectController:FlyPiece(from, to, onArrive)
+	local config = EffectsConfig.PlaceFlight
+	if Settings:EffectScale() <= 0 then
+		onArrive()
+		return
+	end
+	self.FlightPool = self.FlightPool or {}
+	local piece = table.remove(self.FlightPool)
+	if not piece then
+		local stack = templates:FindFirstChild(Names.Templates.CarryStack)
+		local source = stack and stack.Pieces:FindFirstChildWhichIsA("BasePart")
+		if not source then
+			onArrive()
+			return
+		end
+		piece = source:Clone()
+		for _, child in piece:GetChildren() do
+			if not child:IsA("DataModelMesh") then
+				child:Destroy()
+			end
+		end
+		piece.Anchored = true
+		piece.CanCollide = false
+		piece.CanQuery = false
+		piece.CanTouch = false
+		piece.Transparency = 0
+	end
+	piece.Parent = fxPart
+	local started = os.clock()
+	local spin = math.random() * math.pi * 2
+	local connection
+	connection = RunService.RenderStepped:Connect(function()
+		local alpha = math.min(1, (os.clock() - started) / config.Time)
+		local position = from:Lerp(to, alpha) + Vector3.new(0, math.sin(alpha * math.pi) * config.Arc, 0)
+		piece.CFrame = CFrame.new(position) * CFrame.Angles(alpha * 6 + spin, alpha * 4, 0)
+		if alpha >= 1 then
+			connection:Disconnect()
+			piece.Parent = nil
+			if #self.FlightPool < config.Pool then
+				table.insert(self.FlightPool, piece)
+			else
+				piece:Destroy()
+			end
+			onArrive()
+		end
+	end)
+end
+
 function EffectController:Shake(def)
 	if not Settings:Get("Shake") or not def then
 		return
@@ -224,7 +272,11 @@ function EffectController:Handle(kind, a, b)
 			local bandPoint = EggShape.ScaffoldPoint(EggShape.BandHeight(ring))
 			local direction = Vector3.new(bandPoint.X - EggConfig.Center.X, 0, bandPoint.Z - EggConfig.Center.Z).Unit
 			local shellRadius = EggShape.Rings()[ring].Radius
-			self:Burst("Dust", EggConfig.Center + direction * shellRadius + Vector3.new(0, EggShape.BandHeight(ring) - EggConfig.Center.Y, 0), 8)
+			local target = EggConfig.Center + direction * shellRadius + Vector3.new(0, EggShape.BandHeight(ring) - EggConfig.Center.Y, 0)
+			self:FlyPiece(root.Position + Vector3.new(0, 2, 0), target, function()
+				self:Burst("Dust", target, 8)
+				self:Burst("Sparkle", target, 6)
+			end)
 		end
 	elseif kind == "TrainStart" then
 		Audio.Play("TrainStart")

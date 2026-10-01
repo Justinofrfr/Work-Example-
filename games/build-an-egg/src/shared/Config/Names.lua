@@ -74,5 +74,6 @@ return {
 		Segment = "Segment",
 		GoldenGoose = "GoldenGoose",
 		Training = "Training",
+		Carrying = "Carrying",
 	},
 }

@@ -161,6 +161,9 @@ function CarryService:UpdateVisual(player)
 		return
 	end
 	local shown = math.min(runtime.Carry, GameConfig.CarryVisualMax)
+	if stack.Parent then
+		stack.Parent:SetAttribute(Names.Attributes.Carrying, runtime.Carry > 0)
+	end
 	for _, piece in stack.Pieces:GetChildren() do
 		local index = tonumber(piece.Name) or 0
 		piece.Transparency = index <= shown and 0 or 1

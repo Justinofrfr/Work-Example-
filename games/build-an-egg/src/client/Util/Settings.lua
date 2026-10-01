@@ -8,13 +8,15 @@ local Settings = {
 		Sfx = true,
 		Effects = "High",
 		Shake = true,
+		Cutscenes = true,
 	},
-	Order = { "Music", "Sfx", "Effects", "Shake" },
+	Order = { "Music", "Sfx", "Effects", "Shake", "Cutscenes" },
 	Labels = {
 		Music = "Music",
 		Sfx = "Sound Effects",
 		Effects = "Effects Quality",
 		Shake = "Camera Shake",
+		Cutscenes = "Cutscenes",
 	},
 	Cycles = {
 		Effects = { "High", "Low", "Off" },

@@ -118,6 +118,8 @@ function EggController:Render(server, previous)
 	local projectChanged = self.Project ~= server.Project
 	if previous and previous.Round ~= server.Round then
 		self:Restore()
+	elseif previous and server.Ring > previous.Ring then
+		task.defer(self.FlashRing, self, previous.Ring)
 	end
 	if server.Phase == "Interior" and not self.Hatchling and not self.InCutscene then
 		self:Crack(3)
@@ -363,6 +365,34 @@ function EggController:Burst()
 	if ClientState.Server then
 		self:SpawnHatchling(ClientState.Server.Project, true)
 	end
+end
+
+function EggController:FlashRing(index)
+	local ring = ringModels[index]
+	local info = EggShape.Rings()[index]
+	if not ring or not info then
+		return
+	end
+	local color = self:ProjectColor(ClientState.Server)
+	for _, segment in ring:GetChildren() do
+		if segment:IsA("BasePart") and segment.Transparency < 1 then
+			segment.Material = Enum.Material.Neon
+			segment.Color = Color3.new(1, 1, 1)
+			Ui.Tween(segment, 0.6, { Color = color })
+		end
+	end
+	local height = (info.Bottom + info.Top) / 2
+	for step = 1, 8 do
+		local angle = step / 8 * math.pi * 2
+		EffectController:Burst("Sparkle", EggConfig.Center + Vector3.new(math.cos(angle) * info.Radius, height - EggConfig.Center.Y, math.sin(angle) * info.Radius), 6)
+	end
+	task.delay(0.6, function()
+		for _, segment in ring:GetChildren() do
+			if segment:IsA("BasePart") and segment.Material == Enum.Material.Neon and segment.Transparency == 0 then
+				segment.Material = Enum.Material.SmoothPlastic
+			end
+		end
+	end)
 end
 
 function EggController:HatchlingBase()
