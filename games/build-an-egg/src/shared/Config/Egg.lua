@@ -4,7 +4,7 @@ return {
 	MaxRadius = 55,
 	WidestFraction = 0.42,
 	ShellThickness = 3,
-	GhostTransparency = 0.82,
+	GhostTransparency = 0.55,
 	SegmentArcLength = 14,
 	MinSegments = 6,
 	BaseOffset = 12,

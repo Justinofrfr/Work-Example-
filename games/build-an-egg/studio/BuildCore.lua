@@ -60,8 +60,8 @@ end
 
 make("BillboardGui", {
 	Name = Names.Templates.RankTag,
-	Size = UDim2.fromScale(8, 3),
-	StudsOffset = Vector3.new(0, 3.2, 0),
+	Size = UDim2.fromScale(5.5, 2.1),
+	StudsOffset = Vector3.new(0, 2.6, 0),
 	MaxDistance = 90,
 	LightInfluence = 0,
 	ResetOnSpawn = false,

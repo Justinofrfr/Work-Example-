@@ -146,8 +146,8 @@ function EggController:Render(server, previous)
 				segment.Material = Enum.Material.Neon
 				segment.Transparency = 0.7
 			else
-				segment.Color = color
-				segment.Material = Enum.Material.Glass
+				segment.Color = color:Lerp(Color3.new(1, 1, 1), 0.4)
+				segment.Material = Enum.Material.SmoothPlastic
 				segment.Transparency = EggConfig.GhostTransparency
 			end
 		end

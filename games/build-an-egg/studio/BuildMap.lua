@@ -257,9 +257,9 @@ make("SpawnLocation", {
 	Neutral = true,
 	Parent = spawnFolder,
 }):FindFirstChildOfClass("Decal")
-local giftBoard = sign(spawnFolder, W.Gift, facing(stands.Gift + Vector3.new(0, 7, 0), stands.Gift + Vector3.new(0, 7, 60)), Vector3.new(16, 10, 1.2), "FREE GIFT", "Like + Favorite + Join Group", P.Wood)
+local giftBoard = sign(spawnFolder, W.Gift, facing(stands.Gift + Vector3.new(0, 7, 0), stands.Gift + Vector3.new(0, 7, -60)), Vector3.new(16, 10, 1.2), "FREE GIFT", "Like + Favorite + Join Group", P.Wood)
 prompt(giftBoard, W.GiftPrompt, "Claim", "Free Gift", 0)
-local shopBoard = sign(spawnFolder, W.ShopStand, facing(stands.Shop + Vector3.new(0, 7, 0), stands.Shop + Vector3.new(0, 7, 60)), Vector3.new(16, 10, 1.2), "SHOP", "Boosts and passes", Color3.fromRGB(60, 140, 70))
+local shopBoard = sign(spawnFolder, W.ShopStand, facing(stands.Shop + Vector3.new(0, 7, 0), stands.Shop + Vector3.new(0, 7, -60)), Vector3.new(16, 10, 1.2), "SHOP", "Boosts and passes", Color3.fromRGB(60, 140, 70))
 make("ProximityPrompt", { Name = W.StandPrompt, ActionText = "Shop", ObjectText = "Shop", KeyboardKeyCode = Enum.KeyCode.E, MaxActivationDistance = 12, RequiresLineOfSight = false, Parent = shopBoard }):SetAttribute("Panel", "Shop")
 
 local LeaderboardsConfig = require(Shared.Config.Leaderboards)
