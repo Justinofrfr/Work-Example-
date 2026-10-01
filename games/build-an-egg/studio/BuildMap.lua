@@ -330,6 +330,11 @@ part({
 	Parent = scaffold,
 })
 
+local fxAnchor = zone({ Name = "FxAnchor", Size = Vector3.new(1, 1, 1), CFrame = CFrame.new(center + Vector3.new(0, -40, 0)), Parent = site })
+for index = 1, 20 do
+	make("Attachment", { Name = "Popup" .. index, Parent = fxAnchor })
+end
+
 local band = make("Folder", { Name = W.Band, Parent = site })
 for index = 1, 5 do
 	local anchor = zone({ Name = "Point" .. index, Size = Vector3.new(1, 1, 1), CFrame = CFrame.new(center + Vector3.new(0, -50, 0)), Parent = band })

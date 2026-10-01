@@ -57,7 +57,7 @@ function BuildService:Start()
 		return self:ClaimHatch(player)
 	end
 	Players.PlayerRemoving:Connect(function(player)
-		self.Placements[player.UserId] = nil
+		self.Placements[tostring(player.UserId)] = nil
 	end)
 	task.spawn(function()
 		while true do
@@ -188,7 +188,7 @@ function BuildService:AddPieces(player, amount, isPurchase)
 	self.Progress += added
 	if userId then
 		self.Contributions[userId] = (self.Contributions[userId] or 0) + amount
-		self.Placements[userId] = (self.Placements[userId] or 0) + added
+		self.Placements[tostring(userId)] = (self.Placements[tostring(userId)] or 0) + added
 		if player.Parent then
 			StateService:Dirty(player)
 		end
