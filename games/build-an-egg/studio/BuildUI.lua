@@ -79,6 +79,23 @@ local function studs(radius, transparency, color)
 	}, { corner(radius) })
 end
 
+local function iconElement(props)
+	if type(props.Text) == "string" and props.Text:find("^rbxassetid") then
+		return make("ImageLabel", {
+			Name = props.Name,
+			Image = props.Text,
+			ScaleType = Enum.ScaleType.Fit,
+			BackgroundTransparency = 1,
+			Size = props.Size or UDim2.fromScale(1, 1),
+			Position = props.Position or UDim2.new(),
+			AnchorPoint = props.AnchorPoint or Vector2.new(),
+			ZIndex = props.ZIndex or 1,
+			Parent = props.Parent,
+		})
+	end
+	return label(props)
+end
+
 local function panelFrame(props)
 	local base = {
 		BackgroundColor3 = Color3.fromRGB(255, 244, 222),
@@ -110,7 +127,7 @@ local function button(props)
 	})
 	instance:SetAttribute("Feel", true)
 	if props.Icon then
-		label({
+		iconElement({
 			Name = "Icon",
 			Text = props.Icon,
 			Size = UDim2.fromScale(props.Text and 0.62 or 0.8, props.Text and 0.62 or 0.8),
@@ -145,7 +162,8 @@ local gui = make("ScreenGui", {
 	Name = Names.Gui.Main,
 	ResetOnSpawn = false,
 	ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
-	ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets,
+	ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets,
+	IgnoreGuiInset = true,
 	Parent = StarterGui,
 })
 
@@ -153,22 +171,22 @@ local hud = make("Frame", { Name = "Hud", Size = UDim2.fromScale(1, 1), Backgrou
 
 local topLeft = make("Frame", {
 	Name = "TopLeft",
-	Size = UDim2.fromScale(0.16, 0.09),
-	Position = UDim2.fromScale(0.008, 0.012),
+	Size = UDim2.fromScale(0.13, 0.075),
+	Position = UDim2.fromScale(0.008, 0.075),
 	BackgroundTransparency = 1,
 	Parent = hud,
 }, {
 	make("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0.04, 0), SortOrder = Enum.SortOrder.LayoutOrder }),
 	aspect(3.4),
 })
-for index, def in { { "Codes", "🎟️", Color3.fromRGB(80, 170, 255) }, { "Settings", "⚙️", Color3.fromRGB(150, 150, 160) } } do
+for index, def in { { "Codes", UIConfig.Icons.Codes, Color3.fromRGB(80, 170, 255) }, { "Settings", UIConfig.Icons.Settings, Color3.fromRGB(150, 150, 160) } } do
 	local b = button({ Name = def[1], Icon = def[2], Color = def[3], Size = UDim2.fromScale(0.3, 1), LayoutOrder = index, Parent = topLeft })
 	aspect(1).Parent = b
 end
 
 local stats = make("Frame", {
 	Name = "Stats",
-	Size = UDim2.fromScale(0.2, 0.42),
+	Size = UDim2.fromScale(0.16, 0.34),
 	Position = UDim2.fromScale(0.008, 0.3),
 	BackgroundTransparency = 1,
 	Parent = hud,
@@ -184,7 +202,7 @@ for index, def in { { "Coins", "💰", C.Coins }, { "Speed", "⚡", C.Speed, "Wa
 		LayoutOrder = index,
 		Parent = stats,
 	})
-	label({ Name = "Icon", Text = def[2], Size = UDim2.fromScale(0.3, 1), Parent = row }).Parent = row
+	iconElement({ Name = "Icon", Text = UIConfig.Icons[def[1]] or def[2], Size = UDim2.fromScale(0.3, 1), Parent = row })
 	aspect(1).Parent = row.Icon
 	label({ Name = "Value", Text = "0", TextColor3 = Color3.new(1, 1, 1), TextXAlignment = Enum.TextXAlignment.Left, Size = UDim2.fromScale(0.66, def[4] and 0.66 or 0.9), Position = UDim2.fromScale(0.32, def[4] and 0 or 0.05), StrokeThickness = 3, Parent = row })
 	if def[4] then
@@ -197,7 +215,7 @@ rankLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 local right = make("Frame", {
 	Name = "Right",
-	Size = UDim2.fromScale(0.09, 0.5),
+	Size = UDim2.fromScale(0.075, 0.42),
 	Position = UDim2.fromScale(0.992, 0.24),
 	AnchorPoint = Vector2.new(1, 0),
 	BackgroundTransparency = 1,
@@ -219,7 +237,7 @@ local function priceBadge(parent, text)
 	label({ Name = "Text", Text = text, Size = UDim2.fromScale(0.86, 0.8), Position = UDim2.fromScale(0.07, 0.1), ZIndex = 5, StrokeThickness = 1.5, Parent = badge })
 	return badge
 end
-for index, def in { { "Shop", "🧺", "SHOP", Color3.fromRGB(255, 90, 140) }, { "SpeedBoost", "⚡", "1.5x Speed", Color3.fromRGB(80, 160, 255) }, { "StrengthBoost", "💪", "2x Strength", Color3.fromRGB(255, 160, 40) } } do
+for index, def in { { "Shop", UIConfig.Icons.Shop, "SHOP", Color3.fromRGB(255, 90, 140) }, { "SpeedBoost", UIConfig.Icons.Speed, "1.5x Speed", Color3.fromRGB(80, 160, 255) }, { "StrengthBoost", UIConfig.Icons.Strength, "2x Strength", Color3.fromRGB(255, 160, 40) } } do
 	local b = button({ Name = def[1], Icon = def[2], Text = def[3], Color = def[4], Size = UDim2.fromScale(1, 0.3), LayoutOrder = index, Parent = right })
 	aspect(1).Parent = b
 	if index > 1 then
@@ -229,8 +247,8 @@ end
 
 local progress = make("Frame", {
 	Name = "Progress",
-	Size = UDim2.fromScale(0.36, 0.2),
-	Position = UDim2.fromScale(0.5, 0.012),
+	Size = UDim2.fromScale(0.3, 0.17),
+	Position = UDim2.fromScale(0.5, 0.015),
 	AnchorPoint = Vector2.new(0.5, 0),
 	BackgroundTransparency = 1,
 	Parent = hud,
@@ -286,7 +304,7 @@ label({ Name = "Phase", Text = "", Visible = false, Size = UDim2.fromScale(1, 0.
 
 local friend = make("Frame", {
 	Name = "FriendBoost",
-	Size = UDim2.fromScale(0.2, 0.05),
+	Size = UDim2.fromScale(0.17, 0.042),
 	Position = UDim2.fromScale(0.008, 0.985),
 	AnchorPoint = Vector2.new(0, 1),
 	BackgroundTransparency = 1,
@@ -297,7 +315,7 @@ label({ Name = "Text", Text = "Friend Boost: +0%", Size = UDim2.fromScale(0.8, 0
 
 local keys = make("Frame", {
 	Name = "KeyHints",
-	Size = UDim2.fromScale(0.09, 0.07),
+	Size = UDim2.fromScale(0.075, 0.06),
 	Position = UDim2.fromScale(0.992, 0.985),
 	AnchorPoint = Vector2.new(1, 1),
 	BackgroundTransparency = 1,
@@ -311,7 +329,7 @@ local interact = button({
 	Icon = "✋",
 	Text = "PICK UP",
 	Color = Color3.fromRGB(255, 200, 60),
-	Size = UDim2.fromScale(0.13, 0.13),
+	Size = UDim2.fromScale(0.11, 0.11),
 	Position = UDim2.fromScale(0.86, 0.72),
 	AnchorPoint = Vector2.new(1, 1),
 	Radius = 0.5,
@@ -325,7 +343,7 @@ local dropButton = button({
 	Icon = "⬇️",
 	Text = "DROP",
 	Color = Color3.fromRGB(200, 90, 80),
-	Size = UDim2.fromScale(0.08, 0.08),
+	Size = UDim2.fromScale(0.07, 0.07),
 	Position = UDim2.fromScale(0.74, 0.72),
 	AnchorPoint = Vector2.new(1, 1),
 	Radius = 0.5,
@@ -391,7 +409,7 @@ local function panel(name, titleText, size, color, ratio)
 	return frame, body
 end
 
-local _, shopBody = panel("Shop", "SHOP", UDim2.fromScale(0.62, 0.72), Color3.fromRGB(90, 210, 90), 1.45)
+local _, shopBody = panel("Shop", "SHOP", UDim2.fromScale(0.54, 0.64), Color3.fromRGB(90, 210, 90), 1.45)
 make("ScrollingFrame", {
 	Name = "List",
 	Size = UDim2.fromScale(1, 1),
@@ -406,12 +424,12 @@ make("ScrollingFrame", {
 	make("UIPadding", { PaddingTop = UDim.new(0.01, 0), PaddingLeft = UDim.new(0.01, 0), PaddingRight = UDim.new(0.03, 0), PaddingBottom = UDim.new(0.02, 0) }),
 })
 
-local _, upgradeBody = panel("Upgrades", "UPGRADES", UDim2.fromScale(0.56, 0.62), Color3.fromRGB(255, 165, 50), 1.5)
+local _, upgradeBody = panel("Upgrades", "UPGRADES", UDim2.fromScale(0.48, 0.54), Color3.fromRGB(255, 165, 50), 1.5)
 make("Frame", { Name = "List", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Parent = upgradeBody }, {
 	make("UIListLayout", { Padding = UDim.new(0.03, 0), SortOrder = Enum.SortOrder.LayoutOrder }),
 })
 
-local _, codesBody = panel("Codes", "CODES", UDim2.fromScale(0.42, 0.42), Color3.fromRGB(80, 170, 255), 1.7)
+local _, codesBody = panel("Codes", "CODES", UDim2.fromScale(0.36, 0.36), Color3.fromRGB(80, 170, 255), 1.7)
 make("TextBox", {
 	Name = "Input",
 	Size = UDim2.fromScale(1, 0.3),
@@ -429,12 +447,12 @@ make("TextBox", {
 button({ Name = "Redeem", Text = "REDEEM", Color = C.Good, Size = UDim2.fromScale(0.5, 0.3), Position = UDim2.fromScale(0.5, 0.48), AnchorPoint = Vector2.new(0.5, 0), Parent = codesBody })
 label({ Name = "Status", Text = "", Size = UDim2.fromScale(1, 0.18), Position = UDim2.fromScale(0, 0.82), TextColor3 = C.Good, Parent = codesBody })
 
-local _, settingsBody = panel("Settings", "SETTINGS", UDim2.fromScale(0.44, 0.56), Color3.fromRGB(150, 150, 160), 1.35)
+local _, settingsBody = panel("Settings", "SETTINGS", UDim2.fromScale(0.38, 0.5), Color3.fromRGB(150, 150, 160), 1.35)
 make("Frame", { Name = "List", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Parent = settingsBody }, {
 	make("UIListLayout", { Padding = UDim.new(0.04, 0), SortOrder = Enum.SortOrder.LayoutOrder }),
 })
 
-local _, lockedBody = panel("Locked", "GYM LOCKED", UDim2.fromScale(0.42, 0.42), Color3.fromRGB(120, 120, 130), 1.6)
+local _, lockedBody = panel("Locked", "GYM LOCKED", UDim2.fromScale(0.36, 0.36), Color3.fromRGB(120, 120, 130), 1.6)
 label({ Name = "Lock", Text = "🔒", Size = UDim2.fromScale(0.25, 0.4), Position = UDim2.fromScale(0.375, 0), Parent = lockedBody })
 label({ Name = "Desc", Text = "Hatch 1 egg or unlock now!", Size = UDim2.fromScale(1, 0.2), Position = UDim2.fromScale(0, 0.42), Parent = lockedBody })
 button({ Name = "Buy", Text = "UNLOCK R$29", Color = C.Robux, Size = UDim2.fromScale(0.6, 0.28), Position = UDim2.fromScale(0.5, 0.7), AnchorPoint = Vector2.new(0.5, 0), Parent = lockedBody })
@@ -517,13 +535,13 @@ for _, side in { "Top", "Bottom", "Left", "Right" } do
 	make("Frame", { Name = side, BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 0.45, BorderSizePixel = 0, ZIndex = 40, Size = UDim2.fromScale(0, 0), Parent = tutorial })
 end
 make("Frame", { Name = "Ring", BackgroundTransparency = 1, ZIndex = 41, Size = UDim2.fromScale(0, 0), Parent = tutorial }, { corner(0.3), stroke(4, Color3.fromRGB(255, 230, 90)) })
-label({ Name = "Finger", Text = "👆", Size = UDim2.fromScale(0.07, 0.07), AnchorPoint = Vector2.new(0.5, 0), ZIndex = 45, Parent = tutorial }).Parent = tutorial
+iconElement({ Name = "Finger", Text = UIConfig.Icons.Finger, Size = UDim2.fromScale(0.07, 0.07), AnchorPoint = Vector2.new(0.3, 0), ZIndex = 45, Parent = tutorial })
 aspect(1).Parent = tutorial.Finger
 local tutorialCard = panelFrame({
 	Name = "Card",
-	Size = UDim2.fromScale(0.42, 0.12),
-	Position = UDim2.fromScale(0.5, 0.2),
-	AnchorPoint = Vector2.new(0.5, 0),
+	Size = UDim2.fromScale(0.36, 0.1),
+	Position = UDim2.fromScale(0.5, 0.97),
+	AnchorPoint = Vector2.new(0.5, 1),
 	ZIndex = 42,
 	Parent = tutorial,
 })

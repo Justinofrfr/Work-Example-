@@ -648,6 +648,9 @@ bloom.Size = L.BloomSize
 bloom.Threshold = L.BloomThreshold
 local rays = Lighting:FindFirstChildOfClass("SunRaysEffect") or make("SunRaysEffect", { Parent = Lighting })
 rays.Intensity = L.SunRaysIntensity
+local spotlightBlur = Lighting:FindFirstChild("SpotlightBlur") or make("BlurEffect", { Name = "SpotlightBlur", Parent = Lighting })
+spotlightBlur.Size = 10
+spotlightBlur.Enabled = false
 local depth = Lighting:FindFirstChildOfClass("DepthOfFieldEffect")
 if depth then
 	depth.Enabled = false

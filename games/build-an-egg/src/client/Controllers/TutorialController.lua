@@ -1,3 +1,4 @@
+local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -156,6 +157,9 @@ function TutorialController:Finish(skipped)
 	self.Active = false
 	self.Step = #TutorialConfig.Steps + 1
 	frame.Visible = false
+	if Lighting:FindFirstChild("SpotlightBlur") then
+		Lighting.SpotlightBlur.Enabled = false
+	end
 	if skipped then
 		remotes[Names.Remotes.Tutorial]:FireServer(#TutorialConfig.Steps)
 	end
@@ -210,6 +214,9 @@ function TutorialController:SetSpot(target)
 		end
 		frame.Ring.Visible = false
 		frame.Finger.Visible = false
+		if Lighting:FindFirstChild("SpotlightBlur") then
+			Lighting.SpotlightBlur.Enabled = false
+		end
 		return
 	end
 	local origin = frame.AbsolutePosition
@@ -227,14 +234,17 @@ function TutorialController:SetSpot(target)
 	frame.Left.Size = UDim2.fromScale(x0, y1 - y0)
 	frame.Right.Position = UDim2.fromScale(x1, y0)
 	frame.Right.Size = UDim2.fromScale(1 - x1, y1 - y0)
+	if Lighting:FindFirstChild("SpotlightBlur") then
+		Lighting.SpotlightBlur.Enabled = true
+	end
 	frame.Ring.Visible = true
 	frame.Ring.Position = UDim2.fromScale(x0, y0)
 	frame.Ring.Size = UDim2.fromScale(x1 - x0, y1 - y0)
 	local bob = math.sin(os.clock() * TutorialConfig.FingerSpeed) * TutorialConfig.FingerBob
 	frame.Finger.Visible = true
 	local below = y1 < 0.8
-	frame.Finger.Text = below and "👆" or "👇"
-	frame.Finger.AnchorPoint = Vector2.new(0.5, below and 0 or 1)
+	frame.Finger.Rotation = below and 0 or 180
+	frame.Finger.AnchorPoint = Vector2.new(0.3, below and 0 or 1)
 	frame.Finger.Position = UDim2.fromScale((x0 + x1) / 2, (below and y1 or y0) + (below and bob or -bob))
 end
 

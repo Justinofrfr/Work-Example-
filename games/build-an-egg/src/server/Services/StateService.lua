@@ -172,8 +172,20 @@ function StateService:ApplyRankTag(player, character)
 	local rank = Formulas.Rank(data.Eggs)
 	local label = tag:FindFirstChild("Title", true)
 	if label and label:IsA("TextLabel") then
-		label.Text = rank.Name
+		label.Text = string.upper(rank.Name)
 		label.TextColor3 = rank.Color
+	end
+	local count = tag:FindFirstChild("Count", true)
+	if count and count:IsA("TextLabel") then
+		count.Text = "🥚 " .. tostring(data.Eggs)
+	end
+	local nameLabel = tag:FindFirstChild("PlayerName", true)
+	if nameLabel and nameLabel:IsA("TextLabel") then
+		nameLabel.Text = player.DisplayName
+	end
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
 	end
 	tag.Parent = head
 end
