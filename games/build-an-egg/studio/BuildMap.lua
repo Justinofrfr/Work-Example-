@@ -445,8 +445,35 @@ end
 local band = make("Folder", { Name = W.Band, Parent = site })
 for index = 1, 5 do
 	local anchor = zone({ Name = "Point" .. index, Size = Vector3.new(1, 1, 1), CFrame = CFrame.new(center + Vector3.new(0, -50, 0)), Parent = band })
-	prompt(anchor, W.PlacePrompt, "Place", "Shell", GameConfig.PlaceHoldTime)
+	prompt(anchor, W.PlacePrompt, "Place Shells", "Egg", GameConfig.PlaceHoldTime)
 end
+local placeZone = part({
+	Name = "PlaceZone",
+	Shape = Enum.PartType.Cylinder,
+	Size = Vector3.new(0.4, EggConfig.ScaffoldWidth + 4, EggConfig.ScaffoldWidth + 4),
+	CFrame = CFrame.new(center + Vector3.new(0, -50, 0)) * CFrame.Angles(0, 0, math.rad(90)),
+	Color = P.Band,
+	Material = Enum.Material.Neon,
+	Transparency = 0.45,
+	CanCollide = false,
+	CanQuery = false,
+	CanTouch = false,
+	TopSurface = Enum.SurfaceType.Smooth,
+	BottomSurface = Enum.SurfaceType.Smooth,
+	Parent = band,
+})
+make("BillboardGui", {
+	Name = "Label",
+	Size = UDim2.fromScale(16, 5),
+	StudsOffsetWorldSpace = Vector3.new(0, 9, 0),
+	AlwaysOnTop = true,
+	LightInfluence = 0,
+	MaxDistance = 600,
+	Parent = placeZone,
+}, {
+	text({ Name = "Title", Text = "PLACE SHELLS HERE", Size = UDim2.fromScale(1, 0.55), TextColor3 = Color3.fromRGB(140, 255, 140) }),
+	text({ Name = "Arrow", Text = "⬇", Size = UDim2.fromScale(1, 0.45), Position = UDim2.fromScale(0, 0.55), TextColor3 = Color3.fromRGB(140, 255, 140) }),
+})
 
 local trail = make("Folder", { Name = W.Trail, Parent = site })
 local startPoint = pitCenter + Vector3.new(0, 0.3, pitSize.Z / 2 + rampLength)

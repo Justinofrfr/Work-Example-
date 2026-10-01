@@ -88,6 +88,10 @@ function TutorialController:WorldTarget(name)
 	if name == "Quarry" then
 		local zone = world:FindFirstChild(W.Quarry) and world.Quarry:FindFirstChild(W.QuarryZone)
 		return zone and zone.Position
+	elseif name == "PlaceZone" then
+		local band = world:FindFirstChild(W.Site) and world.Site:FindFirstChild(W.Band)
+		local zone = band and band:FindFirstChild("PlaceZone")
+		return zone and zone.Position
 	elseif name == "Band" then
 		local band = world:FindFirstChild(W.Site) and world.Site:FindFirstChild(W.Band)
 		local point = band and band:FindFirstChild("Point3")
@@ -111,9 +115,13 @@ end
 
 function TutorialController:GuiTarget(name)
 	local hud = gui:FindFirstChild("Hud")
-	if name == "Interact" then
-		local interact = hud and hud:FindFirstChild("Interact")
-		return interact and interact.Visible and interact or nil
+	if name == "Action" then
+		if UserInputService.TouchEnabled then
+			local interact = hud and hud:FindFirstChild("Interact")
+			return interact and interact.Visible and interact or nil
+		end
+		local hints = hud and hud:FindFirstChild("KeyHints")
+		return hints and hints.Visible and hints:FindFirstChild("Pickup") or nil
 	elseif name == "Shop" then
 		return hud and hud.Right:FindFirstChild("Shop")
 	end
@@ -186,6 +194,8 @@ function TutorialController:IsDone(def)
 		return InteractController.Mode == "Pickup"
 	elseif def.Key == "Pickup" then
 		return state.Carry > 0
+	elseif def.Key == "Carry" then
+		return InteractController.Mode == "Place" or state.PiecesPlaced > self.StartPlaced
 	elseif def.Key == "Place" then
 		return state.PiecesPlaced > self.StartPlaced
 	elseif def.Key == "Upgrades" then

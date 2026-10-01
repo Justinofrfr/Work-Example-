@@ -193,6 +193,35 @@ make("BillboardGui", {
 	label({ Name = "Text", Text = "Purchased!", TextColor3 = Color3.fromRGB(255, 225, 90) }),
 })
 
+local barbell = make("Model", { Name = "Barbell", Parent = templates })
+local bar = make("Part", {
+	Name = "Bar",
+	Shape = Enum.PartType.Cylinder,
+	Size = Vector3.new(7, 0.3, 0.3),
+	Color = Color3.fromRGB(200, 205, 215),
+	Material = Enum.Material.Metal,
+	Anchored = true,
+	CanCollide = false,
+	CanQuery = false,
+	CanTouch = false,
+	Parent = barbell,
+})
+barbell.PrimaryPart = bar
+for side = -1, 1, 2 do
+	make("Part", {
+		Name = "Plate",
+		Shape = Enum.PartType.Cylinder,
+		Size = Vector3.new(0.5, 2.2, 2.2),
+		CFrame = bar.CFrame * CFrame.new(side * 2.9, 0, 0),
+		Color = Color3.fromRGB(40, 40, 46),
+		Anchored = true,
+		CanCollide = false,
+		CanQuery = false,
+		CanTouch = false,
+		Parent = barbell,
+	})
+end
+
 local TutorialConfig = require(Shared.Config.Tutorial)
 make("Beam", {
 	Name = "GuideBeam",

@@ -16,6 +16,7 @@ local EggShape = require(Shared.Util.EggShape)
 
 local Ui = require(script.Parent.Parent.Util.Ui)
 local Audio = require(script.Parent.Parent.Util.Audio)
+local Cinematic = require(script.Parent.Parent.Util.Cinematic)
 
 local EggController = {
 	Visible = -1,
@@ -38,6 +39,7 @@ local steps = {}
 local anchors = {}
 local arrows = {}
 local board
+local placeZone
 local camera = Workspace.CurrentCamera
 
 function EggController:Init(modules, context)
@@ -67,8 +69,11 @@ function EggController:Start()
 		end
 	end
 	for _, anchor in site:WaitForChild(W.Band):GetChildren() do
-		table.insert(anchors, anchor)
+		if anchor.Name:find("^Point") then
+			table.insert(anchors, anchor)
+		end
 	end
+	placeZone = site.Band:WaitForChild("PlaceZone")
 	table.sort(anchors, function(a, b)
 		return a.Name < b.Name
 	end)
@@ -82,6 +87,7 @@ function EggController:Start()
 	ClientState.StateChanged:Connect(function(state)
 		self:RenderTrail(state)
 		self:RenderHatch()
+		self:RenderPlaceZone()
 	end)
 	if ClientState.Server then
 		self:Render(ClientState.Server, nil)
@@ -98,7 +104,7 @@ function EggController:Start()
 	Ui.Feel(hatch.Button, function()
 		self:Claim()
 	end)
-	gui.Cutscene.Skip.Activated:Connect(function()
+	Cinematic.Gui():WaitForChild("Cutscene").Skip.Activated:Connect(function()
 		self.SkipRequested = true
 	end)
 	RunService.Heartbeat:Connect(function()
@@ -181,6 +187,21 @@ function EggController:RenderBand(server)
 		if prompt then
 			prompt.Enabled = building and prompt.Enabled
 		end
+	end
+	if placeZone then
+		local point = EggShape.ScaffoldPoint(bandY)
+		placeZone.CFrame = CFrame.new(point + Vector3.new(0, 0.9, 0)) * CFrame.Angles(0, 0, math.rad(90))
+		self:RenderPlaceZone()
+	end
+end
+
+function EggController:RenderPlaceZone()
+	local state = ClientState.State
+	local server = ClientState.Server
+	local show = state ~= nil and server ~= nil and state.Carry > 0 and server.Phase == "Building"
+	if placeZone then
+		placeZone.Transparency = show and 0.45 or 1
+		placeZone.Label.Enabled = show
 	end
 end
 
@@ -294,7 +315,7 @@ function EggController:Restore()
 end
 
 function EggController:PlayCutscene()
-	local cutscene = gui.Cutscene
+	local cutscene = Cinematic.Gui().Cutscene
 	local contributor = self:IsContributor()
 	local def = EffectsConfig.Cutscene
 	local total = GameConfig.CompletionCutsceneTime
@@ -304,6 +325,7 @@ function EggController:PlayCutscene()
 	self.SkipRequested = false
 	local previousType = camera.CameraType
 	if contributor then
+		Cinematic.Enter()
 		cutscene.Visible = true
 		Ui.Tween(cutscene.Top, 0.4, { Position = UDim2.fromScale(0, 0) })
 		Ui.Tween(cutscene.Bottom, 0.4, { Position = UDim2.fromScale(0, 0.88) })
@@ -346,6 +368,7 @@ function EggController:PlayCutscene()
 		Ui.Tween(cutscene.Top, 0.3, { Position = UDim2.fromScale(0, -0.12) })
 		Ui.Tween(cutscene.Bottom, 0.3, { Position = UDim2.fromScale(0, 1) }).Completed:Wait()
 		cutscene.Visible = false
+		Cinematic.Exit()
 	end
 	self.InCutscene = false
 	self:RenderHatch()
@@ -355,7 +378,7 @@ function EggController:Burst()
 	Audio.Play("EggBurst")
 	Audio.Play("Fanfare")
 	EffectController:Shake(EffectsConfig.Shake.Burst)
-	local flash = gui.Flash
+	local flash = Cinematic.Gui().Flash
 	flash.BackgroundTransparency = 0.2
 	Ui.Tween(flash, 0.6, { BackgroundTransparency = 1 })
 	local top = EggConfig.Center + Vector3.new(0, EggShape.ScaffoldHeight(), 0)

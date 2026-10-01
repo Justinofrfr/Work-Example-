@@ -63,9 +63,9 @@ return {
 	Poses = {
 		CarryArmAngle = 155,
 		CarryLerp = 10,
-		LiftBaseAngle = 95,
-		LiftSwing = 55,
-		LiftSpeed = 4,
+		LiftShoulderAngle = 90,
+		LiftElbowMax = 100,
+		LiftSpeed = 3.5,
 		CullDistance = 160,
 	},
 	PlaceFlight = {

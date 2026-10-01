@@ -9,6 +9,7 @@ local EffectsConfig = require(Shared.Config.Effects)
 local Ui = require(script.Parent.Parent.Util.Ui)
 local Audio = require(script.Parent.Parent.Util.Audio)
 local Settings = require(script.Parent.Parent.Util.Settings)
+local Cinematic = require(script.Parent.Parent.Util.Cinematic)
 
 local CutsceneController = {
 	Playing = false,
@@ -29,7 +30,7 @@ function CutsceneController:Init(modules, context)
 end
 
 function CutsceneController:Start()
-	gui:WaitForChild("Cutscene").Skip.Activated:Connect(function()
+	Cinematic.Gui():WaitForChild("Cutscene").Skip.Activated:Connect(function()
 		self.SkipRequested = true
 	end)
 	local function tryIntro(state)
@@ -53,8 +54,9 @@ function CutsceneController:Start()
 end
 
 function CutsceneController:Letterbox(show)
-	local cutscene = gui.Cutscene
+	local cutscene = Cinematic.Gui().Cutscene
 	if show then
+		Cinematic.Enter()
 		cutscene.Visible = true
 		Ui.Tween(cutscene.Top, 0.35, { Position = UDim2.fromScale(0, 0) })
 		Ui.Tween(cutscene.Bottom, 0.35, { Position = UDim2.fromScale(0, 0.88) })
@@ -63,6 +65,7 @@ function CutsceneController:Letterbox(show)
 		Ui.Tween(cutscene.Top, 0.3, { Position = UDim2.fromScale(0, -0.12) })
 		Ui.Tween(cutscene.Bottom, 0.3, { Position = UDim2.fromScale(0, 1) }).Completed:Wait()
 		cutscene.Visible = false
+		Cinematic.Exit()
 	end
 end
 
@@ -80,7 +83,7 @@ function CutsceneController:Play(shots)
 		if self.SkipRequested or EggController.InCutscene then
 			break
 		end
-		gui.Cutscene.Caption.Text = shot.Caption or ""
+		Cinematic.Gui().Cutscene.Caption.Text = shot.Caption or ""
 		local started = os.clock()
 		while os.clock() - started < shot.Time and not self.SkipRequested and not EggController.InCutscene do
 			local alpha = (os.clock() - started) / shot.Time

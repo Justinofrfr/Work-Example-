@@ -230,8 +230,54 @@ for index, key in ProjectsConfig.Order do
 end
 
 local gyms = world:WaitForChild(Names.World.Gyms)
+local G = PropsConfig.GymLook
+local function gymPart(parent, props)
+	local base = {
+		Anchored = true,
+		TopSurface = Enum.SurfaceType.Smooth,
+		BottomSurface = Enum.SurfaceType.Smooth,
+		Material = Enum.Material.SmoothPlastic,
+		Parent = parent,
+	}
+	for key, value in props do
+		base[key] = value
+	end
+	return make("Part", base)
+end
+local function buildTreadmill(visual, floor, color)
+	gymPart(visual, { Name = "Base", Size = Vector3.new(G.TreadmillWidth, 1, G.TreadmillLength), CFrame = floor * CFrame.new(0, 0.5, 0), Color = G.MachineDark })
+	gymPart(visual, { Name = "Belt", Size = Vector3.new(G.TreadmillWidth - 1, 0.3, G.TreadmillLength - 0.6), CFrame = floor * CFrame.new(0, 1.15, 0), Color = Color3.fromRGB(25, 25, 30), Material = Enum.Material.Fabric })
+	for side = -1, 1, 2 do
+		gymPart(visual, { Name = "Rail", Size = Vector3.new(0.5, 0.6, G.TreadmillLength), CFrame = floor * CFrame.new(side * (G.TreadmillWidth / 2 - 0.25), 1.3, 0), Color = color })
+		gymPart(visual, { Name = "Post", Size = Vector3.new(0.5, 4.2, 0.5), CFrame = floor * CFrame.new(side * (G.TreadmillWidth / 2 - 0.25), 3.1, -(G.TreadmillLength / 2 - 0.6)), Color = G.MachineLight, Material = Enum.Material.Metal })
+		gymPart(visual, { Name = "Handle", Size = Vector3.new(0.4, 0.4, 2.4), CFrame = floor * CFrame.new(side * (G.TreadmillWidth / 2 - 0.25), 4.2, -(G.TreadmillLength / 2 - 1.8)), Color = color })
+	end
+	gymPart(visual, { Name = "Console", Size = Vector3.new(G.TreadmillWidth - 0.4, 1.6, 0.6), CFrame = floor * CFrame.new(0, 5.2, -(G.TreadmillLength / 2 - 0.6)) * CFrame.Angles(math.rad(-25), 0, 0), Color = color, Material = Enum.Material.Neon })
+end
+local function buildBench(visual, floor, color)
+	local benchTop = G.BenchHeight
+	gymPart(visual, { Name = "Pad", Size = Vector3.new(2.6, 0.7, G.BenchLength), CFrame = floor * CFrame.new(0, benchTop - 0.35, 0.6), Color = color, Material = Enum.Material.Fabric })
+	gymPart(visual, { Name = "Frame", Size = Vector3.new(1.2, benchTop - 0.7, G.BenchLength - 1.6), CFrame = floor * CFrame.new(0, (benchTop - 0.7) / 2, 0.6), Color = G.MachineDark })
+	for side = -1, 1, 2 do
+		gymPart(visual, { Name = "RackPost", Size = Vector3.new(0.5, G.RackHeight, 0.5), CFrame = floor * CFrame.new(side * 2.6, G.RackHeight / 2, -(G.BenchLength / 2 - 0.4)), Color = G.MachineLight, Material = Enum.Material.Metal })
+		gymPart(visual, { Name = "Plate", Shape = Enum.PartType.Cylinder, Size = Vector3.new(0.6, 2.6, 2.6), CFrame = floor * CFrame.new(side * 3.6, G.RackHeight - 0.2, -(G.BenchLength / 2 - 0.4)), Color = G.MachineDark })
+	end
+	gymPart(visual, { Name = "RackBar", Shape = Enum.PartType.Cylinder, Size = Vector3.new(8, 0.35, 0.35), CFrame = floor * CFrame.new(0, G.RackHeight - 0.2, -(G.BenchLength / 2 - 0.4)), Color = G.MachineLight, Material = Enum.Material.Metal })
+	local seat = make("Seat", { Name = "SeatRef", Size = Vector3.new(1, 0.2, 1), Transparency = 1, Anchored = true, CanCollide = false, Disabled = true, CFrame = floor * CFrame.new(0, benchTop - 0.1, 0.6), Parent = visual })
+	return seat
+end
 for _, gym in gyms:GetChildren() do
 	local tierColor = MapConfig.TierColors[gym.Name] or Color3.new(1, 1, 1)
+	local platform = gym:FindFirstChild("Platform")
+	if platform then
+		platform.Color = G.FloorColor
+		platform.Material = Enum.Material.SmoothPlastic
+		local size = platform.Size
+		local topCF = platform.CFrame * CFrame.new(0, size.Y / 2, 0)
+		for _, edge in { { 0, size.Z / 2, size.X, G.BorderWidth }, { 0, -size.Z / 2, size.X, G.BorderWidth }, { size.X / 2, 0, G.BorderWidth, size.Z }, { -size.X / 2, 0, G.BorderWidth, size.Z } } do
+			gymPart(gym, { Name = "Border", Size = Vector3.new(edge[3], 0.3, edge[4]), CFrame = topCF * CFrame.new(edge[1], 0.15, edge[2]), Color = tierColor, Material = Enum.Material.Neon, CanCollide = false })
+		end
+	end
 	for _, machine in gym:GetChildren() do
 		if machine:IsA("Model") and (machine.Name == "Treadmill" or machine.Name == "Bench") then
 			local pad = machine:FindFirstChild(Names.World.Pad)
@@ -241,28 +287,13 @@ for _, gym in gyms:GetChildren() do
 						child:Destroy()
 					end
 				end
-				local sourceName = machine.Name == "Treadmill" and PropsConfig.TreadmillSource or PropsConfig.BenchSource
-				local source = imported:FindFirstChild(sourceName, true)
-				if machine.Name == "Treadmill" then
-					source = imported.Treadmills:FindFirstChild(PropsConfig.TreadmillVariant, true) or source
-				end
-				local visual = prepare(source, true)
-				visual.Name = "Visual"
+				local visual = make("Model", { Name = "Visual", Parent = machine })
 				local floor = pad.CFrame * CFrame.new(0, -pad.Size.Y / 2, 0)
-				fit(visual, "Width", machine.Name == "Treadmill" and PropsConfig.TreadmillLength or PropsConfig.BenchLength, floor * CFrame.Angles(0, math.rad(machine.Name == "Treadmill" and PropsConfig.TreadmillYaw or PropsConfig.BenchYaw), 0))
 				if machine.Name == "Treadmill" then
-					for _, part in visual:GetDescendants() do
-						if part:IsA("BasePart") and part.Material ~= Enum.Material.Neon then
-							local h, s = part.Color:ToHSV()
-							if s > 0.35 then
-								local _, _, v = part.Color:ToHSV()
-								local th, ts = tierColor:ToHSV()
-								part.Color = Color3.fromHSV(th, math.max(ts, 0.2), v)
-							end
-						end
-					end
+					buildTreadmill(visual, floor, tierColor)
+				else
+					buildBench(visual, floor, tierColor)
 				end
-				visual.Parent = machine
 			end
 		end
 	end

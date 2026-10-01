@@ -1,11 +1,12 @@
 return {
 	Steps = {
-		{ Key = "Quarry", Text = "Walk to the SHELL QUARRY", Target = "World", World = "Quarry" },
-		{ Key = "Pickup", Text = "Hold E to grab shell pieces", MobileText = "Hold PICK UP to grab shell pieces", Target = "Gui", Gui = "Interact", World = "Quarry" },
-		{ Key = "Place", Text = "Carry them to the glowing ring on the egg", Target = "World", World = "Band" },
-		{ Key = "Upgrades", Text = "Spend your coins at the UPGRADES NPC", Target = "World", World = "UpgradesNPC" },
+		{ Key = "Quarry", Text = "Follow the green arrows to the SHELL QUARRY", Target = "World", World = "Quarry" },
+		{ Key = "Pickup", Text = "Hold E next to a shell to pick it up", MobileText = "Hold the PICK UP button to grab a shell", Target = "Gui", Gui = "Action" },
+		{ Key = "Carry", Text = "Carry it to the green PLACE zone on the egg", Target = "World", World = "PlaceZone" },
+		{ Key = "Place", Text = "Hold E in the green zone to place your shells", MobileText = "Hold PLACE in the green zone", Target = "Gui", Gui = "Action", World = "PlaceZone" },
+		{ Key = "Upgrades", Text = "Spend coins at the UPGRADES NPC", Target = "World", World = "UpgradesNPC" },
 		{ Key = "Gym", Text = "Step on a treadmill to train your Speed", Target = "World", World = "Gym" },
-		{ Key = "Shop", Text = "Check the SHOP for boosts and passes", Target = "Gui", Gui = "Shop", AutoAdvance = 6 },
+		{ Key = "Shop", Text = "Boosts and passes are in the SHOP", Target = "Gui", Gui = "Shop", AutoAdvance = 6 },
 	},
 	BeamTexture = "rbxassetid://116501023309975",
 	BeamColor = Color3.fromRGB(90, 255, 120),
@@ -17,4 +18,5 @@ return {
 	FingerBob = 0.015,
 	FingerSpeed = 5,
 	MarkerHeight = 12,
+	GuideNewPlayerPieces = 50,
 }

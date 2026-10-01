@@ -109,29 +109,32 @@ end
 
 local function button(props)
 	local color = props.Color or C.Good
+	local decor = props.Bare and {} or {
+		corner(props.Radius or 0.25),
+		stroke(props.Stroke or 3.5),
+		gradient(color),
+		studs(props.Radius or 0.25),
+	}
 	local instance = make("TextButton", {
 		Name = props.Name,
 		Size = props.Size,
 		Position = props.Position or UDim2.new(),
 		AnchorPoint = props.AnchorPoint or Vector2.new(),
 		BackgroundColor3 = Color3.new(1, 1, 1),
+		BackgroundTransparency = props.Bare and 1 or 0,
 		AutoButtonColor = false,
 		Text = "",
 		LayoutOrder = props.LayoutOrder or 0,
 		Parent = props.Parent,
-	}, {
-		corner(props.Radius or 0.25),
-		stroke(props.Stroke or 3.5),
-		gradient(color),
-		studs(props.Radius or 0.25),
-	})
+	}, decor)
 	instance:SetAttribute("Feel", true)
+	local iconSize = props.Bare and 0.8 or (props.Text and 0.62 or 0.8)
 	if props.Icon then
 		iconElement({
 			Name = "Icon",
 			Text = props.Icon,
-			Size = UDim2.fromScale(props.Text and 0.62 or 0.8, props.Text and 0.62 or 0.8),
-			Position = UDim2.fromScale(0.5, props.Text and 0.36 or 0.5),
+			Size = UDim2.fromScale(iconSize, iconSize),
+			Position = UDim2.fromScale(0.5, props.Text and (props.Bare and 0.4 or 0.36) or 0.5),
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Parent = instance,
 		})
@@ -140,9 +143,10 @@ local function button(props)
 		label({
 			Name = "Label",
 			Text = props.Text,
-			Size = props.Icon and UDim2.fromScale(1.1, 0.34) or UDim2.fromScale(0.86, 0.7),
-			Position = props.Icon and UDim2.fromScale(0.5, 0.86) or UDim2.fromScale(0.5, 0.5),
+			Size = props.Icon and UDim2.fromScale(props.Bare and 1.3 or 1.1, props.Bare and 0.28 or 0.34) or UDim2.fromScale(0.86, 0.7),
+			Position = props.Icon and UDim2.fromScale(0.5, props.Bare and 0.9 or 0.86) or UDim2.fromScale(0.5, 0.5),
 			AnchorPoint = Vector2.new(0.5, 0.5),
+			StrokeThickness = props.Bare and 3 or nil,
 			Parent = instance,
 		})
 	end
@@ -238,7 +242,7 @@ local function priceBadge(parent, text)
 	return badge
 end
 for index, def in { { "Shop", UIConfig.Icons.Shop, "SHOP", Color3.fromRGB(255, 90, 140) }, { "SpeedBoost", UIConfig.Icons.Speed, "1.5x Speed", Color3.fromRGB(80, 160, 255) }, { "StrengthBoost", UIConfig.Icons.Strength, "2x Strength", Color3.fromRGB(255, 160, 40) } } do
-	local b = button({ Name = def[1], Icon = def[2], Text = def[3], Color = def[4], Size = UDim2.fromScale(1, 0.3), LayoutOrder = index, Parent = right })
+	local b = button({ Name = def[1], Icon = def[2], Text = def[3], Color = def[4], Size = UDim2.fromScale(1, 0.3), LayoutOrder = index, Bare = true, Parent = right })
 	aspect(1).Parent = b
 	if index > 1 then
 		priceBadge(b, "R$0")
@@ -315,14 +319,18 @@ label({ Name = "Text", Text = "Friend Boost: +0%", Size = UDim2.fromScale(0.8, 0
 
 local keys = make("Frame", {
 	Name = "KeyHints",
-	Size = UDim2.fromScale(0.075, 0.06),
+	Size = UDim2.fromScale(0.09, 0.08),
 	Position = UDim2.fromScale(0.992, 0.985),
 	AnchorPoint = Vector2.new(1, 1),
 	BackgroundTransparency = 1,
 	Parent = hud,
-}, { aspect(2.4) })
-label({ Name = "Pickup", Text = "[E] Pick Up", Size = UDim2.fromScale(1, 0.48), TextXAlignment = Enum.TextXAlignment.Right, Parent = keys })
-label({ Name = "Drop", Text = "[Q] Drop", Size = UDim2.fromScale(1, 0.48), Position = UDim2.fromScale(0, 0.52), TextXAlignment = Enum.TextXAlignment.Right, Parent = keys })
+}, { aspect(2.2), make("UIListLayout", { Padding = UDim.new(0.08, 0), SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Right }) })
+for index, def in { { "Pickup", "E", "Pick Up" }, { "Drop", "Q", "Drop" } } do
+	local row = make("Frame", { Name = def[1], Size = UDim2.fromScale(1, 0.46), BackgroundTransparency = 1, LayoutOrder = index, Parent = keys })
+	local cap = make("Frame", { Name = "Key", Size = UDim2.fromScale(0.26, 1), BackgroundColor3 = Color3.new(1, 1, 1), Parent = row }, { corner(0.25), stroke(2.5), aspect(1) })
+	make("TextLabel", { Name = "Letter", Size = UDim2.fromScale(0.8, 0.8), Position = UDim2.fromScale(0.1, 0.1), BackgroundTransparency = 1, Font = FONT, TextScaled = true, Text = def[2], TextColor3 = Color3.fromRGB(25, 25, 30), Parent = cap })
+	label({ Name = "Label", Text = def[3], Size = UDim2.fromScale(0.7, 0.9), Position = UDim2.fromScale(0.3, 0.05), TextXAlignment = Enum.TextXAlignment.Left, Parent = row })
+end
 
 local interact = button({
 	Name = "Interact",
@@ -568,5 +576,21 @@ end
 for _, child in templates:GetChildren() do
 	child.Visible = false
 end
+
+local existingCinematic = StarterGui:FindFirstChild("Cinematic")
+if existingCinematic then
+	existingCinematic:Destroy()
+end
+local cinematic = make("ScreenGui", {
+	Name = "Cinematic",
+	ResetOnSpawn = false,
+	IgnoreGuiInset = true,
+	ScreenInsets = Enum.ScreenInsets.None,
+	DisplayOrder = 20,
+	ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+	Parent = StarterGui,
+})
+gui.Cutscene.Parent = cinematic
+gui.Flash.Parent = cinematic
 
 print("UI built")
