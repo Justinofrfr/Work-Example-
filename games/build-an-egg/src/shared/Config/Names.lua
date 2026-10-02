@@ -13,6 +13,8 @@ return {
 		ClaimGift = "ClaimGift",
 		RedeemCode = "RedeemCode",
 		ClaimHatch = "ClaimHatch",
+		Incubate = "Incubate",
+		PetAction = "PetAction",
 	},
 	RemoteKinds = {
 		StateSync = "RemoteEvent",
@@ -27,6 +29,8 @@ return {
 		ClaimGift = "RemoteFunction",
 		RedeemCode = "RemoteFunction",
 		ClaimHatch = "RemoteFunction",
+		Incubate = "RemoteFunction",
+		PetAction = "RemoteFunction",
 	},
 	World = {
 		Root = "Game",
@@ -83,6 +87,7 @@ return {
 		PurchaseBlur = "PurchaseBlur",
 	},
 	Attributes = {
+		Pets = "Pets",
 		Stat = "Stat",
 		Tier = "Tier",
 		Ring = "Ring",

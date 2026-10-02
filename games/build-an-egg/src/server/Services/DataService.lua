@@ -30,6 +30,10 @@ local function template()
 		GiftClaimed = false,
 		TutorialStep = 0,
 		Purchases = {},
+		Fragments = {},
+		Pets = {},
+		Equipped = {},
+		PetSerial = 0,
 	}
 end
 

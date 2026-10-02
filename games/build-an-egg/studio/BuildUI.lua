@@ -211,7 +211,7 @@ local topLeft = make("Frame", {
 	make("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0.04, 0), SortOrder = Enum.SortOrder.LayoutOrder }),
 	aspect(3.4),
 })
-for index, def in { { "Codes", UIConfig.Icons.Codes, Color3.fromRGB(80, 170, 255) }, { "Settings", UIConfig.Icons.Settings, Color3.fromRGB(150, 150, 160) } } do
+for index, def in { { "Codes", UIConfig.Icons.Codes, Color3.fromRGB(80, 170, 255) }, { "Settings", UIConfig.Icons.Settings, Color3.fromRGB(150, 150, 160) }, { "Pets", UIConfig.Icons.Pets, Color3.fromRGB(255, 150, 60) } } do
 	local b = button({ Name = def[1], Icon = def[2], Color = def[3], Size = UDim2.fromScale(0.3, 1), LayoutOrder = index, Parent = topLeft })
 	aspect(1).Parent = b
 end
@@ -494,6 +494,90 @@ label({ Name = "Lock", Text = "🔒", Size = UDim2.fromScale(0.25, 0.4), Positio
 label({ Name = "Desc", Text = "Hatch 1 egg or unlock now!", Size = UDim2.fromScale(1, 0.2), Position = UDim2.fromScale(0, 0.42), Parent = lockedBody })
 button({ Name = "Buy", Text = "UNLOCK R$29", Color = C.Robux, Size = UDim2.fromScale(0.6, 0.28), Position = UDim2.fromScale(0.5, 0.7), AnchorPoint = Vector2.new(0.5, 0), Parent = lockedBody })
 
+local function viewport(props)
+	local frame = make("ViewportFrame", {
+		Name = props.Name or "View",
+		Size = props.Size,
+		Position = props.Position or UDim2.new(),
+		AnchorPoint = props.AnchorPoint or Vector2.new(),
+		BackgroundTransparency = 1,
+		Ambient = Color3.fromRGB(200, 200, 200),
+		LightColor = Color3.new(1, 1, 1),
+		LightDirection = Vector3.new(-1, -1, -1),
+		ZIndex = props.ZIndex or 1,
+		Parent = props.Parent,
+	})
+	make("Camera", { Name = "Camera", FieldOfView = 40, Parent = frame })
+	return frame
+end
+
+local _, petsBody = panel("Pets", "PETS", UDim2.fromScale(0.56, 0.66), Color3.fromRGB(255, 150, 60), 1.45)
+label({ Name = "Info", Text = "Equipped 0/3", Size = UDim2.fromScale(0.34, 0.08), Position = UDim2.fromScale(0, 0.01), TextXAlignment = Enum.TextXAlignment.Left, Parent = petsBody })
+button({ Name = "EquipBest", Text = "EQUIP BEST", Color = C.Good, Size = UDim2.fromScale(0.27, 0.1), Position = UDim2.fromScale(0.36, 0), Parent = petsBody })
+button({ Name = "Incubator", Text = "INCUBATOR", Color = Color3.fromRGB(190, 110, 255), Size = UDim2.fromScale(0.27, 0.1), Position = UDim2.fromScale(0.65, 0), Parent = petsBody })
+label({ Name = "Boosts", Text = "", Size = UDim2.fromScale(1, 0.06), Position = UDim2.fromScale(0, 0.115), TextColor3 = Color3.fromRGB(255, 236, 190), StrokeThickness = 1.5, Parent = petsBody })
+make("ScrollingFrame", {
+	Name = "List",
+	Size = UDim2.fromScale(1, 0.8),
+	Position = UDim2.fromScale(0, 0.19),
+	BackgroundTransparency = 1,
+	BorderSizePixel = 0,
+	ScrollBarThickness = 8,
+	AutomaticCanvasSize = Enum.AutomaticSize.Y,
+	CanvasSize = UDim2.new(),
+	Parent = petsBody,
+}, {
+	make("UIGridLayout", { CellSize = UDim2.fromScale(0.23, 0.3), CellPadding = UDim2.fromScale(0.02, 0.02), SortOrder = Enum.SortOrder.LayoutOrder }, { make("UIAspectRatioConstraint", { AspectRatio = 0.78, DominantAxis = Enum.DominantAxis.Width }) }),
+	make("UIPadding", { PaddingTop = UDim.new(0.01, 0), PaddingLeft = UDim.new(0.01, 0), PaddingRight = UDim.new(0.03, 0) }),
+})
+label({ Name = "Empty", Text = "No pets yet! Hatch eggs for fragments, then use the Incubator.", Size = UDim2.fromScale(0.9, 0.12), Position = UDim2.fromScale(0.05, 0.45), Parent = petsBody })
+
+local _, incubatorBody = panel("Incubator", "INCUBATOR", UDim2.fromScale(0.6, 0.66), Color3.fromRGB(190, 110, 255), 1.5)
+button({ Name = "FragmentsTab", Text = "FRAGMENTS", Color = Color3.fromRGB(255, 190, 60), Size = UDim2.fromScale(0.22, 0.1), Position = UDim2.fromScale(0, 0), Parent = incubatorBody })
+button({ Name = "PetsTab", Text = "TRADE UP PETS", Color = Color3.fromRGB(150, 150, 160), Size = UDim2.fromScale(0.25, 0.1), Position = UDim2.fromScale(0.235, 0), Parent = incubatorBody })
+make("ScrollingFrame", {
+	Name = "Choices",
+	Size = UDim2.fromScale(0.48, 0.86),
+	Position = UDim2.fromScale(0, 0.13),
+	BackgroundColor3 = Color3.fromRGB(240, 226, 200),
+	BackgroundTransparency = 0.3,
+	BorderSizePixel = 0,
+	ScrollBarThickness = 8,
+	AutomaticCanvasSize = Enum.AutomaticSize.Y,
+	CanvasSize = UDim2.new(),
+	Parent = incubatorBody,
+}, {
+	corner(0.04),
+	make("UIListLayout", { Padding = UDim.new(0.012, 0), SortOrder = Enum.SortOrder.LayoutOrder }),
+	make("UIPadding", { PaddingTop = UDim.new(0.015, 0), PaddingLeft = UDim.new(0.02, 0), PaddingRight = UDim.new(0.05, 0), PaddingBottom = UDim.new(0.015, 0) }),
+})
+label({ Name = "Hint", Text = "Pick 5 of the same tier. Each pick adds its collection to the odds!", Size = UDim2.fromScale(0.5, 0.1), Position = UDim2.fromScale(0.5, 0.0), TextColor3 = Color3.fromRGB(255, 236, 190), StrokeThickness = 1.5, Parent = incubatorBody })
+local slots = make("Frame", { Name = "Slots", Size = UDim2.fromScale(0.5, 0.16), Position = UDim2.fromScale(0.5, 0.13), BackgroundTransparency = 1, Parent = incubatorBody }, {
+	make("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0.02, 0), HorizontalAlignment = Enum.HorizontalAlignment.Center, SortOrder = Enum.SortOrder.LayoutOrder }),
+})
+for index = 1, 5 do
+	local slot = button({ Name = "Slot" .. index, Text = "+", Color = Color3.fromRGB(120, 110, 100), Size = UDim2.fromScale(0.18, 1), LayoutOrder = index, Radius = 0.3, Parent = slots })
+	aspect(1).Parent = slot
+end
+label({ Name = "Odds", Text = "Add fragments to see the odds", Size = UDim2.fromScale(0.5, 0.44), Position = UDim2.fromScale(0.5, 0.31), TextYAlignment = Enum.TextYAlignment.Top, RichText = true, StrokeThickness = 1.5, Parent = incubatorBody })
+button({ Name = "Hatch", Text = "HATCH!", Color = Color3.fromRGB(190, 110, 255), Size = UDim2.fromScale(0.3, 0.16), Position = UDim2.fromScale(0.56, 0.8), Parent = incubatorBody })
+button({ Name = "Clear", Text = "CLEAR", Color = C.Bad, Size = UDim2.fromScale(0.13, 0.12), Position = UDim2.fromScale(0.88, 0.82), Parent = incubatorBody })
+
+local reveal = make("Frame", { Name = "Reveal", Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 0.35, Visible = false, ZIndex = 60, Parent = gui })
+label({ Name = "Egg", Text = "🥚", Size = UDim2.fromScale(0.3, 0.3), Position = UDim2.fromScale(0.5, 0.45), AnchorPoint = Vector2.new(0.5, 0.5), ZIndex = 61, Parent = reveal })
+viewport({ Name = "View", Size = UDim2.fromScale(0.4, 0.5), Position = UDim2.fromScale(0.5, 0.42), AnchorPoint = Vector2.new(0.5, 0.5), ZIndex = 61, Parent = reveal })
+aspect(1).Parent = reveal.View
+label({ Name = "Rarity", Text = "RARE", Size = UDim2.fromScale(0.5, 0.07), Position = UDim2.fromScale(0.5, 0.1), AnchorPoint = Vector2.new(0.5, 0), ZIndex = 62, Parent = reveal })
+label({ Name = "PetName", Text = "Silver Goose", Size = UDim2.fromScale(0.5, 0.06), Position = UDim2.fromScale(0.5, 0.7), AnchorPoint = Vector2.new(0.5, 0), ZIndex = 62, Parent = reveal })
+label({ Name = "Boost", Text = "+25% Speed", Size = UDim2.fromScale(0.5, 0.045), Position = UDim2.fromScale(0.5, 0.77), AnchorPoint = Vector2.new(0.5, 0), TextColor3 = Color3.fromRGB(140, 255, 160), ZIndex = 62, Parent = reveal })
+local collect = button({ Name = "Collect", Text = "AWESOME!", Color = C.Good, Size = UDim2.fromScale(0.2, 0.08), Position = UDim2.fromScale(0.5, 0.85), AnchorPoint = Vector2.new(0.5, 0), Parent = reveal })
+collect.ZIndex = 62
+for _, descendant in collect:GetDescendants() do
+	if descendant:IsA("GuiObject") then
+		descendant.ZIndex = 63
+	end
+end
+
 local templates = make("Folder", { Name = "Templates", Parent = gui })
 
 local item = panelFrame({ Name = "ShopItem", Size = UDim2.fromScale(0.31, 0.4), BackgroundColor3 = Color3.fromRGB(255, 252, 240), Parent = templates })
@@ -516,6 +600,23 @@ label({ Name = "Title", Text = "Bulk Pickup", Size = UDim2.fromScale(0.5, 0.42),
 label({ Name = "Effect", Text = "1 → 2 per grab", Size = UDim2.fromScale(0.5, 0.3), Position = UDim2.fromScale(0.18, 0.55), TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.fromRGB(255, 236, 190), StrokeThickness = 1.5, Parent = card })
 label({ Name = "Level", Text = "Lv 0/5", Size = UDim2.fromScale(0.14, 0.4), Position = UDim2.fromScale(0.6, 0.3), TextColor3 = Color3.fromRGB(200, 240, 255), Parent = card })
 button({ Name = "Buy", Text = "🪙 50", Color = C.Coins, Size = UDim2.fromScale(0.22, 0.64), Position = UDim2.fromScale(0.97, 0.5), AnchorPoint = Vector2.new(1, 0.5), Parent = card })
+
+local petCard = panelFrame({ Name = "PetCard", Size = UDim2.fromScale(0.23, 0.3), BackgroundColor3 = Color3.fromRGB(255, 252, 240), Parent = templates })
+viewport({ Name = "View", Size = UDim2.fromScale(0.9, 0.5), Position = UDim2.fromScale(0.05, 0.02), Parent = petCard })
+label({ Name = "PetName", Text = "Pet", Size = UDim2.fromScale(0.92, 0.11), Position = UDim2.fromScale(0.04, 0.5), Parent = petCard })
+label({ Name = "Rarity", Text = "Common", Size = UDim2.fromScale(0.92, 0.09), Position = UDim2.fromScale(0.04, 0.6), StrokeThickness = 1.5, Parent = petCard })
+label({ Name = "Boost", Text = "+10% Strength", Size = UDim2.fromScale(0.92, 0.08), Position = UDim2.fromScale(0.04, 0.69), TextColor3 = Color3.fromRGB(255, 236, 190), StrokeThickness = 1.2, Parent = petCard })
+button({ Name = "Equip", Text = "EQUIP", Color = C.Good, Size = UDim2.fromScale(0.62, 0.17), Position = UDim2.fromScale(0.05, 0.8), Parent = petCard })
+button({ Name = "Delete", Text = "X", Color = C.Bad, Size = UDim2.fromScale(0.24, 0.17), Position = UDim2.fromScale(0.71, 0.8), Parent = petCard })
+make("Frame", { Name = "EquippedMark", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Visible = false, Parent = petCard }, { corner(0.06), make("UIStroke", { Thickness = 4, Color = Color3.fromRGB(90, 255, 120) }) })
+
+local choice = panelFrame({ Name = "Choice", Size = UDim2.fromScale(1, 0.12), BackgroundColor3 = Color3.fromRGB(255, 252, 240), Parent = templates })
+aspect(6.5).Parent = choice
+make("Frame", { Name = "Swatch", Size = UDim2.fromScale(0.1, 0.7), Position = UDim2.fromScale(0.03, 0.15), BackgroundColor3 = Color3.new(1, 1, 1), Parent = choice }, { corner(0.4), stroke(2) })
+label({ Name = "Title", Text = "Silver · Shiny", Size = UDim2.fromScale(0.5, 0.5), Position = UDim2.fromScale(0.16, 0.06), TextXAlignment = Enum.TextXAlignment.Left, Parent = choice })
+label({ Name = "Sub", Text = "+25% Speed", Size = UDim2.fromScale(0.5, 0.36), Position = UDim2.fromScale(0.16, 0.56), TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.fromRGB(255, 236, 190), StrokeThickness = 1.2, Parent = choice })
+label({ Name = "Count", Text = "x3", Size = UDim2.fromScale(0.14, 0.6), Position = UDim2.fromScale(0.66, 0.2), Parent = choice })
+button({ Name = "Add", Text = "+", Color = C.Good, Size = UDim2.fromScale(0.15, 0.8), Position = UDim2.fromScale(0.97, 0.5), AnchorPoint = Vector2.new(1, 0.5), Parent = choice })
 
 local toggle = panelFrame({ Name = "Toggle", Size = UDim2.fromScale(1, 0.165), BackgroundColor3 = Color3.fromRGB(255, 252, 240), Parent = templates })
 label({ Name = "Title", Text = "Music", Size = UDim2.fromScale(0.6, 0.7), Position = UDim2.fromScale(0.04, 0.15), TextXAlignment = Enum.TextXAlignment.Left, Parent = toggle })

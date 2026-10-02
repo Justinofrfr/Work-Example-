@@ -15,6 +15,7 @@ local DataService
 local MonetizationService
 local BuildService
 local MovementGuardService
+local PetService
 local remotes
 
 function StateService:Init(modules, context)
@@ -22,6 +23,7 @@ function StateService:Init(modules, context)
 	MonetizationService = modules.MonetizationService
 	BuildService = modules.BuildService
 	MovementGuardService = modules.MovementGuardService
+	PetService = modules.PetService
 	remotes = context.Remotes
 end
 
@@ -90,7 +92,7 @@ function StateService:AwardStat(player, stat, amount)
 		return
 	end
 	local runtime = self.Runtime[player]
-	local gain = amount * self:BoostMultiplier(player, stat) * (1 + (runtime and runtime.FriendBoost or 0))
+	local gain = amount * self:BoostMultiplier(player, stat) * (1 + (runtime and runtime.FriendBoost or 0)) * (PetService and PetService:Multiplier(player, stat) or 1)
 	data[stat] += gain
 	DataService:MarkDirty(player)
 	if stat == "Speed" then
@@ -243,6 +245,11 @@ function StateService:Sync(player)
 		Passes = MonetizationService:OwnedPasses(player),
 		FriendBoost = runtime.FriendBoost or 0,
 		TutorialStep = data.TutorialStep or 0,
+		Fragments = data.Fragments,
+		Pets = data.Pets,
+		Equipped = data.Equipped,
+		PetSpeed = PetService and PetService:Multiplier(player, "Speed") or 1,
+		PetStrength = PetService and PetService:Multiplier(player, "Strength") or 1,
 	})
 end
 

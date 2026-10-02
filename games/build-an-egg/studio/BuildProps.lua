@@ -9,6 +9,8 @@ local MapConfig = require(Shared.Config.Map)
 local EggConfig = require(Shared.Config.Egg)
 local ProjectsConfig = require(Shared.Config.Projects)
 local PropsConfig = require(Shared.Config.Props)
+local PetsConfig = require(Shared.Config.Pets)
+local PetRules = require(Shared.Util.PetRules)
 
 local imported = ServerStorage:WaitForChild("Imported")
 local world = Workspace:WaitForChild(Names.World.Root)
@@ -109,6 +111,39 @@ local function sparkles(parent, color, rate)
 	})
 end
 
+local function keepColor(name)
+	for _, pattern in PetsConfig.KeepColorPattern do
+		if name:find(pattern) then
+			return true
+		end
+	end
+	return false
+end
+
+local function tint(model, collectionKey)
+	local def = PetsConfig.Collections[collectionKey]
+	if not def then
+		return
+	end
+	local index = 0
+	for _, part in model:GetDescendants() do
+		if part:IsA("BasePart") and part.Name ~= "Root" and not keepColor(part.Name) then
+			index += 1
+			if def.Rainbow then
+				part.Color = Color3.fromHSV((index * 0.13) % 1, 0.65, 1)
+			elseif def.Tint then
+				part.Color = part.Color:Lerp(def.Tint.Color, def.Tint.Amount)
+				part.Material = def.Tint.Material
+			end
+		elseif part:IsA("SpecialMesh") then
+			local color = def.Rainbow and Color3.fromHSV((index * 0.13) % 1, 0.5, 1) or (def.Tint and def.Tint.Color)
+			if color then
+				part.VertexColor = Vector3.new(color.R, color.G, color.B) * 1.2
+			end
+		end
+	end
+end
+
 local function primaryPart(model)
 	local _, size = model:GetBoundingBox()
 	local root = make("Part", {
@@ -136,6 +171,9 @@ for key, def in PropsConfig.Hatchlings do
 	local model = prepare(imported:WaitForChild(def.Source))
 	model.Name = key
 	recolor(model, def.Recolor or {})
+	if def.Tint then
+		tint(model, def.Tint)
+	end
 	for _, part in model:GetDescendants() do
 		if part:IsA("SpecialMesh") and def.VertexColor then
 			part.VertexColor = def.VertexColor
@@ -149,6 +187,31 @@ for key, def in PropsConfig.Hatchlings do
 	model:SetAttribute("Wings", table.concat(def.Wings or {}, ","))
 	model.Parent = hatchlings
 end
+
+local pets = ReplicatedStorage:FindFirstChild("Pets")
+if pets then
+	pets:Destroy()
+end
+pets = make("Folder", { Name = "Pets", Parent = ReplicatedStorage })
+local petCount = 0
+for collectionKey, collection in PetsConfig.Collections do
+	for rarity, tier in PetsConfig.Rarities do
+		local species = PetsConfig.Species[tier.Species]
+		local model = prepare(imported:WaitForChild(species.Source))
+		model.Name = PetRules.ModelName(collectionKey, rarity)
+		tint(model, collectionKey)
+		fit(model, "Height", species.Height, CFrame.Angles(0, math.rad(species.Yaw or 0), 0))
+		local root = primaryPart(model)
+		if collection.Sparkle and rarity >= 3 then
+			sparkles(root, collection.Sparkle, rarity * 2)
+		end
+		model:SetAttribute("Flying", species.Flying == true)
+		model:SetAttribute("Height", species.Height)
+		model.Parent = pets
+		petCount += 1
+	end
+end
+print("Pets built: " .. petCount)
 
 local site = world:WaitForChild(Names.World.Site)
 local oldNest = site:FindFirstChild("Nest")

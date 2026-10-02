@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Names = require(Shared.Config.Names)
 local UIConfig = require(Shared.Config.UI)
+local PetsConfig = require(Shared.Config.Pets)
 local Format = require(Shared.Util.Format)
 local Formulas = require(Shared.Util.Formulas)
 
@@ -77,6 +78,9 @@ function NotifyController:Handle(kind, a, b)
 		self:Banner(M.ServerPack:format(a, Format.Short(b)), Color3.fromRGB(255, 200, 60))
 		Audio.Play("ServerPack")
 		EffectController:ShellRain()
+	elseif kind == "Fragments" then
+		self:Toast(PetsConfig.Messages.Fragments:format(a), UIConfig.Colors.Good)
+		Audio.Play("Reward")
 	elseif kind == "Purchased" then
 		PurchaseFxController:Celebrate(a)
 	end
