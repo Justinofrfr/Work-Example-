@@ -62,7 +62,9 @@ local ok, err = pcall(function()
 			waited += 0.1
 		end
 		local id, bubble = next(training and training.Bubbles or {})
-		if id then
+		if stat == "Speed" then
+			task.wait(2)
+		elseif id then
 			task.wait(0.2)
 			local before = DataService:Get(player)[stat]
 			local popped = GymService:PopBubble(player, id)

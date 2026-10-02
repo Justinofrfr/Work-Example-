@@ -13,6 +13,9 @@ local player = Players.LocalPlayer
 task.spawn(function()
 	local layer = player:WaitForChild("PlayerGui"):WaitForChild("Bubbles"):WaitForChild("Layer")
 	local controller = require(player:WaitForChild("PlayerScripts"):WaitForChild("Client"):WaitForChild("Controllers"):WaitForChild("BubbleController"))
+	repeat
+		task.wait(0.1)
+	until player.Character and player.Character:GetAttribute("Training") == "Speed"
 	local bubble
 	repeat
 		task.wait(0.1)
