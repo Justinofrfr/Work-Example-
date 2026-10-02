@@ -382,12 +382,10 @@ local stairDirection = EggConfig.ScaffoldDirection.Unit
 local stairRight = Vector3.new(-stairDirection.Z, 0, stairDirection.X)
 local stairWidth = EggConfig.ScaffoldWidth
 local stairThickness = EggConfig.ScaffoldThickness
-local stairHeight = EggShape.ScaffoldHeight()
-local segmentCount = math.ceil(stairHeight / EggConfig.ScaffoldSegmentRise)
-local stairPoints = {}
-for index = 0, segmentCount do
-	local height = center.Y + math.min(index * EggConfig.ScaffoldSegmentRise, stairHeight)
-	stairPoints[index] = EggShape.ScaffoldPoint(height)
+local rings = EggShape.Rings()
+local stairPoints = { [0] = EggShape.ScaffoldPoint(center.Y) }
+for index = 1, #rings do
+	stairPoints[index] = EggShape.ScaffoldPoint(EggShape.BandHeight(index))
 end
 local function slopeOf(index)
 	local low, high = stairPoints[index - 1], stairPoints[index]
@@ -396,7 +394,7 @@ local function slopeOf(index)
 	end
 	return math.atan2(high.Y - low.Y, Vector2.new(high.X - low.X, high.Z - low.Z).Magnitude)
 end
-for index = 1, segmentCount do
+for index = 1, #rings do
 	local low, high = stairPoints[index - 1], stairPoints[index]
 	local slope = slopeOf(index)
 	local before, after = slopeOf(index - 1), slopeOf(index + 1)
@@ -404,25 +402,23 @@ for index = 1, segmentCount do
 	local extendHigh = (after and math.abs(after - slope) > math.rad(0.5)) and EggConfig.ScaffoldJointOverlap or 0
 	local length = (high - low).Magnitude
 	local frame = CFrame.lookAt((low + high) / 2, high, Vector3.yAxis)
-	local surfaceFrame = frame * CFrame.new(0, -stairThickness / 2, (extendLow - extendHigh) / 2)
 	local surface = studded({
 		Name = "Step",
 		Size = Vector3.new(stairWidth + (index % 2) * 0.2, stairThickness, length + extendLow + extendHigh),
-		CFrame = surfaceFrame,
+		CFrame = frame * CFrame.new(0, -stairThickness / 2, (extendLow - extendHigh) / 2),
 		Color = EggConfig.ScaffoldSurfaceColor,
-		Material = Enum.Material.SmoothPlastic,
 		Parent = scaffold,
 	})
 	surface:SetAttribute("Height", (low.Y + high.Y) / 2)
+	surface:SetAttribute(A.Ring, index)
 	for side = -1, 1, 2 do
 		part({
 			Name = "Rail",
 			Size = Vector3.new(EggConfig.ScaffoldWallWidth, EggConfig.ScaffoldWallHeight, length),
 			CFrame = frame * CFrame.new(side * (stairWidth / 2 - EggConfig.ScaffoldWallWidth / 2 - 0.15), EggConfig.ScaffoldWallHeight / 2, 0),
 			Color = EggConfig.ScaffoldWallColor,
-			Material = Enum.Material.SmoothPlastic,
 			Parent = scaffold,
-		})
+		}):SetAttribute(A.Ring, index)
 	end
 	local mid = (low + high) / 2
 	local flat = Vector2.new(mid.X - center.X, mid.Z - center.Z).Magnitude
@@ -430,28 +426,18 @@ for index = 1, segmentCount do
 		local pillarTop = mid.Y - stairThickness / math.cos(slope) - center.Y
 		if pillarTop > 1 then
 			for side = -1, 1, 2 do
-				local base = mid + stairRight * side * (stairWidth / 2 - EggConfig.ScaffoldPillarSize / 2 - 0.3)
+				local base = mid + stairRight * side * (stairWidth / 2 - EggConfig.ScaffoldPillarSize / 2 - 0.6)
 				studded({
 					Name = "Post",
 					Size = Vector3.new(EggConfig.ScaffoldPillarSize, pillarTop, EggConfig.ScaffoldPillarSize),
 					CFrame = CFrame.new(base.X, center.Y + pillarTop / 2, base.Z),
 					Color = EggConfig.ScaffoldPillarColor,
-					Material = Enum.Material.SmoothPlastic,
 					Parent = scaffold,
-				})
+				}):SetAttribute(A.Ring, index)
 			end
 		end
 	end
 end
-local topPoint = stairPoints[segmentCount]
-studded({
-	Name = "TopDeck",
-	Size = Vector3.new(stairWidth + 6, stairThickness, stairWidth + 6),
-	CFrame = CFrame.new(topPoint + Vector3.new(0, -stairThickness / 2 - 0.05, 0)),
-	Color = EggConfig.ScaffoldSurfaceColor,
-	Material = Enum.Material.SmoothPlastic,
-	Parent = scaffold,
-})
 
 local fxAnchor = zone({ Name = "FxAnchor", Size = Vector3.new(1, 1, 1), CFrame = CFrame.new(center + Vector3.new(0, -40, 0)), Parent = site })
 for index = 1, 20 do

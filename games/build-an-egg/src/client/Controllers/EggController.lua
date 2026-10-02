@@ -126,6 +126,7 @@ function EggController:Render(server, previous)
 		self:Restore()
 	elseif previous and server.Ring > previous.Ring then
 		task.defer(self.FlashRing, self, previous.Ring)
+		self:RevealRamp(previous.Ring, server.Ring)
 	end
 	if server.Phase == "Interior" and not self.Hatchling and not self.InCutscene then
 		self:Crack(3)
@@ -140,7 +141,7 @@ function EggController:Render(server, previous)
 			local ghost = not built and segment.Parent:GetAttribute(A.Ring) == ring and server.Phase == "Building"
 			if built then
 				segment.Transparency = 0
-				segment.Color = color
+				segment.Color = color:Lerp(Color3.new(1, 1, 1), (segment.Parent:GetAttribute(A.Ring) % 2) * EggConfig.RingShade)
 				segment.Material = Enum.Material.SmoothPlastic
 				if before >= 0 and index > before and visible - before <= 12 then
 					local size = segment.Size
@@ -180,7 +181,7 @@ function EggController:RenderBand(server)
 	end
 	local count = #anchors
 	for index, anchor in anchors do
-		local offset = ((index - 1) / math.max(count - 1, 1) - 0.5) * 2 * reach
+		local offset = ((index - 1) / math.max(count - 1, 1) - 1) * reach
 		local point = EggShape.ScaffoldPoint(bandY + offset)
 		anchor.CFrame = CFrame.new(point + Vector3.new(0, EggConfig.StandHeight, 0))
 		local prompt = anchor:FindFirstChildOfClass("ProximityPrompt")
@@ -192,6 +193,33 @@ function EggController:RenderBand(server)
 		local point = EggShape.ScaffoldPoint(bandY)
 		placeZone.CFrame = CFrame.new(point + Vector3.new(0, 0.9, 0)) * CFrame.Angles(0, 0, math.rad(90))
 		self:RenderPlaceZone()
+	end
+end
+
+function EggController:RevealRamp(fromRing, toRing)
+	local scaffold = Workspace:FindFirstChild(W.Root)
+	scaffold = scaffold and scaffold:FindFirstChild(W.Site)
+	scaffold = scaffold and scaffold:FindFirstChild(W.Scaffold)
+	if not scaffold then
+		return
+	end
+	local revealTime = EggConfig.ScaffoldRevealTime
+	for _, piece in scaffold:GetChildren() do
+		local index = piece:GetAttribute(A.Ring)
+		if index and index > fromRing and index <= toRing and piece:IsA("BasePart") then
+			local target = piece.CFrame
+			piece.CFrame = target - Vector3.new(0, 4, 0)
+			piece.LocalTransparencyModifier = 1
+			task.delay((index - fromRing - 1) * revealTime * 0.5, function()
+				piece.LocalTransparencyModifier = 0
+				Ui.Tween(piece, revealTime, { CFrame = target }, Enum.EasingStyle.Back)
+				if piece.Name == "Step" then
+					EffectController:Burst("Dust", target.Position, 14)
+					EffectController:Burst("Sparkle", target.Position + Vector3.new(0, 2, 0), 8)
+					Audio.PlayAt("Place", target.Position, 0.8)
+				end
+			end)
+		end
 	end
 end
 

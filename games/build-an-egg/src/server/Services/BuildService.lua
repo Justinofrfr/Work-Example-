@@ -58,6 +58,7 @@ end
 
 function BuildService:Start()
 	world = Workspace:WaitForChild(Names.World.Root)
+	self:UpdateRamp()
 	remotes[Names.Remotes.ClaimHatch].OnServerInvoke = function(player)
 		if not claimLimiter:Check(player) then
 			return false, "Busy"
@@ -115,7 +116,30 @@ function BuildService:Snapshot()
 	}
 end
 
+function BuildService:UpdateRamp()
+	local ring = self.Phase == "Building" and self:ActiveRing() or GameConfig.RingCount
+	if ring == self.RampRing then
+		return
+	end
+	local site = world and world:FindFirstChild(Names.World.Site)
+	local scaffold = site and site:FindFirstChild(Names.World.Scaffold)
+	if not scaffold then
+		return
+	end
+	self.RampRing = ring
+	for _, piece in scaffold:GetChildren() do
+		local index = piece:GetAttribute(Names.Attributes.Ring)
+		if index and piece:IsA("BasePart") then
+			local shown = index <= ring
+			piece.Transparency = shown and 0 or 1
+			piece.CanCollide = shown
+			piece.CanQuery = shown
+		end
+	end
+end
+
 function BuildService:BroadcastServer()
+	self:UpdateRamp()
 	local payload = self:Snapshot()
 	if next(self.Placements) then
 		payload.Placements = self.Placements

@@ -34,7 +34,7 @@ return {
 	InteriorMinContribution = 1,
 	Milestones = { 0.25, 0.5, 0.75, 0.9 },
 
-	RingCount = 20,
+	RingCount = 32,
 	CarryVisualMax = 10,
 	CarryBlockBaseSize = 2.2,
 	CarryBlockGrowth = 0.55,
