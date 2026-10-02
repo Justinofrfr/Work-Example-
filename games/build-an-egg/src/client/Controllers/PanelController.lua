@@ -69,14 +69,17 @@ function PanelController:Open(name)
 		self.Current.Visible = false
 	end
 	self.Current = panel
-	local home = homes[panel] or panel.Position
-	panel.Position = home + UDim2.fromOffset(0, UIConfig.PanelSlide)
+	panel.Position = homes[panel] or panel.Position
 	panel.Visible = true
 	local scale = Ui.Scale(panel)
-	scale.Scale = 0.92
-	Ui.Tween(panel, UIConfig.PanelOpenTime, { Position = home }, Enum.EasingStyle.Quint)
-	Ui.Tween(scale, UIConfig.PanelOpenTime, { Scale = 1 }, Enum.EasingStyle.Quint)
+	scale.Scale = UIConfig.Fx.OpenScaleFrom
+	Ui.Tween(scale, UIConfig.Fx.OpenTime, { Scale = 1 }, Enum.EasingStyle.Back)
 	Audio.Play("Open")
+	task.delay(UIConfig.Fx.HeaderShineDelay, function()
+		if self.Current == panel then
+			Ui.Shine(panel:FindFirstChild("Header"))
+		end
+	end)
 	self.Opened:Fire(name)
 end
 
@@ -88,7 +91,7 @@ function PanelController:Close()
 	self.Current = nil
 	Audio.Play("Close")
 	local scale = Ui.Scale(panel)
-	Ui.Tween(scale, UIConfig.PanelCloseTime, { Scale = 0.9 }).Completed:Once(function()
+	Ui.Tween(scale, UIConfig.Fx.CloseTime, { Scale = UIConfig.Fx.CloseScale }, Enum.EasingStyle.Quad, Enum.EasingDirection.In).Completed:Once(function()
 		if self.Current ~= panel then
 			panel.Visible = false
 		end

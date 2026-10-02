@@ -60,7 +60,7 @@ function MonetizationService:Start()
 					StateService:Dirty(player)
 					self.PassChanged:Fire(player, key)
 					self:ShowPurchase(player, pass.Name or key)
-					remotes[Names.Remotes.Notify]:FireClient(player, "PassOwned", key)
+					remotes[Names.Remotes.Notify]:FireClient(player, "Purchased", pass.Name or key)
 				end
 			end
 		end
@@ -159,6 +159,7 @@ function MonetizationService:ProcessReceipt(receipt)
 		remotes[Names.Remotes.Notify]:FireAllClients("ServerPack", player.DisplayName, product.Pieces)
 	end
 	self:ShowPurchase(player, product.Name or entry.Key)
+	remotes[Names.Remotes.Notify]:FireClient(player, "Purchased", product.Name or entry.Key)
 	StateService:Dirty(player)
 	return Enum.ProductPurchaseDecision.PurchaseGranted
 end

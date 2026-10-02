@@ -76,6 +76,11 @@ return {
 	},
 	Gui = {
 		Main = "Main",
+		Notify = "Notify",
+		Alert = "Alert",
+		Fx = "Fx",
+		Overlay = "Overlay",
+		PurchaseBlur = "PurchaseBlur",
 	},
 	Attributes = {
 		Stat = "Stat",

@@ -1,5 +1,4 @@
 local ProximityPromptService = game:GetService("ProximityPromptService")
-local MarketplaceService = game:GetService("MarketplaceService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -9,6 +8,7 @@ local UIConfig = require(Shared.Config.UI)
 local Names = require(Shared.Config.Names)
 
 local Ui = require(script.Parent.Parent.Util.Ui)
+local Purchase = require(script.Parent.Parent.Util.Purchase)
 
 local ShopController = {
 	Cards = {},
@@ -17,7 +17,6 @@ local ShopController = {
 local ClientState
 local PanelController
 local NotifyController
-local player
 local list
 local templates
 
@@ -25,7 +24,6 @@ function ShopController:Init(modules, context)
 	ClientState = modules.ClientState
 	PanelController = modules.PanelController
 	NotifyController = modules.NotifyController
-	player = context.Player
 	list = PanelController:Get("Shop").Body.List
 	templates = context.Gui:WaitForChild("Templates")
 end
@@ -106,9 +104,9 @@ function ShopController:Buy(item)
 		return
 	end
 	if item.Kind == "Pass" then
-		MarketplaceService:PromptGamePassPurchase(player, id)
+		Purchase.Pass(id)
 	else
-		MarketplaceService:PromptProductPurchase(player, id)
+		Purchase.Product(id)
 	end
 end
 

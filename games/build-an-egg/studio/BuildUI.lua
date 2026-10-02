@@ -96,6 +96,31 @@ local function iconElement(props)
 	return label(props)
 end
 
+local function shine(radius)
+	return make("Frame", {
+		Name = "ShineFX",
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.5),
+		Size = UDim2.fromScale(0.94, 0.86),
+		BackgroundColor3 = Color3.new(1, 1, 1),
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+	}, {
+		corner(radius or 0.25),
+		make("UIGradient", {
+			Rotation = 65,
+			Offset = Vector2.new(-1, 0),
+			Transparency = NumberSequence.new({
+				NumberSequenceKeypoint.new(0, 1),
+				NumberSequenceKeypoint.new(0.38, 1),
+				NumberSequenceKeypoint.new(0.5, 0.45),
+				NumberSequenceKeypoint.new(0.62, 1),
+				NumberSequenceKeypoint.new(1, 1),
+			}),
+		}),
+	})
+end
+
 local function panelFrame(props)
 	local base = {
 		BackgroundColor3 = Color3.fromRGB(255, 244, 222),
@@ -149,6 +174,9 @@ local function button(props)
 			StrokeThickness = props.Bare and 3 or nil,
 			Parent = instance,
 		})
+	end
+	if not props.Bare then
+		shine(props.Radius).Parent = instance
 	end
 	return instance
 end
@@ -396,6 +424,7 @@ local function panel(name, titleText, size, color, ratio)
 		Parent = frame,
 	}, { corner(0.3), stroke(4), gradient(color), studs(0.3) })
 	label({ Name = "Title", Text = titleText, Size = UDim2.fromScale(0.7, 0.8), Position = UDim2.fromScale(0.15, 0.1), Parent = header })
+	shine(0.3).Parent = header
 	local close = button({
 		Name = "Close",
 		Text = "X",
@@ -492,21 +521,6 @@ local toggle = panelFrame({ Name = "Toggle", Size = UDim2.fromScale(1, 0.165), B
 label({ Name = "Title", Text = "Music", Size = UDim2.fromScale(0.6, 0.7), Position = UDim2.fromScale(0.04, 0.15), TextXAlignment = Enum.TextXAlignment.Left, Parent = toggle })
 button({ Name = "Button", Text = "ON", Color = C.Good, Size = UDim2.fromScale(0.28, 0.75), Position = UDim2.fromScale(0.97, 0.5), AnchorPoint = Vector2.new(1, 0.5), Parent = toggle })
 
-local toast = make("Frame", { Name = "Toast", Size = UDim2.fromScale(1, 0.22), BackgroundColor3 = Color3.fromRGB(30, 22, 18), BackgroundTransparency = 0.25 }, { corner(0.5), stroke(2.5) })
-label({ Name = "Text", Text = "Message", Size = UDim2.fromScale(0.94, 0.75), Position = UDim2.fromScale(0.03, 0.125), Parent = toast })
-toast.Parent = templates
-
-local toasts = make("Frame", {
-	Name = "Toasts",
-	Size = UDim2.fromScale(0.34, 0.2),
-	Position = UDim2.fromScale(0.5, 0.8),
-	AnchorPoint = Vector2.new(0.5, 1),
-	BackgroundTransparency = 1,
-	Parent = gui,
-}, {
-	make("UIListLayout", { Padding = UDim.new(0.04, 0), VerticalAlignment = Enum.VerticalAlignment.Bottom, SortOrder = Enum.SortOrder.LayoutOrder }),
-})
-
 local banner = make("Frame", {
 	Name = "Banner",
 	Size = UDim2.fromScale(0.5, 0.1),
@@ -592,5 +606,147 @@ local cinematic = make("ScreenGui", {
 })
 gui.Cutscene.Parent = cinematic
 gui.Flash.Parent = cinematic
+
+local function screen(name, order)
+	local old = StarterGui:FindFirstChild(name)
+	if old then
+		old:Destroy()
+	end
+	return make("ScreenGui", {
+		Name = name,
+		ResetOnSpawn = false,
+		IgnoreGuiInset = true,
+		ScreenInsets = Enum.ScreenInsets.None,
+		DisplayOrder = order,
+		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+		Parent = StarterGui,
+	})
+end
+
+local toastFont = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.ExtraBold)
+local heavyFont = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Heavy)
+local edgeFade = NumberSequence.new({
+	NumberSequenceKeypoint.new(0, 1),
+	NumberSequenceKeypoint.new(0.17, 1),
+	NumberSequenceKeypoint.new(0.3, 0),
+	NumberSequenceKeypoint.new(0.7, 0),
+	NumberSequenceKeypoint.new(0.82, 1),
+	NumberSequenceKeypoint.new(1, 1),
+})
+
+local notifyGui = screen(Names.Gui.Notify, 150)
+local notifications = make("Frame", {
+	Name = "Notifications",
+	AnchorPoint = Vector2.new(0.5, 1),
+	Position = UDim2.fromScale(0.5, 0.73),
+	Size = UDim2.fromScale(1, 0.036),
+	BackgroundTransparency = 1,
+	Parent = notifyGui,
+})
+local toastTemplate = make("TextLabel", {
+	Name = "Template",
+	AnchorPoint = Vector2.new(0.5, 0.5),
+	Position = UDim2.fromScale(0.5, 0.5),
+	Size = UDim2.fromScale(1, 1),
+	BackgroundColor3 = Color3.new(0, 0, 0),
+	BackgroundTransparency = 0.65,
+	BorderSizePixel = 0,
+	FontFace = toastFont,
+	Text = "Message",
+	TextColor3 = Color3.new(0, 0, 0),
+	TextScaled = true,
+	Visible = false,
+	Parent = notifications,
+}, {
+	make("UIStroke", { Name = "Outer", Thickness = 2, Color = Color3.new(0, 0, 0) }),
+	make("UIGradient", { Transparency = edgeFade }),
+})
+make("TextLabel", {
+	Name = "bg",
+	Position = UDim2.fromScale(0, -0.068),
+	Size = UDim2.fromScale(1, 1),
+	BackgroundTransparency = 1,
+	FontFace = toastFont,
+	Text = "Message",
+	TextColor3 = Color3.new(1, 1, 1),
+	TextScaled = true,
+	ZIndex = 2,
+	Parent = toastTemplate,
+}, {
+	make("UIStroke", { Name = "Outer", Thickness = 2, Color = Color3.new(0, 0, 0) }),
+	make("UIGradient", { Rotation = 90 }),
+})
+
+local alertGui = screen(Names.Gui.Alert, 100)
+local alertFrame = make("Frame", {
+	Name = "MainFrame",
+	AnchorPoint = Vector2.new(0.5, 0.5),
+	Position = UDim2.fromScale(0.5, 0.2),
+	Size = UDim2.fromScale(0.073, 0.11),
+	BackgroundTransparency = 1,
+	Parent = alertGui,
+}, { aspect(1) })
+for index, y in { 1.261, 0.901, 0.54, 0.18 } do
+	make("TextLabel", {
+		Name = "Alert" .. index,
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, y),
+		Size = UDim2.fromScale(10.34, 0.358),
+		BackgroundTransparency = 1,
+		FontFace = heavyFont,
+		Text = "",
+		TextColor3 = Color3.new(1, 1, 1),
+		TextTransparency = 1,
+		TextScaled = true,
+		Parent = alertFrame,
+	}, {
+		make("UIStroke", { Thickness = 3, Color = Color3.new(0, 0, 0), Transparency = 1 }),
+		make("UIGradient", { Rotation = 90, Color = ColorSequence.new(Color3.fromRGB(221, 255, 0), Color3.fromRGB(0, 255, 0)) }),
+	})
+end
+
+local fxGui = screen(Names.Gui.Fx, 60)
+local confettiLayer = make("Frame", { Name = "ConfettiLayer", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ZIndex = 150, Parent = fxGui })
+make("Frame", {
+	Name = "Bit",
+	Size = UDim2.fromScale(0.005, 0.014),
+	BackgroundColor3 = Color3.fromRGB(255, 212, 64),
+	BorderSizePixel = 0,
+	Visible = false,
+	ZIndex = 150,
+	Parent = confettiLayer,
+}, { make("UICorner", { CornerRadius = UDim.new(0, 2) }) })
+
+local overlayGui = screen(Names.Gui.Overlay, 30)
+make("ImageLabel", {
+	Name = "PurchaseBackground",
+	Size = UDim2.fromScale(1, 1),
+	BackgroundTransparency = 1,
+	Image = "rbxassetid://99274215381014",
+	ScaleType = Enum.ScaleType.Stretch,
+	Visible = false,
+	ZIndex = 99,
+	Parent = overlayGui,
+}, {
+	make("UIGradient", {
+		Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 4)),
+			ColorSequenceKeypoint.new(0.07, Color3.fromRGB(255, 0, 212)),
+			ColorSequenceKeypoint.new(0.14, Color3.fromRGB(255, 0, 251)),
+			ColorSequenceKeypoint.new(0.32, Color3.fromRGB(0, 26, 255)),
+			ColorSequenceKeypoint.new(0.44, Color3.fromRGB(0, 251, 255)),
+			ColorSequenceKeypoint.new(0.6, Color3.fromRGB(4, 255, 0)),
+			ColorSequenceKeypoint.new(0.75, Color3.fromRGB(255, 255, 0)),
+			ColorSequenceKeypoint.new(0.89, Color3.fromRGB(255, 149, 0)),
+			ColorSequenceKeypoint.new(0.95, Color3.fromRGB(255, 113, 0)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0)),
+		}),
+	}),
+})
+
+local Lighting = game:GetService("Lighting")
+local purchaseBlur = Lighting:FindFirstChild(Names.Gui.PurchaseBlur) or make("BlurEffect", { Name = Names.Gui.PurchaseBlur, Parent = Lighting })
+purchaseBlur.Size = 0
+purchaseBlur.Enabled = true
 
 print("UI built")
