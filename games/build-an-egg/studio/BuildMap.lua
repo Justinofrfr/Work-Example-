@@ -313,6 +313,32 @@ local site = make("Folder", { Name = W.Site, Parent = root })
 local center = EggConfig.Center
 local egg = make("Model", { Name = W.Egg, Parent = site })
 local ringsFolder = make("Folder", { Name = W.Rings, Parent = egg })
+local function shellTile()
+	local GeometryService = game:GetService("GeometryService")
+	local radius = 0.5 / math.sin(math.rad(EggConfig.TileArc / 2))
+	local depth = EggConfig.TileThickness + radius * (1 - math.cos(math.rad(EggConfig.TileArc / 2))) + 0.05
+	local outer = make("Part", { Shape = Enum.PartType.Cylinder, Size = Vector3.new(1, radius * 2, radius * 2), CFrame = CFrame.Angles(0, 0, math.rad(90)), Anchored = true })
+	local inner = make("Part", { Shape = Enum.PartType.Cylinder, Size = Vector3.new(1.4, (radius - EggConfig.TileThickness) * 2, (radius - EggConfig.TileThickness) * 2), CFrame = CFrame.Angles(0, 0, math.rad(90)), Anchored = true })
+	local box = make("Part", { Size = Vector3.new(1, 1, depth), CFrame = CFrame.new(0, 0, -radius + depth / 2), Anchored = true })
+	local ok, tile = pcall(function()
+		local slab = GeometryService:IntersectAsync(outer, { box }, { CollisionFidelity = Enum.CollisionFidelity.Box, RenderFidelity = Enum.RenderFidelity.Precise })[1]
+		return GeometryService:SubtractAsync(slab, { inner }, { CollisionFidelity = Enum.CollisionFidelity.Box, RenderFidelity = Enum.RenderFidelity.Precise, SplitApart = false })[1]
+	end)
+	outer:Destroy()
+	inner:Destroy()
+	box:Destroy()
+	if not ok or not tile then
+		warn("shell tile CSG failed: " .. tostring(tile))
+		return nil
+	end
+	tile.UsePartColor = true
+	pcall(function()
+		tile.SmoothingAngle = EggConfig.TileSmoothing
+	end)
+	tile.Anchored = true
+	return tile
+end
+local tileTemplate = shellTile()
 for _, ring in EggShape.Rings() do
 	local ringModel = make("Model", { Name = ("Ring%02d"):format(ring.Index), Parent = ringsFolder })
 	ringModel:SetAttribute(A.Ring, ring.Index)
@@ -325,8 +351,9 @@ for _, ring in EggShape.Rings() do
 		local tangent = Vector3.new(-math.sin(angle), 0, math.cos(angle))
 		local up = (outward * (ring.TopRadius - ring.BottomRadius) + Vector3.new(0, height, 0)).Unit
 		local position = center + outward * ring.Radius + Vector3.new(0, (ring.Bottom + ring.Top) / 2 - center.Y, 0)
-		local segment = part({
-			Name = tostring(index),
+		local segment = tileTemplate and tileTemplate:Clone() or part({ Name = tostring(index) })
+		segment.Name = tostring(index)
+		for key, value in {
 			TopSurface = Enum.SurfaceType.Smooth,
 			BottomSurface = Enum.SurfaceType.Smooth,
 			Size = Vector3.new(width, slant * 1.04, EggConfig.ShellThickness),
@@ -335,8 +362,13 @@ for _, ring in EggShape.Rings() do
 			Transparency = 1,
 			CanCollide = false,
 			CastShadow = false,
-			Parent = ringModel,
-		})
+			Anchored = true,
+			CanQuery = false,
+			CanTouch = false,
+		} do
+			segment[key] = value
+		end
+		segment.Parent = ringModel
 		segment:SetAttribute(A.Segment, ring.First + index - 1)
 	end
 end
