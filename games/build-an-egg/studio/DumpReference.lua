@@ -12,7 +12,10 @@ function encode(value)
 		end
 		return value
 	end
-	if kind == "string" or kind == "boolean" then
+	if kind == "string" then
+		return utf8.len(value) and value or (value:gsub("[\128-\255]", "?"))
+	end
+	if kind == "boolean" then
 		return value
 	end
 	if kind == "Color3" then
@@ -60,17 +63,26 @@ function encode(value)
 end
 
 local function serialize(instance)
-	local node = { ClassName = instance.ClassName, Name = instance.Name, Props = {}, Attributes = {}, Children = {} }
+	local node = { ClassName = instance.ClassName, Name = encode(instance.Name), Props = {}, Attributes = {}, Children = {} }
+	local function safe(value)
+		local encoded = encode(value)
+		if pcall(function()
+			HttpService:JSONEncode({ encoded })
+		end) then
+			return encoded
+		end
+		return nil
+	end
 	for _, prop in PROPS do
 		local ok, value = pcall(function()
 			return instance[prop]
 		end)
 		if ok and value ~= nil and typeof(value) ~= "Instance" then
-			node.Props[prop] = encode(value)
+			node.Props[prop] = safe(value)
 		end
 	end
 	for key, value in instance:GetAttributes() do
-		node.Attributes[key] = encode(value)
+		node.Attributes[encode(key)] = safe(value)
 	end
 	for _, child in instance:GetChildren() do
 		table.insert(node.Children, serialize(child))
