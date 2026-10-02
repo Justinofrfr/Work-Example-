@@ -107,6 +107,9 @@ function EggController:Start()
 	Ui.Feel(hatch.Button, function()
 		self:Claim()
 	end)
+	Ui.Feel(gui.Hud:WaitForChild("LeaveEgg"), function()
+		self:Leave()
+	end)
 	Cinematic.Gui():WaitForChild("Cutscene").Skip.Activated:Connect(function()
 		self.SkipRequested = true
 	end)
@@ -312,11 +315,26 @@ function EggController:RenderInteriorTimer()
 	end
 	local inside = root ~= nil and root.Position.Y < MapConfig.Interior.Center.Y + MapConfig.Interior.Height + 20
 	label.Visible = server.Phase == "Interior" and inside
+	gui.Hud.LeaveEgg.Visible = label.Visible and not self.Leaving
 	if label.Visible then
 		local remaining = math.max(0, math.ceil(server.PhaseEndsAt - Workspace:GetServerTimeNow()))
 		label.Text = UIConfig.Messages.InteriorTimer:format(("%d:%02d"):format(remaining // 60, remaining % 60))
 		self.WasInside = true
 	end
+end
+
+function EggController:Leave()
+	if self.Leaving then
+		return
+	end
+	self.Leaving = true
+	gui.Hud.LeaveEgg.Visible = false
+	self:Fade(EffectsConfig.Cutscene.Leave.Caption, 0.3)
+	remotes[Names.Remotes.LeaveEgg]:InvokeServer()
+	task.wait(0.4)
+	self:Unfade()
+	self.WasInside = false
+	self.Leaving = false
 end
 
 function EggController:Claim()
@@ -402,6 +420,7 @@ function EggController:Fade(text, hold)
 	local time = EffectsConfig.Cutscene.FadeTime
 	fade.Text.Text = text or ""
 	Ui.Tween(fade, time, { BackgroundTransparency = 0 })
+	Ui.Tween(fade.Text.UIStroke, time, { Transparency = 0 })
 	Ui.Tween(fade.Text, time, { TextTransparency = 0 }).Completed:Wait()
 	task.wait(hold or 0.4)
 end
@@ -410,6 +429,7 @@ function EggController:Unfade()
 	local fade = Cinematic.Gui().Fade
 	local time = EffectsConfig.Cutscene.FadeTime
 	Ui.Tween(fade.Text, time, { TextTransparency = 1 })
+	Ui.Tween(fade.Text.UIStroke, time, { Transparency = 1 })
 	Ui.Tween(fade, time, { BackgroundTransparency = 1 })
 end
 
@@ -486,10 +506,9 @@ function EggController:HideRampTop(hidden)
 	if not scaffold then
 		return
 	end
-	local from = GameConfig.RingCount - EffectsConfig.Cutscene.CrackRings
 	for _, piece in scaffold:GetChildren() do
 		local ring = piece:GetAttribute(A.Ring)
-		if ring and ring > from and piece:IsA("BasePart") then
+		if ring and piece:IsA("BasePart") then
 			piece.LocalTransparencyModifier = hidden and 1 or 0
 		end
 	end
@@ -548,7 +567,7 @@ end
 
 function EggController:HatchlingBase()
 	local ring = EggShape.Rings()[GameConfig.RingCount - EffectsConfig.Cutscene.CrackRings]
-	return CFrame.new(EggConfig.Center.X, ring.Top - PropsConfig.HatchlingHeight * 0.2, EggConfig.Center.Z)
+	return CFrame.new(EggConfig.Center.X, ring.Top - PropsConfig.HatchlingHeight * 0.05, EggConfig.Center.Z)
 end
 
 function EggController:SpawnHatchling(project, animated)

@@ -10,6 +10,8 @@ local EggConfig = require(Shared.Config.Egg)
 local MapConfig = require(Shared.Config.Map)
 local GameConfig = require(Shared.Config.Game)
 local EggShape = require(Shared.Util.EggShape)
+local PetsConfig = require(Shared.Config.Pets)
+local PetRules = require(Shared.Util.PetRules)
 
 local Settings = require(script.Parent.Parent.Util.Settings)
 local Audio = require(script.Parent.Parent.Util.Audio)
@@ -151,6 +153,68 @@ function EffectController:Vfx(use, position)
 		longest = math.max(longest, delay + emitter.Lifetime.Max / math.max(emitter.TimeScale, 0.05))
 	end
 	Debris:AddItem(attachment, longest + 0.5)
+end
+
+function EffectController:FragmentShower(granted)
+	local root = self:Root()
+	local template = templates:FindFirstChild(Names.Templates.Fragment)
+	if not root or not template then
+		return
+	end
+	local F = EffectsConfig.Cutscene.Fragments
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Exclude
+	params.FilterDescendantsInstances = { player.Character }
+	local units = {}
+	for key, count in granted do
+		local _, tier = PetRules.ParseFragment(key)
+		for _ = 1, count do
+			table.insert(units, PetsConfig.Rarities[tier or 1].Color)
+		end
+	end
+	for index, color in units do
+		task.delay((index - 1) * F.Stagger, function()
+			local origin = root.Position + Vector3.new(0, F.Rise, 0)
+			local angle = (index / #units) * math.pi * 2 + math.random() * 0.4
+			local distance = F.Spread[1] + math.random() * (F.Spread[2] - F.Spread[1])
+			local flat = root.Position + Vector3.new(math.cos(angle) * distance, 0, math.sin(angle) * distance)
+			local hit = Workspace:Raycast(flat + Vector3.new(0, 12, 0), Vector3.new(0, -40, 0), params)
+			local land = (hit and hit.Position or (flat - Vector3.new(0, 3, 0))) + Vector3.new(0, 0.9, 0)
+			local piece = template:Clone()
+			piece.Color = color
+			piece.Glow.Color = color
+			piece.Trail.Color = ColorSequence.new(color)
+			piece.CFrame = CFrame.new(origin)
+			piece.Parent = Workspace
+			Audio.PlayAt("Pickup", origin, 1.2 + math.random() * 0.3)
+			local started = os.clock()
+			while os.clock() - started < F.FlyTime do
+				local alpha = (os.clock() - started) / F.FlyTime
+				local position = origin:Lerp(land, alpha) + Vector3.new(0, math.sin(alpha * math.pi) * F.Arc, 0)
+				piece.CFrame = CFrame.new(position) * CFrame.Angles(0, alpha * 8, alpha * 3)
+				RunService.RenderStepped:Wait()
+			end
+			self:Burst("Sparkle", land, 4)
+			local holdStart = os.clock()
+			while os.clock() - holdStart < F.Hold do
+				local t = os.clock() - holdStart
+				piece.CFrame = CFrame.new(land + Vector3.new(0, math.abs(math.sin(t * 5)) * 0.4, 0)) * CFrame.Angles(0, t * 3, 0)
+				RunService.RenderStepped:Wait()
+			end
+			local from = piece.Position
+			local absorbStart = os.clock()
+			while os.clock() - absorbStart < F.AbsorbTime do
+				local alpha = (os.clock() - absorbStart) / F.AbsorbTime
+				local target = root.Parent and root.Position or from
+				piece.CFrame = CFrame.new(from:Lerp(target, alpha * alpha)) * CFrame.Angles(0, alpha * 10, 0)
+				piece.Size = template.Size * (1 - alpha * 0.6)
+				RunService.RenderStepped:Wait()
+			end
+			Audio.Play("Tick", 1 + index * 0.03)
+			self:Burst("Sparkle", root.Position, 3)
+			piece:Destroy()
+		end)
+	end
 end
 
 function EffectController:CoinPopup(position, amount)

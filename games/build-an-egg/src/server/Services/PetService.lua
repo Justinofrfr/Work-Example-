@@ -29,9 +29,12 @@ function PetService:Start()
 	DataService.Loaded:Connect(function(player)
 		self:Apply(player)
 	end)
-	BuildService.EggsCredited:Connect(function(player)
-		local key = BuildService:Project()
-		self:GrantFragments(player, key, BuildService:Contribution(player))
+	BuildService.HatchStarted:Connect(function(key)
+		for _, player in Players:GetPlayers() do
+			if BuildService:IsContributor(player) then
+				self:GrantFragments(player, key, BuildService:Contribution(player))
+			end
+		end
 	end)
 	remotes[Names.Remotes.Incubate].OnServerInvoke = function(player, mode, selection)
 		if not limiter:Check(player) then

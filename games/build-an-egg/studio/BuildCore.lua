@@ -221,6 +221,32 @@ make("BillboardGui", {
 	label({ Name = "Text", Text = "0" }),
 })
 
+local fragment = make("Part", {
+	Name = Names.Templates.Fragment,
+	Size = Vector3.new(0.9, 1.3, 0.9),
+	Material = Enum.Material.Neon,
+	Color = Color3.new(1, 1, 1),
+	Anchored = true,
+	CanCollide = false,
+	CanQuery = false,
+	CanTouch = false,
+	CastShadow = false,
+	Parent = templates,
+})
+local trailTop = make("Attachment", { Name = "A0", Position = Vector3.new(0, 0.5, 0), Parent = fragment })
+local trailBottom = make("Attachment", { Name = "A1", Position = Vector3.new(0, -0.5, 0), Parent = fragment })
+make("Trail", {
+	Name = "Trail",
+	Attachment0 = trailTop,
+	Attachment1 = trailBottom,
+	Lifetime = 0.35,
+	LightEmission = 1,
+	FaceCamera = true,
+	Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.1), NumberSequenceKeypoint.new(1, 1) }),
+	Parent = fragment,
+})
+make("PointLight", { Name = "Glow", Range = 6, Brightness = 1.5, Parent = fragment })
+
 local pile = shellChunk(Names.Templates.DroppedPile)
 pile.Anchored = true
 pile.CanCollide = true

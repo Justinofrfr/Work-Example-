@@ -658,22 +658,47 @@ for ringIndex = 1, wallRings do
 	end
 end
 local poolSize = interiorConfig.PoolSize
-part({
-	Name = "PoolRim",
-	Size = poolSize + Vector3.new(6, -2, 6),
-	CFrame = CFrame.new(inCenter + Vector3.new(0, 0.5, 8)),
-	Color = Color3.fromRGB(210, 180, 120),
-	Material = Enum.Material.Sandstone,
-	Parent = interior,
-})
+local poolDepth = interiorConfig.PoolDepth
+local poolCenter = inCenter + Vector3.new(0, poolDepth / 2, 8)
+local rimHeight = poolDepth + 1
+for _, wall in {
+	{ Vector3.new(poolSize.X + 6, rimHeight, 3), Vector3.new(0, 0, poolSize.Z / 2 + 1.5) },
+	{ Vector3.new(poolSize.X + 6, rimHeight, 3), Vector3.new(0, 0, -poolSize.Z / 2 - 1.5) },
+	{ Vector3.new(3, rimHeight, poolSize.Z), Vector3.new(poolSize.X / 2 + 1.5, 0, 0) },
+	{ Vector3.new(3, rimHeight, poolSize.Z), Vector3.new(-poolSize.X / 2 - 1.5, 0, 0) },
+} do
+	part({
+		Name = "PoolRim",
+		Size = wall[1],
+		CFrame = CFrame.new(inCenter + Vector3.new(0, rimHeight / 2 - 0.5, 8) + wall[2]),
+		Color = Color3.fromRGB(210, 180, 120),
+		Material = Enum.Material.Sandstone,
+		Parent = interior,
+	})
+end
+for side = -1, 1, 2 do
+	part({
+		Name = "PoolStep",
+		Size = Vector3.new(8, rimHeight / 2, 3),
+		CFrame = CFrame.new(inCenter + Vector3.new(side * 14, rimHeight / 4 - 0.5, 8 - poolSize.Z / 2 - 4.5)),
+		Color = Color3.fromRGB(230, 200, 140),
+		Material = Enum.Material.Sandstone,
+		Parent = interior,
+	})
+end
+Workspace.Terrain:FillBlock(CFrame.new(poolCenter), Vector3.new(poolSize.X, poolDepth, poolSize.Z), Enum.Material.Water)
+Workspace.Terrain.WaterColor = interiorConfig.WaterColor
+Workspace.Terrain.WaterTransparency = 0.35
+Workspace.Terrain.WaterReflectance = 0.25
+Workspace.Terrain.WaterWaveSize = 0.1
 local pool = part({
 	Name = W.Pool,
-	Size = poolSize,
-	CFrame = CFrame.new(inCenter + Vector3.new(0, 1.6, 8)),
+	Size = Vector3.new(poolSize.X, poolDepth + 4, poolSize.Z),
+	CFrame = CFrame.new(poolCenter + Vector3.new(0, 2, 0)),
 	Color = P.Yolk,
-	Material = Enum.Material.Glass,
-	Transparency = 0.25,
+	Transparency = 1,
 	CanCollide = false,
+	CanQuery = false,
 	Parent = interior,
 })
 pool:SetAttribute(A.Stat, "Both")

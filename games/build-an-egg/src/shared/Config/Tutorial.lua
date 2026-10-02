@@ -1,9 +1,9 @@
 return {
 	Steps = {
 		{ Key = "Quarry", Text = "Follow the green arrows to the SHELL QUARRY", Target = "World", World = "Quarry" },
-		{ Key = "Pickup", Text = "Hold E next to a shell to pick it up", MobileText = "Hold the PICK UP button to grab a shell", Target = "Gui", Gui = "Action" },
+		{ Key = "Pickup", Text = "Walk up to a shell and hold its prompt to pick it up", Target = "World", World = "Shell" },
 		{ Key = "Carry", Text = "Carry it to the green PLACE zone on the egg", Target = "World", World = "PlaceZone" },
-		{ Key = "Place", Text = "Hold E in the green zone to place your shells", MobileText = "Hold PLACE in the green zone", Target = "Gui", Gui = "Action", World = "PlaceZone" },
+		{ Key = "Place", Text = "Stand in the green zone and hold the Place prompt", Target = "World", World = "PlaceZone" },
 		{ Key = "Upgrades", Text = "Spend coins at the UPGRADES NPC", Target = "World", World = "UpgradesNPC" },
 		{ Key = "Gym", Text = "Step on a treadmill to train your Speed", Target = "World", World = "Gym" },
 		{ Key = "Shop", Text = "Boosts and passes are in the SHOP", Target = "Gui", Gui = "Shop", AutoAdvance = 6 },

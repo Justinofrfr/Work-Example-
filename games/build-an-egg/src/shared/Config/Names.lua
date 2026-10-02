@@ -15,6 +15,7 @@ return {
 		ClaimHatch = "ClaimHatch",
 		Incubate = "Incubate",
 		PetAction = "PetAction",
+		LeaveEgg = "LeaveEgg",
 	},
 	RemoteKinds = {
 		StateSync = "RemoteEvent",
@@ -31,6 +32,7 @@ return {
 		ClaimHatch = "RemoteFunction",
 		Incubate = "RemoteFunction",
 		PetAction = "RemoteFunction",
+		LeaveEgg = "RemoteFunction",
 	},
 	World = {
 		Root = "Game",
@@ -70,6 +72,7 @@ return {
 		Backpack = "Backpack",
 		StackPiece = "StackPiece",
 		StackLabel = "StackLabel",
+		Fragment = "Fragment",
 		DroppedPile = "DroppedPile",
 		PurchaseTag = "PurchaseTag",
 		GooseAura = "GooseAura",

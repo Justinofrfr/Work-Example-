@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
+local Players = game:GetService("Players")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Names = require(Shared.Config.Names)
@@ -88,6 +89,20 @@ function TutorialController:WorldTarget(name)
 	if name == "Quarry" then
 		local zone = world:FindFirstChild(W.Quarry) and world.Quarry:FindFirstChild(W.QuarryZone)
 		return zone and zone.Position
+	elseif name == "Shell" then
+		local quarry = world:FindFirstChild(W.Quarry)
+		local character = Players.LocalPlayer.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart")
+		local best, bestDistance
+		for _, prompt in quarry and quarry:GetDescendants() or {} do
+			if prompt:IsA("ProximityPrompt") and prompt.Enabled and prompt.Parent:IsA("BasePart") then
+				local distance = root and (prompt.Parent.Position - root.Position).Magnitude or 0
+				if not best or distance < bestDistance then
+					best, bestDistance = prompt.Parent, distance
+				end
+			end
+		end
+		return best and best.Position
 	elseif name == "PlaceZone" then
 		local band = world:FindFirstChild(W.Site) and world.Site:FindFirstChild(W.Band)
 		local zone = band and band:FindFirstChild("PlaceZone")

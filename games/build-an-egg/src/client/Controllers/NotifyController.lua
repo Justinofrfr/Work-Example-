@@ -25,12 +25,14 @@ local banner
 local holder
 local toastTemplate
 local EffectController
+local EggController
 local PurchaseFxController
 
 function NotifyController:Init(modules, context)
 	gui = context.Gui
 	remotes = context.Remotes
 	EffectController = modules.EffectController
+	EggController = modules.EggController
 	PurchaseFxController = modules.PurchaseFxController
 	banner = gui:WaitForChild("Banner")
 	holder = context.Player:WaitForChild("PlayerGui"):WaitForChild(Names.Gui.Notify):WaitForChild("Notifications")
@@ -85,8 +87,15 @@ function NotifyController:Handle(kind, a, b)
 		Audio.Play("ServerPack")
 		EffectController:ShellRain()
 	elseif kind == "Fragments" then
-		self:Toast(PetsConfig.Messages.Fragments:format(a), UIConfig.Colors.Good)
-		Audio.Play("Reward")
+		task.spawn(function()
+			while EggController and EggController.InCutscene do
+				task.wait(0.1)
+			end
+			EffectController:FragmentShower(b or {})
+			task.wait(1.5)
+			self:Toast(PetsConfig.Messages.Fragments:format(a), UIConfig.Colors.Good)
+			Audio.Play("Reward")
+		end)
 	elseif kind == "Purchased" then
 		PurchaseFxController:Celebrate(a)
 	end

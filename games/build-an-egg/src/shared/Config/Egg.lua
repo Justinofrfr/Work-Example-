@@ -14,7 +14,7 @@ return {
 
 	ScaffoldWidth = 16,
 	ScaffoldDirection = Vector3.new(0, 0, -1),
-	ScaffoldMaxAngle = 52,
+	ScaffoldMaxAngle = 38,
 	ScaffoldGap = 5,
 	ScaffoldShellClearance = 3,
 	ScaffoldTopDistance = 8,

@@ -8,8 +8,8 @@ return {
 		{ Key = "Speed", Field = "Speed", Title = "⚡ FASTEST", Color = Color3.fromRGB(120, 210, 255) },
 		{ Key = "Strength", Field = "Strength", Title = "💪 STRONGEST", Color = Color3.fromRGB(255, 140, 110) },
 	},
-	Origin = Vector3.new(-110, 0, -405),
+	Origin = Vector3.new(-110, 0, -475),
 	Spacing = 26,
 	BoardSize = Vector3.new(22, 30, 1.5),
-	FacingTarget = Vector3.new(0, 0, -370),
+	FacingTarget = Vector3.new(0, 0, -440),
 }

@@ -32,6 +32,7 @@ local BuildService = {
 	Completed = Signal.new(),
 	Reset = Signal.new(),
 	EggsCredited = Signal.new(),
+	HatchStarted = Signal.new(),
 }
 
 local DataService
@@ -59,6 +60,12 @@ end
 function BuildService:Start()
 	world = Workspace:WaitForChild(Names.World.Root)
 	self:UpdateRamp()
+	remotes[Names.Remotes.LeaveEgg].OnServerInvoke = function(player)
+		if not claimLimiter:Check(player) then
+			return false
+		end
+		return self:LeaveInterior(player)
+	end
 	remotes[Names.Remotes.ClaimHatch].OnServerInvoke = function(player)
 		if not claimLimiter:Check(player) then
 			return false, "Busy"
@@ -275,6 +282,7 @@ function BuildService:Complete()
 			return
 		end
 		self:SetPhase("Interior", GameConfig.InteriorDuration)
+		self.HatchStarted:Fire(self:Project())
 		task.delay(GameConfig.HatchAutoClaimDelay, function()
 			if self.Round == round then
 				self:AutoClaim()
@@ -333,6 +341,24 @@ function BuildService:AutoClaim()
 			self:CreditEgg(player)
 		end
 	end
+end
+
+function BuildService:LeaveInterior(player)
+	local character = player.Character
+	local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+	local interior = world:FindFirstChild(Names.World.Interior)
+	local spawnFolder = world:FindFirstChild(Names.World.Spawn)
+	local spawn = spawnFolder and spawnFolder:FindFirstChildWhichIsA("SpawnLocation")
+	if not rootPart or not interior or not spawn then
+		return false
+	end
+	local pivot, size = interior:GetBoundingBox()
+	local localPosition = pivot:PointToObjectSpace(rootPart.Position)
+	if math.abs(localPosition.X) > size.X / 2 + 10 or math.abs(localPosition.Y) > size.Y / 2 + 10 or math.abs(localPosition.Z) > size.Z / 2 + 10 then
+		return false
+	end
+	StateService:Teleport(player, spawn.CFrame + Vector3.new(0, 4, 0))
+	return true
 end
 
 function BuildService:SendToInterior(player)
