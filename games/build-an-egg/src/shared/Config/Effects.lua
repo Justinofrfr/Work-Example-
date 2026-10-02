@@ -66,7 +66,7 @@ return {
 		LiftShoulderAngle = 90,
 		LiftElbowMax = 100,
 		LiftSpeed = 3.5,
-		CullDistance = 160,
+		CullDistance = 400,
 	},
 	PlaceFlight = {
 		Time = 0.35,

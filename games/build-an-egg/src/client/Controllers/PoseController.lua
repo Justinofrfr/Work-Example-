@@ -23,6 +23,8 @@ local function joints(character)
 		local motor = holder and holder:FindFirstChild(def[2])
 		if motor and motor:IsA("Motor6D") then
 			table.insert(list[def[4]], { Motor = motor, Base = motor.C0, Side = def[3], R6 = def[1] == "Torso", Angle = 0 })
+		elseif motor and motor:IsA("AnimationConstraint") and motor.Attachment0 then
+			table.insert(list[def[4]], { Motor = motor, Attachment = motor.Attachment0, Base = motor.Attachment0.CFrame, Side = def[3], R6 = false, Angle = 0 })
 		end
 	end
 	return list
@@ -91,6 +93,13 @@ function PoseController:Step(dt)
 		if not root or (root.Position - cameraPosition).Magnitude > P.CullDistance then
 			continue
 		end
+		local stale = #rig.Shoulders == 0 or not rig.Shoulders[1].Motor:IsDescendantOf(character)
+		if stale and t - (rig.LastScan or 0) > 1 then
+			rig.LastScan = t
+			local fresh = joints(character)
+			rig.Shoulders = fresh.Shoulders
+			rig.Elbows = fresh.Elbows
+		end
 		local training = character:GetAttribute(A.Training)
 		local lifting = training == "Strength"
 		local shoulderTarget = 0
@@ -107,13 +116,21 @@ function PoseController:Step(dt)
 			if joint.Motor.Parent then
 				joint.Angle += (shoulderTarget - joint.Angle) * alpha
 				local rotation = joint.R6 and CFrame.Angles(0, 0, joint.Side * joint.Angle) or CFrame.Angles(joint.Angle, 0, 0)
-				joint.Motor.C0 = joint.Base * rotation
+				if joint.Attachment then
+					joint.Attachment.CFrame = joint.Base * rotation
+				else
+					joint.Motor.C0 = joint.Base * rotation
+				end
 			end
 		end
 		for _, joint in rig.Elbows do
 			if joint.Motor.Parent then
 				joint.Angle += (elbowTarget - joint.Angle) * alpha
-				joint.Motor.C0 = joint.Base * CFrame.Angles(joint.Angle, 0, 0)
+				if joint.Attachment then
+					joint.Attachment.CFrame = joint.Base * CFrame.Angles(joint.Angle, 0, 0)
+				else
+					joint.Motor.C0 = joint.Base * CFrame.Angles(joint.Angle, 0, 0)
+				end
 			end
 		end
 		self:Barbell(rig, lifting)
