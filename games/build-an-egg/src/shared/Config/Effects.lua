@@ -67,7 +67,7 @@ return {
 		Both = "",
 	},
 	Poses = {
-		CarryArmAngle = 155,
+		CarryArmAngle = 0,
 		CarryLerp = 10,
 		LiftShoulderAngle = 90,
 		LiftElbowMax = 100,

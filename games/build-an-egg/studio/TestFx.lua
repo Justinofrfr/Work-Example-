@@ -27,6 +27,12 @@ local ok, err = pcall(function()
 	notify:FireClient(player, "Purchased", "Golden Goose")
 	task.wait(0.4)
 	notify:FireClient(player, "Purchased", "+1,000 Shells")
+	local Services = game:GetService("ServerScriptService").Server.Services
+	local StateService = require(Services.StateService)
+	local CarryService = require(Services.CarryService)
+	StateService:Get(player).Carry = 250
+	CarryService:UpdateVisual(player)
+	note("backpack", player.Character:FindFirstChild("Backpack") ~= nil, "count attr", player.Character:GetAttribute("CarryCount"))
 	task.wait(5)
 end)
 if not ok then

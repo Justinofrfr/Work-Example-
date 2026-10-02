@@ -61,7 +61,7 @@ local ok, err = pcall(function()
 	local data = DataService:Get(player)
 	local runtime = StateService:Get(player)
 	note("loaded", data ~= nil, "runtime", runtime ~= nil, "walk", character.Humanoid.WalkSpeed)
-	note("block", character:FindFirstChild("CarryBlock") ~= nil, "rank", character.Head:FindFirstChild("RankTag") ~= nil)
+	note("block", character:FindFirstChild("Backpack") ~= nil, "rank", character.Head:FindFirstChild("RankTag") ~= nil)
 
 	local quarry = MapConfig.Quarry.Center
 	StateService:Teleport(player, CFrame.new(quarry + Vector3.new(0, -3, 0)))

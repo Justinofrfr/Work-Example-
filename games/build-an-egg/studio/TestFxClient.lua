@@ -9,7 +9,8 @@ LogService.MessageOut:Connect(function(message, messageType)
 	end
 end)
 
-local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 task.spawn(function()
 	local holder = playerGui:WaitForChild("Notify"):WaitForChild("Notifications")
 	local alert = playerGui:WaitForChild("Alert"):WaitForChild("MainFrame")
@@ -37,5 +38,15 @@ task.spawn(function()
 	clientLog:FireServer("alerts " .. table.concat(alerts, " | "))
 	clientLog:FireServer("confetti bits " .. bits)
 	local shine = playerGui.Main:FindFirstChild("ShineFX", true)
+	local root = workspace:FindFirstChild("StackRoot")
+	local pieces = 0
+	for _, child in root and root:GetChildren() or {} do
+		if child.Name == "Piece" then
+			pieces += 1
+		end
+	end
+	local top = root and root:FindFirstChild("StackLabel")
+	local body = player.Character and player.Character:FindFirstChild("Backpack") and player.Character.Backpack.PrimaryPart
+	clientLog:FireServer(("stack pieces %d label %s height %.1f backpack rel %s"):format(pieces, top and top.Text.Text or "-", pieces * 0.95, body and tostring(player.Character.UpperTorso.CFrame:PointToObjectSpace(body.Position)) or "-"))
 	clientLog:FireServer("shine frames present " .. tostring(shine ~= nil) .. " bg " .. tostring(playerGui.Overlay.PurchaseBackground.Visible))
 end)

@@ -67,6 +67,9 @@ return {
 		RankTag = "RankTag",
 		CarryStack = "CarryStack",
 		CarryBlock = "CarryBlock",
+		Backpack = "Backpack",
+		StackPiece = "StackPiece",
+		StackLabel = "StackLabel",
 		DroppedPile = "DroppedPile",
 		PurchaseTag = "PurchaseTag",
 		GooseAura = "GooseAura",
@@ -96,5 +99,6 @@ return {
 		GoldenGoose = "GoldenGoose",
 		Training = "Training",
 		Carrying = "Carrying",
+		CarryCount = "CarryCount",
 	},
 }

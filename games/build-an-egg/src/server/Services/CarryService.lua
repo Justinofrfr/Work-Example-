@@ -235,16 +235,18 @@ function CarryService:OnCharacter(player, character)
 	if not head or not templates then
 		return
 	end
-	local template = templates:FindFirstChild(Names.Templates.CarryBlock)
-	if template then
-		local block = template:Clone()
-		local weld = block:FindFirstChildOfClass("Weld")
-		if weld then
-			weld.Part0 = head
-			weld.Part1 = block
-		end
-		block.Parent = character
-		self.Blocks[player] = block
+	local torso = character:FindFirstChild("UpperTorso") or character:FindFirstChild("Torso") or character:WaitForChild("UpperTorso", 5)
+	local template = templates:FindFirstChild(Names.Templates.Backpack)
+	if template and torso then
+		local backpack = template:Clone()
+		local body = backpack.PrimaryPart
+		local mount = body:FindFirstChild("Mount")
+		local offset = GameConfig.Backpack.Offset
+		body.CFrame = torso.CFrame * CFrame.new(offset.X, offset.Y, torso.Size.Z / 2 + offset.Z)
+		mount.Part0 = torso
+		mount.C0 = CFrame.new(offset.X, offset.Y, torso.Size.Z / 2 + offset.Z)
+		backpack.Parent = character
+		self.Blocks[player] = backpack
 	end
 	self:ApplyCosmetics(player)
 	self:UpdateVisual(player)
@@ -270,31 +272,13 @@ function CarryService:ApplyCosmetics(player)
 end
 
 function CarryService:UpdateVisual(player)
-	local block = self.Blocks[player]
 	local runtime = StateService:Get(player)
-	if not block or not block.Parent or not runtime then
+	local character = player.Character
+	if not character or not runtime then
 		return
 	end
-	local carrying = runtime.Carry > 0
-	block.Parent:SetAttribute(Names.Attributes.Carrying, carrying)
-	block.Transparency = carrying and 0 or 1
-	local size = math.min(GameConfig.CarryBlockBaseSize + GameConfig.CarryBlockGrowth * math.sqrt(runtime.Carry), GameConfig.CarryBlockMaxSize)
-	local base = block:GetAttribute("BaseSize") or block.Size
-	block:SetAttribute("BaseSize", base)
-	block.Size = base.Unit * size * math.sqrt(3)
-	local weld = block:FindFirstChildOfClass("Weld")
-	local head = weld and weld.Part0
-	if weld and head then
-		weld.C0 = CFrame.new(0, head.Size.Y / 2 + block.Size.Y / 2 + 0.8, 0)
-	end
-	local count = block:FindFirstChild("Count")
-	if count then
-		count.Enabled = carrying
-		local label = count:FindFirstChild("Text")
-		if label then
-			label.Text = tostring(runtime.Carry)
-		end
-	end
+	character:SetAttribute(Names.Attributes.Carrying, runtime.Carry > 0)
+	character:SetAttribute(Names.Attributes.CarryCount, runtime.Carry)
 end
 
 return CarryService

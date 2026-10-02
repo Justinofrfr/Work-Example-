@@ -4,6 +4,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Names = require(Shared.Config.Names)
 local EffectsConfig = require(Shared.Config.Effects)
 local MapConfig = require(Shared.Config.Map)
+local GameConfig = require(Shared.Config.Game)
 
 local function make(className, props, children)
 	local instance = Instance.new(className)
@@ -151,6 +152,63 @@ make("BillboardGui", {
 	LightInfluence = 0,
 	Enabled = false,
 	Parent = carryBlock,
+}, {
+	label({ Name = "Text", Text = "0" }),
+})
+
+local BP = GameConfig.Backpack
+local backpack = make("Model", { Name = Names.Templates.Backpack, Parent = templates })
+local backpackBody = make("Part", {
+	Name = "Body",
+	Size = BP.Size,
+	Color = BP.BodyColor,
+	Material = Enum.Material.Plastic,
+	TopSurface = Enum.SurfaceType.Studs,
+	BottomSurface = Enum.SurfaceType.Inlet,
+	CanCollide = false,
+	CanQuery = false,
+	CanTouch = false,
+	Massless = true,
+	Parent = backpack,
+})
+backpack.PrimaryPart = backpackBody
+local function backpackPiece(name, size, offset, color)
+	local piece = make("Part", {
+		Name = name,
+		Size = size,
+		CFrame = backpackBody.CFrame * CFrame.new(offset),
+		Color = color,
+		Material = Enum.Material.Plastic,
+		TopSurface = Enum.SurfaceType.Smooth,
+		BottomSurface = Enum.SurfaceType.Smooth,
+		CanCollide = false,
+		CanQuery = false,
+		CanTouch = false,
+		Massless = true,
+		Parent = backpack,
+	})
+	make("WeldConstraint", { Part0 = backpackBody, Part1 = piece, Parent = piece })
+	return piece
+end
+backpackPiece("Rim", Vector3.new(BP.Size.X + 0.3, 0.35, BP.Size.Z + 0.3), Vector3.new(0, BP.Size.Y / 2 - 0.1, 0), BP.TrimColor)
+backpackPiece("Pocket", Vector3.new(BP.Size.X * 0.7, BP.Size.Y * 0.4, 0.3), Vector3.new(0, -BP.Size.Y * 0.18, BP.Size.Z / 2 + 0.12), BP.TrimColor)
+for side = -1, 1, 2 do
+	backpackPiece("Strap", Vector3.new(0.35, BP.Size.Y + 0.4, 0.25), Vector3.new(side * BP.Size.X * 0.3, 0, -BP.Size.Z / 2 - 0.1), BP.StrapColor)
+end
+make("Weld", { Name = "Mount", Part1 = backpackBody, Parent = backpackBody })
+
+local stackPiece = shellChunk(Names.Templates.StackPiece)
+stackPiece.Size = BP.PieceSize
+stackPiece.Massless = true
+stackPiece.Parent = templates
+
+make("BillboardGui", {
+	Name = Names.Templates.StackLabel,
+	Size = UDim2.fromScale(4, 1.6),
+	MaxDistance = 220,
+	LightInfluence = 0,
+	AlwaysOnTop = true,
+	Parent = templates,
 }, {
 	label({ Name = "Text", Text = "0" }),
 })
