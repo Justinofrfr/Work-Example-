@@ -20,6 +20,7 @@ local BuildService = {
 	Phase = "Building",
 	PhaseEndsAt = 0,
 	ProjectIndex = 1,
+	Cycle = 0,
 	Progress = 0,
 	Round = 1,
 	Contributions = {},
@@ -83,7 +84,8 @@ end
 
 function BuildService:Target()
 	local _, project = self:Project()
-	return project.Target
+	local rounding = ProjectsConfig.TargetRounding
+	return math.floor(project.Target * ProjectsConfig.CycleGrowth ^ self.Cycle / rounding + 0.5) * rounding
 end
 
 function BuildService:ActiveRing()
@@ -105,7 +107,7 @@ function BuildService:Snapshot()
 		ProjectName = project.DisplayName,
 		ProjectIndex = self.ProjectIndex,
 		Progress = self.Progress,
-		Target = project.Target,
+		Target = self:Target(),
 		Phase = self.Phase,
 		PhaseEndsAt = self.PhaseEndsAt,
 		Ring = self:ActiveRing(),
@@ -337,6 +339,9 @@ function BuildService:ResetRound()
 	end
 	self.Round += 1
 	self.ProjectIndex = self.ProjectIndex % #ProjectsConfig.Order + 1
+	if self.ProjectIndex == 1 then
+		self.Cycle += 1
+	end
 	self.Contributions = self.PendingContributions
 	self.PendingContributions = {}
 	self.Claimed = {}
