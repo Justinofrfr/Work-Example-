@@ -40,7 +40,7 @@ These are the reference images you'll give the image generator, so it uses the g
 | 3 | **Rainbow Egg and Golden Egg** recolours of the giant egg | Set ProjectsConfig Color and screenshot the egg | Thumb C, Icon option |
 | 4 | **Hatchlings**: Rainbow Unicorn, Void Dragon, Golden Bunny, Gem Axolotl, plus the Common Duck | Spawn each hatchling (EggController) or pet model and take a front three-quarter shot of each | Thumb A, C |
 | 5 | **Small pets at each rarity**: Duck (Common), Kitten (Rare), Fox (Epic), Owl (Legendary), Dragon or Unicorn (Mythic) | Pet models from the pet pack. Shoot them on their own. | Thumb C |
-| 6 | **Cracked eggshells**: 3 shapes (bottom half, top cap, shallow bowl) in brown, tan and white | Blender: `assets/EggShells.fbx` (already set up) | All |
+| 6 | **Cracked eggshells**: 3 shapes (bottom half, top cap, shallow bowl) in brown, tan and white | **Done:** `assets/thumbnail-refs/EggShell{A,B,C}_{brown,white}.png` (transparent 1600px renders) | All |
 | 7 | **Avatar carrying a TALL backpack shell stack** (about 60–200 shells), front and three-quarter views | Studio: give your avatar a full carry, then screenshot it at eye level | Thumb B, Icon |
 | 8 | **Avatar on the bench press**: arms up with the barbell, plus the treadmill run pose | Studio: stand on a Gym1 pad and screenshot it | Thumb C (optional) |
 | 9 | **Spiral ramp section**: 3–4 steps with the white chevron arrows, plus the green PLACE zone | Studio screenshot of one ramp segment (not the whole map) | Thumb B |
