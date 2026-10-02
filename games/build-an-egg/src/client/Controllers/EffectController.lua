@@ -24,6 +24,7 @@ local ClientState
 local remotes
 local player
 local particles
+local vfx
 local templates
 local fxPart
 local popupPool = {}
@@ -38,6 +39,7 @@ function EffectController:Init(modules, context)
 	remotes = context.Remotes
 	player = context.Player
 	particles = ReplicatedStorage:WaitForChild(Names.Effects.Folder):WaitForChild(Names.Effects.Particles)
+	vfx = ReplicatedStorage:WaitForChild(Names.Effects.Folder):WaitForChild(Names.Effects.Vfx)
 	templates = ReplicatedStorage:WaitForChild(Names.Templates.Folder)
 end
 
@@ -101,6 +103,54 @@ function EffectController:Burst(name, position, count)
 	emitter.Parent = attachment
 	emitter:Emit(math.max(1, math.floor(math.min(count, EffectsConfig.Particles.MaxPerBurst) * scale)))
 	Debris:AddItem(attachment, emitter.Lifetime.Max + 0.5)
+end
+
+local function scaled(sequence, scale)
+	local keys = {}
+	for _, key in sequence.Keypoints do
+		table.insert(keys, NumberSequenceKeypoint.new(key.Time, key.Value * scale, key.Envelope * scale))
+	end
+	return NumberSequence.new(keys)
+end
+
+function EffectController:Vfx(use, position)
+	local def = EffectsConfig.Vfx[use]
+	local quality = Settings:EffectScale()
+	if not def or quality <= 0 or not fxPart then
+		return
+	end
+	if (camera.CFrame.Position - position).Magnitude > EffectsConfig.Particles.CullDistance * 3 then
+		return
+	end
+	local preset = vfx:FindFirstChild(def.Preset)
+	if not preset then
+		return
+	end
+	local scale = def.Scale or 1
+	local attachment = Instance.new("Attachment")
+	attachment.Parent = fxPart
+	attachment.WorldPosition = position
+	local longest = 0
+	for _, template in preset:GetChildren() do
+		local emitter = template:Clone()
+		emitter.Size = scaled(emitter.Size, scale)
+		emitter.Speed = NumberRange.new(emitter.Speed.Min * scale, emitter.Speed.Max * scale)
+		emitter.Acceleration *= scale
+		emitter.Parent = attachment
+		local count = math.max(1, math.floor((template:GetAttribute("Count") or 1) * quality + 0.5))
+		local delay = template:GetAttribute("Delay") or 0
+		if delay > 0 then
+			task.delay(delay, function()
+				if emitter.Parent then
+					emitter:Emit(count)
+				end
+			end)
+		else
+			emitter:Emit(count)
+		end
+		longest = math.max(longest, delay + emitter.Lifetime.Max / math.max(emitter.TimeScale, 0.05))
+	end
+	Debris:AddItem(attachment, longest + 0.5)
 end
 
 function EffectController:CoinPopup(position, amount)
@@ -261,6 +311,7 @@ function EffectController:Handle(kind, a, b)
 		if root then
 			Audio.PlayAt("Pickup", root.Position, 1 + 0.05 * math.max(0, (a or 1) - 1))
 			self:Burst("Dust", root.Position - Vector3.new(0, 2.5, 0), 6)
+			self:Vfx("Pickup", root.Position + Vector3.new(0, 4, 0))
 		end
 	elseif kind == "Place" then
 		local ring = b or 1
@@ -274,19 +325,19 @@ function EffectController:Handle(kind, a, b)
 			local shellRadius = EggShape.Rings()[ring].Radius
 			local target = EggConfig.Center + direction * shellRadius + Vector3.new(0, EggShape.BandHeight(ring) - EggConfig.Center.Y, 0)
 			self:FlyPiece(root.Position + Vector3.new(0, 2, 0), target, function()
-				self:Burst("Dust", target, 8)
-				self:Burst("Sparkle", target, 6)
+				self:Vfx("Place", target)
+				self:Vfx("PlacePuff", target)
 			end)
 		end
 	elseif kind == "Drop" then
 		if root then
 			Audio.PlayAt("Place", root.Position, 0.8)
-			self:Burst("Dust", root.Position - Vector3.new(0, 2.5, 0), 10)
+			self:Vfx("Drop", root.Position - Vector3.new(0, 2.5, 0))
 		end
 	elseif kind == "TrainStart" then
 		Audio.Play("TrainStart")
 		if root then
-			self:Burst("Sparkle", root.Position, 8)
+			self:Vfx("TrainStart", root.Position)
 		end
 	end
 end

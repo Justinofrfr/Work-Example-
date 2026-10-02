@@ -9,6 +9,7 @@ local PropsConfig = require(Shared.Config.Props)
 local AmbientController = {
 	Wobblers = {},
 	Wanderers = {},
+	Clouds = {},
 }
 
 local CULL = 260
@@ -63,6 +64,15 @@ function AmbientController:Start()
 	CollectionService:GetInstanceAddedSignal("NPC"):Connect(addNPC)
 	CollectionService:GetInstanceAddedSignal("Wobble"):Connect(addWobble)
 	CollectionService:GetInstanceAddedSignal("Wander"):Connect(addWander)
+	local function addCloud(model)
+		if model:IsA("Model") then
+			self.Clouds[model] = { Base = model:GetPivot(), Drift = model:GetAttribute("Drift") or 2, Phase = random:NextNumber(0, math.pi * 2) }
+		end
+	end
+	for _, model in CollectionService:GetTagged("Cloud") do
+		addCloud(model)
+	end
+	CollectionService:GetInstanceAddedSignal("Cloud"):Connect(addCloud)
 	RunService.Heartbeat:Connect(function(dt)
 		self:Step(dt)
 	end)
@@ -79,6 +89,14 @@ function AmbientController:Step(dt)
 			local angle = math.rad(display.WobbleDegrees)
 			local wobble = CFrame.Angles(math.sin(t * display.WobbleSpeed + state.Phase) * angle, t * 0.6 + state.Phase, math.cos(t * display.WobbleSpeed * 1.3 + state.Phase) * angle * 0.6)
 			model:PivotTo(state.Base * wobble)
+		end
+	end
+	for model, state in self.Clouds do
+		if not model.Parent then
+			self.Clouds[model] = nil
+		else
+			local sway = math.sin(t * 0.03 * state.Drift + state.Phase) * PropsConfig.CloudSway
+			model:PivotTo(state.Base * CFrame.new(sway, math.sin(t * 0.2 + state.Phase) * 1.5, 0))
 		end
 	end
 	for model, state in self.Wanderers do

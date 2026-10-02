@@ -654,4 +654,124 @@ for _, model in scenery:GetChildren() do
 	end
 end
 
-print(("Props built: trees=%d rocks=%d bushes=%d"):format(trees, rocks, bushes))
+local decor = world:FindFirstChild("Decor")
+if decor then
+	decor:Destroy()
+end
+decor = make("Folder", { Name = "Decor", Parent = world })
+local D = PropsConfig.Decor
+local groundFolder = world:FindFirstChild("Ground")
+local overlap = OverlapParams.new()
+overlap.FilterType = Enum.RaycastFilterType.Exclude
+overlap.FilterDescendantsInstances = { groundFolder, decor }
+local function freeSpot(minRadius, maxRadius)
+	for _ = 1, 30 do
+		local angle = random:NextNumber(0, math.pi * 2)
+		local radius = random:NextNumber(minRadius, maxRadius)
+		local position = Vector3.new(math.cos(angle) * radius, 0, math.sin(angle) * radius)
+		if not blocked(position) and #Workspace:GetPartBoundsInBox(CFrame.new(position + Vector3.new(0, 3, 0)), Vector3.new(D.Keepout, 6, D.Keepout), overlap) == 0 then
+			return position
+		end
+	end
+	return nil
+end
+local function decorPart(props)
+	props.Anchored = true
+	props.CanCollide = false
+	props.CanTouch = false
+	props.CanQuery = false
+	props.CastShadow = false
+	props.TopSurface = props.TopSurface or Enum.SurfaceType.Studs
+	props.BottomSurface = Enum.SurfaceType.Inlet
+	props.Material = props.Material or Enum.Material.Plastic
+	return make("Part", props)
+end
+for _ = 1, D.Flowers.Count do
+	local position = freeSpot(D.Flowers.Ring[1], D.Flowers.Ring[2])
+	if position then
+		local height = random:NextNumber(D.Flowers.Height[1], D.Flowers.Height[2])
+		local model = make("Model", { Name = "Flower", Parent = decor })
+		decorPart({ Name = "Stem", Size = Vector3.new(0.3, height, 0.3), CFrame = CFrame.new(position + Vector3.new(0, height / 2, 0)), Color = D.Flowers.Stem, Parent = model })
+		decorPart({ Name = "Bloom", Size = Vector3.new(1.2, 0.5, 1.2), CFrame = CFrame.new(position + Vector3.new(0, height, 0)) * CFrame.Angles(0, random:NextNumber(0, math.pi), 0), Color = D.Flowers.Colors[random:NextInteger(1, #D.Flowers.Colors)], Parent = model })
+		decorPart({ Name = "Center", Size = Vector3.new(0.5, 0.3, 0.5), CFrame = CFrame.new(position + Vector3.new(0, height + 0.38, 0)), Color = D.Flowers.Center, TopSurface = Enum.SurfaceType.Smooth, Parent = model })
+	end
+end
+for _ = 1, D.Tufts.Count do
+	local position = freeSpot(D.Tufts.Ring[1], D.Tufts.Ring[2])
+	if position then
+		local height = random:NextNumber(D.Tufts.Height[1], D.Tufts.Height[2])
+		local tuft = make("WedgePart", {
+			Name = "Tuft",
+			Size = Vector3.new(random:NextNumber(1.2, 2.2), height, random:NextNumber(0.6, 1)),
+			CFrame = CFrame.new(position + Vector3.new(0, height / 2, 0)) * CFrame.Angles(0, random:NextNumber(0, math.pi * 2), 0),
+			Color = D.Tufts.Colors[random:NextInteger(1, #D.Tufts.Colors)],
+			Anchored = true,
+			CanCollide = false,
+			CanTouch = false,
+			CanQuery = false,
+			CastShadow = false,
+			Material = Enum.Material.Plastic,
+			Parent = decor,
+		})
+		tuft.TopSurface = Enum.SurfaceType.Smooth
+	end
+end
+for index = 1, D.Clouds.Count do
+	local angle = index / D.Clouds.Count * math.pi * 2 + random:NextNumber(-0.2, 0.2)
+	local radius = random:NextNumber(D.Clouds.Ring[1], D.Clouds.Ring[2])
+	local base = Vector3.new(math.cos(angle) * radius, random:NextNumber(D.Clouds.Height[1], D.Clouds.Height[2]), math.sin(angle) * radius)
+	local cloud = make("Model", { Name = "Cloud", Parent = decor })
+	for block = 1, random:NextInteger(D.Clouds.Blocks[1], D.Clouds.Blocks[2]) do
+		local size = random:NextNumber(D.Clouds.BlockSize[1], D.Clouds.BlockSize[2])
+		decorPart({
+			Name = "Puff" .. block,
+			Size = Vector3.new(size * random:NextNumber(1, 1.6), size * 0.55 + block * 0.07, size),
+			CFrame = CFrame.new(base + Vector3.new(random:NextNumber(-size, size), random:NextNumber(-size * 0.2, size * 0.25), random:NextNumber(-size * 0.6, size * 0.6))),
+			Color = D.Clouds.Color,
+			Transparency = D.Clouds.Transparency,
+			Material = Enum.Material.SmoothPlastic,
+			TopSurface = Enum.SurfaceType.Smooth,
+			Parent = cloud,
+		})
+	end
+	cloud:SetAttribute("Drift", random:NextNumber(1.5, 3.5))
+	CollectionService:AddTag(cloud, "Cloud")
+end
+local L = D.Lanterns
+for _, segment in L.Segments do
+	local length = (segment.To - segment.From).Magnitude
+	local direction = (segment.To - segment.From).Unit
+	local right = Vector3.new(-direction.Z, 0, direction.X)
+	for step = 0, math.floor(length / L.Spacing) do
+		for side = -1, 1, 2 do
+			local base = segment.From + direction * step * L.Spacing + right * side * L.Offset
+			local lantern = make("Model", { Name = "Lantern", Parent = decor })
+			decorPart({ Name = "Post", Size = Vector3.new(0.8, L.PostHeight, 0.8), CFrame = CFrame.new(base + Vector3.new(0, L.PostHeight / 2, 0)), Color = L.Post, Parent = lantern })
+			local lamp = decorPart({ Name = "Lamp", Size = Vector3.new(1.6, 1.6, 1.6), CFrame = CFrame.new(base + Vector3.new(0, L.PostHeight + 0.8, 0)), Color = L.Lamp, Material = Enum.Material.Neon, TopSurface = Enum.SurfaceType.Smooth, Parent = lantern })
+			decorPart({ Name = "Cap", Size = Vector3.new(2.2, 0.5, 2.2), CFrame = CFrame.new(base + Vector3.new(0, L.PostHeight + 1.85, 0)), Color = L.Post, Parent = lantern })
+			make("PointLight", { Range = L.LightRange, Brightness = L.LightBrightness, Color = L.Lamp, Shadows = false, Parent = lamp })
+		end
+	end
+end
+local P2 = D.Pollen
+for index, area in P2.Areas do
+	local holder = decorPart({ Name = "Pollen" .. index, Size = P2.Size, CFrame = CFrame.new(area), Transparency = 1, TopSurface = Enum.SurfaceType.Smooth, Parent = decor })
+	make("ParticleEmitter", {
+		Name = "Pollen",
+		Texture = P2.Texture,
+		Rate = P2.Rate,
+		Lifetime = NumberRange.new(5, 9),
+		Speed = NumberRange.new(0.5, 1.5),
+		SpreadAngle = Vector2.new(180, 180),
+		Acceleration = Vector3.new(0, 0.3, 0),
+		Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.2, 0.35), NumberSequenceKeypoint.new(0.8, 0.35), NumberSequenceKeypoint.new(1, 0) }),
+		Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.2, 0.2), NumberSequenceKeypoint.new(0.8, 0.2), NumberSequenceKeypoint.new(1, 1) }),
+		Color = ColorSequence.new(P2.Color),
+		LightEmission = 0.8,
+		Shape = Enum.ParticleEmitterShape.Box,
+		ShapeStyle = Enum.ParticleEmitterShapeStyle.Volume,
+		Parent = holder,
+	})
+end
+
+print(("Props built: trees=%d rocks=%d bushes=%d decor=%d"):format(trees, rocks, bushes, #decor:GetChildren()))

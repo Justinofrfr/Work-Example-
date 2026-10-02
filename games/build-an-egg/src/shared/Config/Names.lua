@@ -77,6 +77,7 @@ return {
 		Folder = "Effects",
 		Sounds = "Sounds",
 		Particles = "Particles",
+		Vfx = "Vfx",
 	},
 	Gui = {
 		Main = "Main",

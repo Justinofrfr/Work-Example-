@@ -214,8 +214,7 @@ function EggController:RevealRamp(fromRing, toRing)
 				piece.LocalTransparencyModifier = 0
 				Ui.Tween(piece, revealTime, { CFrame = target }, Enum.EasingStyle.Back)
 				if piece.Name == "Step" then
-					EffectController:Burst("Dust", target.Position, 14)
-					EffectController:Burst("Sparkle", target.Position + Vector3.new(0, 2, 0), 8)
+					EffectController:Vfx("RampReveal", target.Position)
 					Audio.PlayAt("Place", target.Position, 0.8)
 				end
 			end)
@@ -411,7 +410,9 @@ function EggController:Burst()
 	Ui.Tween(flash, 0.6, { BackgroundTransparency = 1 })
 	local top = EggConfig.Center + Vector3.new(0, EggShape.ScaffoldHeight(), 0)
 	EffectController:Burst("Shards", top, 30)
-	EffectController:Burst("Confetti", top + Vector3.new(0, 10, 0), 30)
+	EffectController:Vfx("EggBurst", top)
+	EffectController:Vfx("EggGround", EggConfig.Center + Vector3.new(0, 4, 0))
+	EffectController:Vfx("EggConfetti", top + Vector3.new(0, 10, 0))
 	EffectController:Fireworks(5)
 	self:SetGlow(0)
 	self:Crack(3)
@@ -435,6 +436,9 @@ function EggController:FlashRing(index)
 		end
 	end
 	local height = (info.Bottom + info.Top) / 2
+	local bandPoint = EggShape.ScaffoldPoint(height)
+	EffectController:Vfx("RingComplete", bandPoint + Vector3.new(0, 3, 0))
+	EffectController:Vfx("RingDust", bandPoint)
 	for step = 1, 8 do
 		local angle = step / 8 * math.pi * 2
 		EffectController:Burst("Sparkle", EggConfig.Center + Vector3.new(math.cos(angle) * info.Radius, height - EggConfig.Center.Y, math.sin(angle) * info.Radius), 6)
@@ -498,6 +502,7 @@ function EggController:SpawnHatchling(project, animated)
 				model:PivotTo(base)
 				Audio.Play("Hatch")
 				EffectController:Burst("Sparkle", base.Position + Vector3.new(0, PropsConfig.HatchlingHeight * 0.6, 0), 30)
+				EffectController:Vfx("Hatch", base.Position + Vector3.new(0, PropsConfig.HatchlingHeight * 0.6, 0))
 				capture()
 			end
 		end)

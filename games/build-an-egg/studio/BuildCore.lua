@@ -387,4 +387,24 @@ emitter("Bubbles", {
 	Size = NumberSequence.new(0.5),
 })
 
+local VfxConfig = require(Shared.Config.Vfx)
+local vfxFolder = make("Folder", { Name = Names.Effects.Vfx, Parent = effects })
+for presetName, list in VfxConfig.Presets do
+	local preset = make("Folder", { Name = presetName, Parent = vfxFolder })
+	for index, def in list do
+		local emitter = Instance.new("ParticleEmitter")
+		emitter.Name = tostring(index)
+		emitter.Enabled = false
+		emitter.Rate = 0
+		for key, value in def.Props do
+			pcall(function()
+				emitter[key] = value
+			end)
+		end
+		emitter:SetAttribute("Count", def.Count)
+		emitter:SetAttribute("Delay", def.Delay)
+		emitter.Parent = preset
+	end
+end
+
 print("Core built: remotes, templates, effects")

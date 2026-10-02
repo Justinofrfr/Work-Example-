@@ -464,6 +464,22 @@ local placeZone = part({
 	BottomSurface = Enum.SurfaceType.Smooth,
 	Parent = band,
 })
+make("ParticleEmitter", {
+	Name = "Rise",
+	Texture = "rbxasset://textures/particles/sparkles_main.dds",
+	Rate = 14,
+	Lifetime = NumberRange.new(1.2, 2),
+	Speed = NumberRange.new(3, 6),
+	EmissionDirection = Enum.NormalId.Right,
+	SpreadAngle = Vector2.new(8, 8),
+	Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.6), NumberSequenceKeypoint.new(1, 0) }),
+	Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.1), NumberSequenceKeypoint.new(1, 1) }),
+	Color = ColorSequence.new(P.Band),
+	LightEmission = 1,
+	Shape = Enum.ParticleEmitterShape.Cylinder,
+	ShapeStyle = Enum.ParticleEmitterShapeStyle.Surface,
+	Parent = placeZone,
+})
 make("BillboardGui", {
 	Name = "Label",
 	Size = UDim2.fromScale(16, 5),

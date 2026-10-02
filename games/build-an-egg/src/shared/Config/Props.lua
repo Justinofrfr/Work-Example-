@@ -133,6 +133,32 @@ return {
 			{ Center = Vector3.new(0, 0, 0), Radius = 215 },
 		},
 	},
+	Decor = {
+		Flowers = { Count = 170, Ring = { 95, 620 }, Height = { 1.4, 2.4 }, Colors = { Color3.fromRGB(255, 110, 150), Color3.fromRGB(255, 220, 80), Color3.fromRGB(150, 120, 255), Color3.fromRGB(255, 255, 255), Color3.fromRGB(255, 150, 60) }, Stem = Color3.fromRGB(70, 170, 70), Center = Color3.fromRGB(255, 230, 120) },
+		Tufts = { Count = 240, Ring = { 90, 640 }, Height = { 0.8, 1.6 }, Colors = { Color3.fromRGB(90, 185, 75), Color3.fromRGB(120, 210, 90), Color3.fromRGB(75, 160, 65) } },
+		Clouds = { Count = 14, Ring = { 260, 660 }, Height = { 150, 230 }, Blocks = { 4, 7 }, BlockSize = { 14, 34 }, Color = Color3.fromRGB(255, 255, 255), Transparency = 0.08 },
+		Lanterns = {
+			Spacing = 20,
+			Offset = 13,
+			Segments = {
+				{ From = Vector3.new(0, 0, -345), To = Vector3.new(0, 0, -312) },
+				{ From = Vector3.new(0, 0, -215), To = Vector3.new(0, 0, -168) },
+			},
+			PostHeight = 7,
+			Post = Color3.fromRGB(102, 64, 38),
+			Lamp = Color3.fromRGB(255, 214, 140),
+			LightRange = 20,
+			LightBrightness = 1.4,
+		},
+		Pollen = {
+			Areas = { Vector3.new(0, 12, -330), Vector3.new(0, 18, -120), Vector3.new(-200, 12, 0), Vector3.new(200, 12, 0), Vector3.new(0, 12, 200) },
+			Size = Vector3.new(170, 24, 170),
+			Rate = 5,
+			Color = Color3.fromRGB(255, 245, 170),
+			Texture = "rbxasset://textures/particles/sparkles_main.dds",
+		},
+		Keepout = 6,
+	},
 	Ambient = {
 		{ Source = "Hen", Count = 4, Height = 3.2, Area = Vector3.new(-95, 0, -360), Spread = 22, Speed = 5, Yaw = 90 },
 		{ Source = "Chick", Count = 5, Height = 1.8, Area = Vector3.new(-95, 0, -360), Spread = 22, Speed = 6, Yaw = 90 },
@@ -178,4 +204,5 @@ return {
 	NPCIdleAnimation = "rbxassetid://507766666",
 	WanderPause = { 1.5, 4 },
 	WanderHop = 0.35,
+	CloudSway = 40,
 }

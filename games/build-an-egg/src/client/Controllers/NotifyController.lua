@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -68,6 +69,11 @@ function NotifyController:Handle(kind, a, b)
 		self:Banner(M.RankUp:format(a), Color3.fromRGB(190, 120, 255))
 		Audio.Play("RankUp")
 		PurchaseFxController:Confetti(UIConfig.Celebrate.RankUp)
+		local character = Players.LocalPlayer.Character
+		local head = character and character:FindFirstChild("Head")
+		if head then
+			EffectController:Vfx("RankUp", head.Position + Vector3.new(0, 3, 0))
+		end
 	elseif kind == "GymUnlocked" then
 		local tier = Formulas.GymTier(a)
 		self:Banner(M.GymUnlocked:format(tier and (tier.Multiplier .. "x") or a), Color3.fromRGB(90, 200, 255))
