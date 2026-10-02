@@ -8,7 +8,7 @@ local GameConfig = require(Shared.Config.Game)
 local Formulas = {}
 
 function Formulas.WalkSpeed(speed: number): number
-	return math.min(StatsConfig.BaseWalkSpeed + speed * StatsConfig.WalkSpeedPerSpeed, StatsConfig.MaxWalkSpeed)
+	return math.min(StatsConfig.BaseWalkSpeed + StatsConfig.WalkSpeedCoefficient * math.log10(1 + math.max(speed, 0) / StatsConfig.WalkSpeedDivisor), StatsConfig.MaxWalkSpeed)
 end
 
 function Formulas.Capacity(strength: number): number

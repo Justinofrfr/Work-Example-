@@ -13,11 +13,17 @@ local StateService = {
 
 local DataService
 local MonetizationService
+local BuildService
+local MovementGuardService
+local PetService
 local remotes
 
 function StateService:Init(modules, context)
 	DataService = modules.DataService
 	MonetizationService = modules.MonetizationService
+	BuildService = modules.BuildService
+	MovementGuardService = modules.MovementGuardService
+	PetService = modules.PetService
 	remotes = context.Remotes
 end
 
@@ -83,15 +89,17 @@ end
 function StateService:AwardStat(player, stat, amount)
 	local data = DataService:Get(player)
 	if not data or (stat ~= "Speed" and stat ~= "Strength") then
-		return
+		return 0
 	end
-	local gain = amount * self:BoostMultiplier(player, stat)
+	local runtime = self.Runtime[player]
+	local gain = amount * self:BoostMultiplier(player, stat) * (1 + (runtime and runtime.FriendBoost or 0)) * (PetService and PetService:Multiplier(player, stat) or 1)
 	data[stat] += gain
 	DataService:MarkDirty(player)
 	if stat == "Speed" then
 		self:ApplyWalkSpeed(player)
 	end
 	self:Dirty(player)
+	return gain
 end
 
 function StateService:Grant(player, rewards)
@@ -119,9 +127,21 @@ function StateService:ApplyWalkSpeed(player)
 	local data = DataService:Get(player)
 	local character = player.Character
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	local runtime = self.Runtime[player]
 	if data and humanoid then
-		humanoid.WalkSpeed = Formulas.WalkSpeed(data.Speed)
+		humanoid.WalkSpeed = runtime and runtime.Training and 0 or Formulas.WalkSpeed(data.Speed)
 	end
+end
+
+function StateService:Teleport(player, cframe)
+	local character = player.Character
+	if not character then
+		return
+	end
+	if MovementGuardService then
+		MovementGuardService:Grace(player)
+	end
+	character:PivotTo(cframe)
 end
 
 function StateService:OnCharacter(player, character)
@@ -133,6 +153,9 @@ function StateService:OnCharacter(player, character)
 	if runtime then
 		runtime.Carry = 0
 		runtime.Training = nil
+	end
+	if MovementGuardService then
+		MovementGuardService:Grace(player)
 	end
 	self:ApplyWalkSpeed(player)
 	self:ApplyRankTag(player, character)
@@ -152,8 +175,20 @@ function StateService:ApplyRankTag(player, character)
 	local rank = Formulas.Rank(data.Eggs)
 	local label = tag:FindFirstChild("Title", true)
 	if label and label:IsA("TextLabel") then
-		label.Text = rank.Name
+		label.Text = string.upper(rank.Name)
 		label.TextColor3 = rank.Color
+	end
+	local count = tag:FindFirstChild("Count", true)
+	if count and count:IsA("TextLabel") then
+		count.Text = "🥚 " .. tostring(data.Eggs)
+	end
+	local nameLabel = tag:FindFirstChild("PlayerName", true)
+	if nameLabel and nameLabel:IsA("TextLabel") then
+		nameLabel.Text = player.DisplayName
+	end
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
 	end
 	tag.Parent = head
 end
@@ -203,9 +238,19 @@ function StateService:Sync(player)
 		Upgrades = data.Upgrades,
 		BoostLevels = data.BoostLevels,
 		GiftClaimed = data.GiftClaimed,
-		Training = runtime.Training,
+		Training = runtime.Training and runtime.Training.Stat or nil,
+		TrainingTier = runtime.Training and runtime.Training.Tier or nil,
+		RoundPieces = BuildService and BuildService:Contribution(player) or 0,
+		Claimed = BuildService and BuildService.Claimed[player.UserId] == true or false,
 		Rank = rank.Name,
 		Passes = MonetizationService:OwnedPasses(player),
+		FriendBoost = runtime.FriendBoost or 0,
+		TutorialStep = data.TutorialStep or 0,
+		Fragments = data.Fragments,
+		Pets = data.Pets,
+		Equipped = data.Equipped,
+		PetSpeed = PetService and PetService:Multiplier(player, "Speed") or 1,
+		PetStrength = PetService and PetService:Multiplier(player, "Strength") or 1,
 	})
 end
 

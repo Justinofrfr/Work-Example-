@@ -28,7 +28,12 @@ local function template()
 		BoostLevels = { SpeedBoost = 0, StrengthBoost = 0 },
 		Codes = {},
 		GiftClaimed = false,
+		TutorialStep = 0,
 		Purchases = {},
+		Fragments = {},
+		Pets = {},
+		Equipped = {},
+		PetSerial = 0,
 	}
 end
 
@@ -69,6 +74,10 @@ local function key(player)
 end
 
 function DataService:Init()
+	if RunService:IsStudio() and not GameConfig.SaveInStudio then
+		store = nil
+		return
+	end
 	local ok, result = pcall(function()
 		local candidate = DataStoreService:GetDataStore(GameConfig.DataStoreName)
 		if RunService:IsStudio() then
@@ -87,7 +96,7 @@ function DataService:Start()
 		self:LoadPlayer(player)
 	end)
 	for _, player in Players:GetPlayers() do
-		task.spawn(self.LoadPlayer, self, player)
+		task.defer(self.LoadPlayer, self, player)
 	end
 	Players.PlayerRemoving:Connect(function(player)
 		self:ReleasePlayer(player)
@@ -118,28 +127,60 @@ function DataService:Start()
 	end)
 end
 
-function DataService:LoadPlayer(player)
-	local data
-	if store then
+function DataService:AcquireLock(player)
+	local deadline = os.clock() + GameConfig.ForeignLockWait
+	while true do
 		waitForBudget(Enum.DataStoreRequestType.UpdateAsync)
+		local foreign = false
 		local ok, result = retry(function()
 			return store:UpdateAsync(key(player), function(current)
 				current = current or template()
 				local lock = current.SessionLock
 				if lock and lock.JobId ~= game.JobId and os.time() - lock.Time < GameConfig.SessionLockTimeout then
+					foreign = true
 					return nil
 				end
+				foreign = false
 				current.SessionLock = { JobId = game.JobId, Time = os.time() }
 				return current
 			end)
 		end)
-		if not ok or result == nil then
+		if ok and result ~= nil then
+			return result
+		end
+		if not ok or not foreign or os.clock() >= deadline or not player.Parent then
+			return nil
+		end
+		task.wait(GameConfig.ForeignLockRetryDelay)
+	end
+end
+
+function DataService:ClearLock(player)
+	pcall(function()
+		store:UpdateAsync(key(player), function(current)
+			if current and current.SessionLock and current.SessionLock.JobId == game.JobId then
+				current.SessionLock = nil
+				return current
+			end
+			return nil
+		end)
+	end)
+end
+
+function DataService:LoadPlayer(player)
+	local data
+	if store then
+		data = self:AcquireLock(player)
+		if data == nil then
 			if player.Parent then
 				player:Kick("Your data is still loading in another server. Please rejoin in a moment.")
 			end
 			return
 		end
-		data = result
+		if not player.Parent then
+			self:ClearLock(player)
+			return
+		end
 	else
 		data = template()
 	end
@@ -147,38 +188,59 @@ function DataService:LoadPlayer(player)
 		return
 	end
 	reconcile(data, template())
-	self.Profiles[player] = { Data = data, Dirty = false }
+	self.Profiles[player] = { Data = data, Dirty = false, Released = false, Saving = false }
 	self.Loaded:Fire(player, data)
 end
 
 function DataService:Save(player, release)
 	local profile = self.Profiles[player]
-	if not profile or not store then
-		return
+	if not profile then
+		return false
 	end
+	if not store then
+		return true
+	end
+	if profile.Released and not release then
+		return false
+	end
+	while profile.Saving do
+		task.wait(0.1)
+	end
+	if profile.Released and not release then
+		return false
+	end
+	profile.Saving = true
 	local data = profile.Data
+	local lockLost = false
 	waitForBudget(Enum.DataStoreRequestType.UpdateAsync)
-	local ok, err = retry(function()
+	local ok, result = retry(function()
 		return store:UpdateAsync(key(player), function(current)
 			if current and current.SessionLock and current.SessionLock.JobId ~= game.JobId then
+				lockLost = true
 				return nil
 			end
+			lockLost = false
 			local copy = table.clone(data)
 			copy.SessionLock = not release and { JobId = game.JobId, Time = os.time() } or nil
 			return copy
 		end)
 	end)
-	if ok then
+	profile.Saving = false
+	local saved = ok and result ~= nil
+	if saved then
 		profile.Dirty = false
 	else
-		warn("[DataService] save failed for " .. player.UserId .. ": " .. tostring(err))
+		warn(("[DataService] save failed for %d: %s"):format(player.UserId, lockLost and "session lock owned by another server" or tostring(result)))
 	end
+	return saved
 end
 
 function DataService:ReleasePlayer(player)
-	if not self.Profiles[player] then
+	local profile = self.Profiles[player]
+	if not profile or profile.Released then
 		return
 	end
+	profile.Released = true
 	self.Releasing:Fire(player)
 	self:Save(player, true)
 	self.Profiles[player] = nil

@@ -1,3 +1,4 @@
+local Debris = game:GetService("Debris")
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -5,9 +6,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local ProductsConfig = require(Shared.Config.Products)
 local Names = require(Shared.Config.Names)
+local UIConfig = require(Shared.Config.UI)
+local GameConfig = require(Shared.Config.Game)
+local Signal = require(Shared.Util.Signal)
 
 local MonetizationService = {
 	PassCache = {},
+	PassChanged = Signal.new(),
 }
 
 local DataService
@@ -53,7 +58,9 @@ function MonetizationService:Start()
 					self.PassCache[player] = self.PassCache[player] or {}
 					self.PassCache[player][key] = true
 					StateService:Dirty(player)
-					remotes[Names.Remotes.Notify]:FireClient(player, "PassOwned", key)
+					self.PassChanged:Fire(player, key)
+					self:ShowPurchase(player, pass.Name or key)
+					remotes[Names.Remotes.Notify]:FireClient(player, "Purchased", pass.Name or key)
 				end
 			end
 		end
@@ -73,8 +80,12 @@ function MonetizationService:RefreshPasses(player)
 			owned[key] = false
 		end
 	end
+	if not player.Parent then
+		return
+	end
 	self.PassCache[player] = owned
 	StateService:Dirty(player)
+	self.PassChanged:Fire(player)
 end
 
 function MonetizationService:OwnsPass(player, key)
@@ -117,21 +128,57 @@ function MonetizationService:ProcessReceipt(receipt)
 		return Enum.ProductPurchaseDecision.NotProcessedYet
 	end
 	local product = ProductsConfig.DevProducts[entry.Key]
+	local previousLevel = data.BoostLevels[entry.Key]
+	local coinsGranted = 0
 	if product.Tiers then
-		data.BoostLevels[entry.Key] = (data.BoostLevels[entry.Key] or 0) + 1
+		data.BoostLevels[entry.Key] = (previousLevel or 0) + 1
 	elseif product.Pieces then
-		BuildService:AddPieces(player, product.Pieces, true)
-		data.Coins += product.Coins or 0
-		remotes[Names.Remotes.Notify]:FireAllClients("ServerPack", player.DisplayName, product.Pieces)
+		coinsGranted = product.Coins or 0
+		data.Coins += coinsGranted
 	end
 	table.insert(data.Purchases, receipt.PurchaseId)
 	while #data.Purchases > ProductsConfig.PurchaseHistoryCap do
 		table.remove(data.Purchases, 1)
 	end
 	DataService:MarkDirty(player)
-	DataService:Save(player, false)
+	if not DataService:Save(player, false) then
+		local index = table.find(data.Purchases, receipt.PurchaseId)
+		if index then
+			table.remove(data.Purchases, index)
+		end
+		if product.Tiers then
+			data.BoostLevels[entry.Key] = previousLevel
+		else
+			data.Coins -= coinsGranted
+		end
+		StateService:Dirty(player)
+		return Enum.ProductPurchaseDecision.NotProcessedYet
+	end
+	if product.Pieces then
+		BuildService:AddPieces(player, product.Pieces, true)
+		remotes[Names.Remotes.Notify]:FireAllClients("ServerPack", player.DisplayName, product.Pieces)
+	end
+	self:ShowPurchase(player, product.Name or entry.Key)
+	remotes[Names.Remotes.Notify]:FireClient(player, "Purchased", product.Name or entry.Key)
 	StateService:Dirty(player)
 	return Enum.ProductPurchaseDecision.PurchaseGranted
+end
+
+function MonetizationService:ShowPurchase(player, itemName)
+	local character = player.Character
+	local head = character and character:FindFirstChild("Head")
+	local templates = ReplicatedStorage:FindFirstChild(Names.Templates.Folder)
+	local template = templates and templates:FindFirstChild(Names.Templates.PurchaseTag)
+	if not head or not template then
+		return
+	end
+	local tag = template:Clone()
+	local label = tag:FindFirstChild("Text")
+	if label then
+		label.Text = UIConfig.Messages.Purchased:format(itemName)
+	end
+	tag.Parent = head
+	Debris:AddItem(tag, GameConfig.PurchaseTagTime)
 end
 
 return MonetizationService
