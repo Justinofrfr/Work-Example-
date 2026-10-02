@@ -1,6 +1,6 @@
 return {
 	GamePasses = {
-		Gym2 = { Id = 0, Price = 29, Name = "Unlock 2x Gym", Description = "Skip the 1 egg requirement for the 2x gym." },
+		Gym2 = { Id = 2004926308, Price = 29, Name = "Unlock 2x Gym", Description = "Skip the 1 egg requirement for the 2x gym." },
 		Gym5 = { Id = 0, Price = 68, Name = "Unlock 5x Gym", Description = "Skip the 3 egg requirement for the 5x gym." },
 		GoldenGoose = { Id = 0, Price = 104, Name = "Golden Goose", Description = "2x eggs from every hatch, quick pickup and quick place, plus a golden aura.", CreditMultiplier = 2, InstantActions = true, QuickPickup = true, QuickPlace = true },
 		Gym10 = { Id = 0, Price = 199, Name = "Unlock 10x Gym", Description = "Skip the 8 egg requirement for the 10x gym." },
