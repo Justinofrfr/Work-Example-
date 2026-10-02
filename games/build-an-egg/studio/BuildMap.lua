@@ -321,7 +321,7 @@ local function shellTile()
 	local inner = make("Part", { Shape = Enum.PartType.Cylinder, Size = Vector3.new(1.4, (radius - EggConfig.TileThickness) * 2, (radius - EggConfig.TileThickness) * 2), CFrame = CFrame.Angles(0, 0, math.rad(90)), Anchored = true })
 	local box = make("Part", { Size = Vector3.new(1, 1, depth), CFrame = CFrame.new(0, 0, -radius + depth / 2), Anchored = true })
 	local ok, tile = pcall(function()
-		local slab = GeometryService:IntersectAsync(outer, { box }, { CollisionFidelity = Enum.CollisionFidelity.Box, RenderFidelity = Enum.RenderFidelity.Precise })[1]
+		local slab = GeometryService:IntersectAsync(box, { outer }, { CollisionFidelity = Enum.CollisionFidelity.Box, RenderFidelity = Enum.RenderFidelity.Precise })[1]
 		return GeometryService:SubtractAsync(slab, { inner }, { CollisionFidelity = Enum.CollisionFidelity.Box, RenderFidelity = Enum.RenderFidelity.Precise, SplitApart = false })[1]
 	end)
 	outer:Destroy()
