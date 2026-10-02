@@ -1,5 +1,5 @@
 local TARGET_PLACE = 107780766224326
-local BASE = "http://127.0.0.1:34877/studio/"
+local BASE = (_G.__EggBase or "http://127.0.0.1:34877/") .. "studio/"
 
 return function(names)
 	if game.PlaceId ~= TARGET_PLACE then

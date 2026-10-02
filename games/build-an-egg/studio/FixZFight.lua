@@ -1,6 +1,6 @@
 local HttpService = game:GetService("HttpService")
 
-local source = HttpService:GetAsync("http://127.0.0.1:34877/studio/ZFight.lua?t=" .. tostring(os.clock()), true)
+local source = HttpService:GetAsync((_G.__EggBase or "http://127.0.0.1:34877/") .. "studio/ZFight.lua?t=" .. tostring(os.clock()), true)
 local fixed = {}
 for _ = 1, 10 do
 	local hits = loadstring(source)()

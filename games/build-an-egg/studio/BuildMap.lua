@@ -378,48 +378,46 @@ for index = 1, 44 do
 end
 
 local scaffold = make("Model", { Name = W.Scaffold, Parent = site })
-local steps = EggConfig.ScaffoldTurns * EggConfig.ScaffoldStepsPerTurn
-local rise = EggShape.ScaffoldHeight() / steps
-local stepAngle = 2 * math.pi / EggConfig.ScaffoldStepsPerTurn
-local arc = stepAngle * EggConfig.ScaffoldRadius
-for index = 1, steps do
-	local midHeight = center.Y + (index - 0.5) * rise
-	local point, angle = EggShape.ScaffoldPoint(midHeight)
-	local outward = Vector3.new(math.cos(angle), 0, math.sin(angle))
-	local tangent = Vector3.new(-math.sin(angle), 0, math.cos(angle))
-	local forward = (tangent * arc + Vector3.new(0, rise, 0)).Unit
-	local up = forward:Cross(outward).Unit
-	if up.Y < 0 then
-		up = -up
-	end
-	local cf = CFrame.fromMatrix(point, outward, up)
+local stairDirection = EggConfig.ScaffoldDirection.Unit
+local stairRight = Vector3.new(-stairDirection.Z, 0, stairDirection.X)
+local stairRise = EggConfig.ScaffoldStepRise
+local stairSteps = math.floor(EggShape.ScaffoldHeight() / stairRise)
+local stairWidth = EggConfig.ScaffoldWidth
+for index = 1, stairSteps do
+	local height = center.Y + index * stairRise
+	local near = EggShape.ScaffoldDistance(height)
+	local far = EggShape.ScaffoldDistance(height - stairRise)
+	local tread = math.max(far - near, 0.6)
+	local mid = (near + far) / 2
+	local position = Vector3.new(center.X + stairDirection.X * mid, height - 0.6, center.Z + stairDirection.Z * mid)
+	local cf = CFrame.lookAt(position, position + stairDirection)
 	local plank = part({
 		Name = "Step",
-		Size = Vector3.new(EggConfig.ScaffoldWidth, 1.2, arc * 1.08),
+		Size = Vector3.new(stairWidth, 1.2, tread + 0.4),
 		CFrame = cf,
 		Color = P.Wood,
 		Material = Enum.Material.WoodPlanks,
 		Parent = scaffold,
 	})
-	plank:SetAttribute("Height", midHeight)
+	plank:SetAttribute("Height", height)
 	for side = -1, 1, 2 do
 		part({
 			Name = "Rail",
-			Size = Vector3.new(0.6, 3, arc * 1.04),
-			CFrame = cf * CFrame.new(side * (EggConfig.ScaffoldWidth / 2 - 0.5), 2, 0),
+			Size = Vector3.new(0.6, 3, tread),
+			CFrame = cf * CFrame.new(side * (stairWidth / 2 - 0.5), 2.1, 0),
 			Color = P.WoodDark,
 			Material = Enum.Material.Wood,
 			Parent = scaffold,
 		})
 	end
-	if index % 3 == 0 then
-		local postHeight = midHeight - center.Y
+	if index % EggConfig.ScaffoldPostEvery == 0 then
+		local postHeight = height - 1.2 - center.Y
 		for side = -1, 1, 2 do
-			local base = point + outward * side * (EggConfig.ScaffoldWidth / 2 - 1)
+			local base = position + stairRight * side * (stairWidth / 2 - 1.2)
 			part({
 				Name = "Post",
 				Size = Vector3.new(1.6, postHeight, 1.6),
-				CFrame = CFrame.new(Vector3.new(base.X, center.Y + postHeight / 2 - 0.6, base.Z)),
+				CFrame = CFrame.new(Vector3.new(base.X, center.Y + postHeight / 2, base.Z)),
 				Color = P.WoodDark,
 				Material = Enum.Material.Wood,
 				Parent = scaffold,
@@ -430,8 +428,8 @@ end
 local topPoint = EggShape.ScaffoldPoint(center.Y + EggShape.ScaffoldHeight())
 part({
 	Name = "TopDeck",
-	Size = Vector3.new(EggConfig.ScaffoldWidth + 6, 1.2, EggConfig.ScaffoldWidth + 6),
-	CFrame = CFrame.new(topPoint + Vector3.new(0, 0.4, 0)),
+	Size = Vector3.new(stairWidth + 6, 1.2, stairWidth + 6),
+	CFrame = CFrame.new(topPoint + Vector3.new(0, -0.6, 0)),
 	Color = P.Wood,
 	Material = Enum.Material.WoodPlanks,
 	Parent = scaffold,

@@ -1,6 +1,6 @@
 local HttpService = game:GetService("HttpService")
 
-local BASE = "http://127.0.0.1:34877/"
+local BASE = _G.__EggBase or "http://127.0.0.1:34877/"
 
 local roots = {
 	{ Path = "src/shared/", Parent = game:GetService("ReplicatedStorage"), Name = "Shared" },
@@ -14,6 +14,20 @@ end
 
 local function list(path)
 	local items = {}
+	if _G.__EggTree then
+		local seen = {}
+		for _, file in _G.__EggTree do
+			if file:sub(1, #path) == path then
+				local first, slash = file:sub(#path + 1):match("^([^/]+)(/?)")
+				local entry = first and (first .. slash)
+				if entry and not seen[entry] then
+					seen[entry] = true
+					table.insert(items, entry)
+				end
+			end
+		end
+		return items
+	end
 	for href in fetch(path):gmatch('href="([^"?]+)"') do
 		if not href:find("^%.") and not href:find("^/") then
 			table.insert(items, href)

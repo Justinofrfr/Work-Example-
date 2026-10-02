@@ -4,7 +4,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local StarterPlayer = game:GetService("StarterPlayer")
 local StudioTestService = game:GetService("StudioTestService")
 
-local BASE = "http://127.0.0.1:34877/studio/"
+local BASE = (_G.__EggBase or "http://127.0.0.1:34877/") .. "studio/"
 
 local function fetch(name)
 	return HttpService:GetAsync(BASE .. name .. ".lua?t=" .. tostring(os.clock()), true)
