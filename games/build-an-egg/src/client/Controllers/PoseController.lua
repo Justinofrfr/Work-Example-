@@ -80,6 +80,16 @@ function PoseController:Barbell(rig, show)
 	end
 end
 
+function PoseController:Freeze(character)
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	local animator = humanoid and humanoid:FindFirstChildOfClass("Animator")
+	if animator then
+		for _, track in animator:GetPlayingAnimationTracks() do
+			track:Stop(0)
+		end
+	end
+end
+
 function PoseController:Step(dt)
 	local t = os.clock()
 	local cameraPosition = camera.CFrame.Position
@@ -106,8 +116,10 @@ function PoseController:Step(dt)
 		local elbowTarget = 0
 		if lifting then
 			local wave = 0.5 + 0.5 * math.sin(t * P.LiftSpeed)
-			shoulderTarget = math.rad(P.LiftShoulderAngle)
-			elbowTarget = math.rad(P.LiftElbowMax) * (1 - wave)
+			local shoulder = P.LiftShoulderMin + (P.LiftShoulderMax - P.LiftShoulderMin) * wave
+			shoulderTarget = math.rad(shoulder)
+			elbowTarget = math.rad(P.LiftShoulderMax - shoulder)
+			self:Freeze(character)
 		elseif character:GetAttribute(A.Carrying) then
 			shoulderTarget = math.rad(P.CarryArmAngle)
 		end

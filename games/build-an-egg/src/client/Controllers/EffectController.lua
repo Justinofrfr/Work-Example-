@@ -33,6 +33,8 @@ local popupPool = {}
 local popupIndex = 0
 local music
 local finalMusic
+local playlist = {}
+local trackIndex = 0
 local ambience
 local camera = Workspace.CurrentCamera
 
@@ -72,7 +74,19 @@ function EffectController:Start()
 	RunService:BindToRenderStep("EggShake", Enum.RenderPriority.Camera.Value + 1, function()
 		self:ApplyShake()
 	end)
-	music = Audio.Loop("Music")
+	for _, name in EffectsConfig.Playlist do
+		local sound = Audio.Track(name)
+		if sound then
+			table.insert(playlist, sound)
+			sound.Ended:Connect(function()
+				if sound == music then
+					self:NextTrack()
+				end
+			end)
+		end
+	end
+	trackIndex = #playlist > 0 and math.random(1, #playlist) or 0
+	music = playlist[trackIndex]
 	finalMusic = Audio.Loop("MusicFinal")
 	ambience = Audio.Loop("Ambience")
 	if ambience then
@@ -421,6 +435,16 @@ function EffectController:OnServer(server, previous)
 		end
 	end
 	self.FinalStretch = server.Phase == "Building" and fraction >= EffectsConfig.FinalMusicFraction
+	self:UpdateMusic()
+end
+
+function EffectController:NextTrack()
+	if #playlist == 0 then
+		return
+	end
+	trackIndex = trackIndex % #playlist + 1
+	music = playlist[trackIndex]
+	self.MusicKey = nil
 	self:UpdateMusic()
 end
 

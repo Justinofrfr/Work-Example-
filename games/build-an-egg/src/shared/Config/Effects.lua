@@ -36,7 +36,12 @@ return {
 		Open = { Id = "rbxassetid://127488139302452", Volume = 0.3 },
 		Close = { Id = "rbxassetid://103749529388434", Volume = 0.3 },
 		Ambience = { Id = "rbxassetid://9116971178", Volume = 0.25, Looped = true },
-		Music = { Id = "rbxassetid://9047876673", Volume = 0.3, Looped = true },
+		Music = { Id = "rbxassetid://9047876673", Volume = 0.3 },
+		Music2 = { Id = "rbxassetid://1845756489", Volume = 0.3 },
+		Music3 = { Id = "rbxassetid://109169936780821", Volume = 0.28 },
+		Music4 = { Id = "rbxassetid://124849039097423", Volume = 0.28 },
+		Music5 = { Id = "rbxassetid://106410560378452", Volume = 0.26 },
+		Music6 = { Id = "rbxassetid://138524894251708", Volume = 0.28 },
 		MusicFinal = { Id = "rbxassetid://77999551719434", Volume = 0.35, Looped = true },
 	},
 	Particles = {
@@ -76,8 +81,8 @@ return {
 	Poses = {
 		CarryArmAngle = 0,
 		CarryLerp = 10,
-		LiftShoulderAngle = 90,
-		LiftElbowMax = 100,
+		LiftShoulderMin = 50,
+		LiftShoulderMax = 90,
 		LiftSpeed = 3.5,
 		CullDistance = 400,
 	},
@@ -128,4 +133,5 @@ return {
 	BandPulseSpeed = 2,
 	TrailFirstTripOnly = true,
 	MusicCrossfade = 2,
+	Playlist = { "Music", "Music2", "Music3", "Music4", "Music5", "Music6" },
 }

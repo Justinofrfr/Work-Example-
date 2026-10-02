@@ -88,6 +88,17 @@ function Audio.PlayAt(name, position, pitch)
 	return sound
 end
 
+function Audio.Track(name)
+	local source = template(name)
+	if not source then
+		return nil
+	end
+	local sound = source:Clone()
+	sound.Looped = false
+	sound.Parent = SoundService
+	return sound
+end
+
 function Audio.Loop(name)
 	local source = template(name)
 	if not source then
