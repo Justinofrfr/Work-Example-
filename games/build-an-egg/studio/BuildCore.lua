@@ -221,31 +221,58 @@ make("BillboardGui", {
 	label({ Name = "Text", Text = "0" }),
 })
 
-local fragment = make("Part", {
-	Name = Names.Templates.Fragment,
-	Size = Vector3.new(0.9, 1.3, 0.9),
-	Material = Enum.Material.Neon,
-	Color = Color3.new(1, 1, 1),
-	Anchored = true,
-	CanCollide = false,
-	CanQuery = false,
-	CanTouch = false,
-	CastShadow = false,
-	Parent = templates,
-})
-local trailTop = make("Attachment", { Name = "A0", Position = Vector3.new(0, 0.5, 0), Parent = fragment })
-local trailBottom = make("Attachment", { Name = "A1", Position = Vector3.new(0, -0.5, 0), Parent = fragment })
-make("Trail", {
-	Name = "Trail",
-	Attachment0 = trailTop,
-	Attachment1 = trailBottom,
-	Lifetime = 0.35,
-	LightEmission = 1,
-	FaceCamera = true,
-	Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.1), NumberSequenceKeypoint.new(1, 1) }),
-	Parent = fragment,
-})
-make("PointLight", { Name = "Glow", Range = 6, Brightness = 1.5, Parent = fragment })
+local fragments = make("Folder", { Name = Names.Templates.Fragment, Parent = templates })
+local shardSource = imported and imported:FindFirstChild("EggShards")
+local shardMeshes = {}
+for _, mesh in shardSource and shardSource:GetDescendants() or {} do
+	if mesh:IsA("MeshPart") then
+		table.insert(shardMeshes, mesh)
+	end
+end
+if #shardMeshes == 0 then
+	table.insert(shardMeshes, make("Part", { Name = "Shard", Size = Vector3.new(1, 1, 1) }))
+end
+for index, source in shardMeshes do
+	local shard = source:Clone()
+	for _, child in shard:GetChildren() do
+		child:Destroy()
+	end
+	shard.Name = "Shard" .. index
+	local longest = math.max(shard.Size.X, shard.Size.Y, shard.Size.Z)
+	shard.Size = shard.Size / longest * EffectsConfig.Cutscene.Fragments.Size
+	shard.Material = Enum.Material.SmoothPlastic
+	shard.Color = Color3.new(1, 1, 1)
+	shard.Anchored = true
+	shard.CanCollide = false
+	shard.CanQuery = false
+	shard.CanTouch = false
+	shard.CastShadow = false
+	shard.Parent = fragments
+	local trailTop = make("Attachment", { Name = "A0", Position = Vector3.new(0, 0.4, 0), Parent = shard })
+	local trailBottom = make("Attachment", { Name = "A1", Position = Vector3.new(0, -0.4, 0), Parent = shard })
+	make("Trail", {
+		Name = "Trail",
+		Attachment0 = trailTop,
+		Attachment1 = trailBottom,
+		Lifetime = 0.35,
+		LightEmission = 1,
+		FaceCamera = true,
+		Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.1), NumberSequenceKeypoint.new(1, 1) }),
+		Parent = shard,
+	})
+	make("PointLight", { Name = "Glow", Range = 7, Brightness = 1.6, Parent = shard })
+	make("ParticleEmitter", {
+		Name = "Sparkle",
+		Texture = "rbxasset://textures/particles/sparkles_main.dds",
+		Rate = 6,
+		Lifetime = NumberRange.new(0.4, 0.7),
+		Speed = NumberRange.new(0.5, 1.5),
+		SpreadAngle = Vector2.new(180, 180),
+		Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.35), NumberSequenceKeypoint.new(1, 0) }),
+		LightEmission = 1,
+		Parent = shard,
+	})
+end
 
 local pile = shellChunk(Names.Templates.DroppedPile)
 pile.Anchored = true

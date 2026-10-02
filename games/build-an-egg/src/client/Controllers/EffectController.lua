@@ -157,8 +157,9 @@ end
 
 function EffectController:FragmentShower(granted)
 	local root = self:Root()
-	local template = templates:FindFirstChild(Names.Templates.Fragment)
-	if not root or not template then
+	local folder = templates:FindFirstChild(Names.Templates.Fragment)
+	local shapes = folder and folder:GetChildren() or {}
+	if not root or #shapes == 0 then
 		return
 	end
 	local F = EffectsConfig.Cutscene.Fragments
@@ -180,10 +181,12 @@ function EffectController:FragmentShower(granted)
 			local flat = root.Position + Vector3.new(math.cos(angle) * distance, 0, math.sin(angle) * distance)
 			local hit = Workspace:Raycast(flat + Vector3.new(0, 12, 0), Vector3.new(0, -40, 0), params)
 			local land = (hit and hit.Position or (flat - Vector3.new(0, 3, 0))) + Vector3.new(0, 0.9, 0)
+			local template = shapes[math.random(1, #shapes)]
 			local piece = template:Clone()
 			piece.Color = color
 			piece.Glow.Color = color
 			piece.Trail.Color = ColorSequence.new(color)
+			piece.Sparkle.Color = ColorSequence.new(color)
 			piece.CFrame = CFrame.new(origin)
 			piece.Parent = Workspace
 			Audio.PlayAt("Pickup", origin, 1.2 + math.random() * 0.3)

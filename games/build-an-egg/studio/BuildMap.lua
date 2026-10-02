@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Lighting = game:GetService("Lighting")
 local Workspace = game:GetService("Workspace")
+local ServerStorage = game:GetService("ServerStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Names = require(Shared.Config.Names)
@@ -338,7 +339,19 @@ local function shellTile()
 	tile.Anchored = true
 	return tile
 end
-local tileTemplate = shellTile()
+local importedTile = ServerStorage:FindFirstChild("Imported") and ServerStorage.Imported:FindFirstChild("ShellTile")
+local tileMesh = importedTile and importedTile:FindFirstChildWhichIsA("MeshPart", true)
+local tileTemplate
+if tileMesh then
+	tileTemplate = tileMesh:Clone()
+	for _, child in tileTemplate:GetChildren() do
+		child:Destroy()
+	end
+	tileTemplate.CollisionFidelity = Enum.CollisionFidelity.Box
+	tileTemplate.RenderFidelity = Enum.RenderFidelity.Precise
+else
+	tileTemplate = shellTile()
+end
 for _, ring in EggShape.Rings() do
 	local ringModel = make("Model", { Name = ("Ring%02d"):format(ring.Index), Parent = ringsFolder })
 	ringModel:SetAttribute(A.Ring, ring.Index)
