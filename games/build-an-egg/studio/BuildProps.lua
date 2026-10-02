@@ -155,7 +155,16 @@ local function faceForward(model)
 		end
 	end
 	if count == 0 then
-		return
+		local smallest
+		for _, part in model:GetDescendants() do
+			if part:IsA("BasePart") and (not smallest or part.Size.X * part.Size.Y * part.Size.Z < smallest.Size.X * smallest.Size.Y * smallest.Size.Z) then
+				smallest = part
+			end
+		end
+		if not smallest then
+			return
+		end
+		sum, count = smallest.Position, 1
 	end
 	local offset = sum / count - center
 	local front = Vector3.new(offset.X, 0, offset.Z)
