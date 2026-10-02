@@ -101,11 +101,20 @@ local ok, err = pcall(function()
 	task.wait(0.4)
 	runtime.Carry = 3
 	CarryService:Drop(player)
-	local piles = workspace.Game.Piles:GetChildren()
+	local function pileParts()
+		local list = {}
+		for _, child in workspace.Game.Piles:GetChildren() do
+			if child:IsA("BasePart") then
+				table.insert(list, child)
+			end
+		end
+		return list
+	end
+	local piles = pileParts()
 	note("drop: carry", runtime.Carry, "piles", #piles, "pile pieces", piles[1] and piles[1]:GetAttribute("Pieces"))
 	runtime.LastPickup = 0
 	CarryService:Interact(player)
-	note("took pile: carry", runtime.Carry, "piles left", #workspace.Game.Piles:GetChildren())
+	note("took pile: carry", runtime.Carry, "piles left", #pileParts())
 	runtime.Carry = 0
 
 	data.Coins = 1000

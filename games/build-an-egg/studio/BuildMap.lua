@@ -9,6 +9,7 @@ local MapConfig = require(Shared.Config.Map)
 local EggConfig = require(Shared.Config.Egg)
 local GymsConfig = require(Shared.Config.Gyms)
 local GameConfig = require(Shared.Config.Game)
+local PropsConfig = require(Shared.Config.Props)
 local EggShape = require(Shared.Util.EggShape)
 
 local W = Names.World
@@ -128,8 +129,20 @@ for _, child in Workspace:GetChildren() do
 	end
 end
 
+local function outline(parent)
+	local O = PropsConfig.Shells.Outline
+	return make("Highlight", {
+		Name = "Outline",
+		OutlineColor = O.Color,
+		OutlineTransparency = O.Transparency,
+		FillTransparency = O.FillTransparency,
+		DepthMode = Enum.HighlightDepthMode.Occluded,
+		Parent = parent,
+	})
+end
+
 local root = make("Folder", { Name = W.Root, Parent = Workspace })
-make("Folder", { Name = W.Piles, Parent = root })
+outline(make("Model", { Name = W.Piles, Parent = root }))
 
 Workspace.Terrain:Clear()
 local random = Random.new(7)
@@ -227,7 +240,8 @@ zone({
 	CFrame = CFrame.new(pitCenter + Vector3.new(0, -pitSize.Y / 2 + 5, 0)),
 	Parent = quarryFolder,
 })
-local piecesFolder = make("Folder", { Name = W.Pieces, Parent = quarryFolder })
+local piecesFolder = make("Model", { Name = W.Pieces, Parent = quarryFolder })
+outline(piecesFolder)
 for index = 1, quarryConfig.PieceCount do
 	local position = pitCenter + Vector3.new(random:NextNumber(-pitSize.X / 2 + 5, pitSize.X / 2 - 5), -pitSize.Y + quarryConfig.PieceSize.Y / 2 - 0.4, random:NextNumber(-pitSize.Z / 2 + 5, pitSize.Z / 2 - 8))
 	local piece = part({
@@ -313,6 +327,7 @@ end
 local site = make("Folder", { Name = W.Site, Parent = root })
 local center = EggConfig.Center
 local egg = make("Model", { Name = W.Egg, Parent = site })
+outline(egg)
 local ringsFolder = make("Folder", { Name = W.Rings, Parent = egg })
 local function shellTile()
 	local GeometryService = game:GetService("GeometryService")

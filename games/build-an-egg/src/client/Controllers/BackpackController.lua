@@ -32,7 +32,7 @@ end
 function BackpackController:Clear(character)
 	local stack = self.Stacks[character]
 	if stack then
-		stack.Root:Destroy()
+		stack.Holder:Destroy()
 		self.Stacks[character] = nil
 	end
 end
@@ -50,11 +50,14 @@ function BackpackController:Build(character, body)
 	mount.Part1 = root
 	mount.C0 = CFrame.new(0, top, 0)
 	mount.Parent = root
-	root.Parent = Workspace
+	local holder = templates[Names.Templates.ShellStack]:Clone()
+	holder.Name = "ShellStack"
+	root.Parent = holder
+	holder.Parent = Workspace
 	local label = templates[Names.Templates.StackLabel]:Clone()
 	label.Adornee = root
 	label.Parent = root
-	local stack = { Root = root, Mount = mount, Base = mount.C0, Pieces = {}, Label = label, Phase = math.random() * math.pi * 2, Shown = 0 }
+	local stack = { Holder = holder, Root = root, Mount = mount, Base = mount.C0, Pieces = {}, Label = label, Phase = math.random() * math.pi * 2, Shown = 0 }
 	self.Stacks[character] = stack
 	return stack
 end

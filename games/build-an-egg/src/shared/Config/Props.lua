@@ -30,6 +30,11 @@ return {
 		PileSize = 3.2,
 		ChunkSize = 2.6,
 		StackSize = 1.9,
+		Outline = {
+			Color = Color3.new(0, 0, 0),
+			Transparency = 0,
+			FillTransparency = 1,
+		},
 	},
 	NestWidth = 120,
 	NestSink = -8,

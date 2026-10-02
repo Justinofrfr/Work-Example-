@@ -143,6 +143,16 @@ for _, mesh in shellSource and shellSource:GetDescendants() or {} do
 		shell.Parent = shellFolder
 	end
 end
+local outlineTemplate = make("Highlight", {
+	Name = Names.Templates.ShellOutline,
+	OutlineColor = SH.Outline.Color,
+	OutlineTransparency = SH.Outline.Transparency,
+	FillTransparency = SH.Outline.FillTransparency,
+	DepthMode = Enum.HighlightDepthMode.Occluded,
+	Parent = templates,
+})
+local shellStack = make("Model", { Name = Names.Templates.ShellStack, Parent = templates })
+outlineTemplate:Clone().Parent = shellStack
 local firstShell = shellFolder:FindFirstChild("EggShellA") or shellFolder:FindFirstChildWhichIsA("MeshPart")
 local function shellChunk(name, size)
 	local chunk

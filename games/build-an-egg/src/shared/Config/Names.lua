@@ -78,6 +78,8 @@ return {
 		StackLabel = "StackLabel",
 		Fragment = "Fragment",
 		Shells = "Shells",
+		ShellOutline = "ShellOutline",
+		ShellStack = "ShellStack",
 		DroppedPile = "DroppedPile",
 		PurchaseTag = "PurchaseTag",
 		GooseAura = "GooseAura",
