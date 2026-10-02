@@ -11,6 +11,36 @@ end)
 
 local player = Players.LocalPlayer
 task.spawn(function()
+	local layer = player:WaitForChild("PlayerGui"):WaitForChild("Bubbles"):WaitForChild("Layer")
+	local controller = require(player:WaitForChild("PlayerScripts"):WaitForChild("Client"):WaitForChild("Controllers"):WaitForChild("BubbleController"))
+	local bubble
+	repeat
+		task.wait(0.1)
+		for _, child in layer:GetChildren() do
+			if child.Name:match("^Bubble%d+$") then
+				bubble = child
+			end
+		end
+	until bubble
+	task.wait(0.4)
+	local id = tonumber(bubble.Name:match("%d+"))
+	clientLog:FireServer(("bubble ui %s visible %s abs %s pos %s approach %.2f icon %s"):format(bubble.Name, tostring(bubble.Visible), tostring(bubble.AbsoluteSize), tostring(bubble.AbsolutePosition), bubble.Approach.Size.X.Scale, bubble.Icon.Text))
+	controller:Pop(id)
+	local float
+	for _ = 1, 20 do
+		task.wait(0.05)
+		for _, child in layer:GetChildren() do
+			if child.Name == "Float" and child.Visible then
+				float = child
+			end
+		end
+		if float then
+			break
+		end
+	end
+	clientLog:FireServer("float " .. (float and float.Text or "none") .. " bubble gone " .. tostring(bubble.Parent == nil or bubble.BackgroundTransparency > 0.5))
+end)
+task.spawn(function()
 	local reported = false
 	while not reported do
 		task.wait(0.3)
