@@ -115,7 +115,16 @@ function GymService:TickBubbles(player, training, now)
 		return
 	end
 	training.NextBubble = now + random:NextNumber(B.Interval[1], B.Interval[2])
-	local kind = random:NextNumber() < B.Kinds.Rare.Chance and "Rare" or "Normal"
+	local kind = "Normal"
+	local roll = random:NextNumber()
+	for _, key in B.Special do
+		local chance = B.Kinds[key].Chance
+		if roll < chance then
+			kind = key
+			break
+		end
+		roll -= chance
+	end
 	self.BubbleSerial += 1
 	local id = self.BubbleSerial
 	training.Bubbles[id] = { Kind = kind, Spawned = now, Expires = now + B.Kinds[kind].Lifetime }

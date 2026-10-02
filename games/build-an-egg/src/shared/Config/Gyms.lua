@@ -40,7 +40,7 @@ return {
 		StatText = { Speed = "SPEED", Strength = "STRENGTH", Both = "STATS" },
 		Kinds = {
 			Normal = {
-				Lifetime = 2.4,
+				Lifetime = 3.6,
 				Reps = 3,
 				Size = 0.075,
 				Color = Color3.fromRGB(95, 195, 255),
@@ -53,7 +53,7 @@ return {
 			},
 			Rare = {
 				Chance = 0.12,
-				Lifetime = 1.05,
+				Lifetime = 1.6,
 				Reps = 15,
 				Size = 0.062,
 				Color = Color3.fromRGB(255, 200, 40),
@@ -64,6 +64,20 @@ return {
 				PopPitch = 1.1,
 				FloatColor = Color3.fromRGB(255, 220, 70),
 			},
+			Red = {
+				Chance = 0.04,
+				Lifetime = 1.05,
+				Reps = 50,
+				Size = 0.056,
+				Color = Color3.fromRGB(255, 64, 64),
+				Stroke = Color3.fromRGB(255, 225, 225),
+				Icon = "🔥",
+				SpawnPitch = 2.4,
+				PopSound = "Victory",
+				PopPitch = 1.15,
+				FloatColor = Color3.fromRGB(255, 110, 110),
+			},
 		},
+		Special = { "Red", "Rare" },
 	},
 }

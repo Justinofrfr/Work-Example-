@@ -83,47 +83,75 @@ function EggShape.ScaffoldHeight(): number
 end
 
 local profile
+local spin
 
-local function radiusAtHeight(height: number): number
+function EggShape.ShellRadius(height: number): number
 	local fraction = (height - EggConfig.Center.Y - EggConfig.BaseOffset) / EggConfig.Height
 	if fraction < 0 or fraction > 1 then
 		return 0
 	end
-	return EggShape.Radius(fraction) + EggConfig.ScaffoldShellClearance
+	return EggShape.Radius(fraction)
 end
 
 local function buildProfile()
-	profile = {}
+	profile, spin = {}, {}
 	local step = EggConfig.ScaffoldProfileStep
 	local run = step / math.tan(math.rad(EggConfig.ScaffoldMaxAngle))
 	local count = math.ceil(EggShape.ScaffoldHeight() / step)
-	local distance = math.max(EggConfig.ScaffoldTopDistance, radiusAtHeight(EggConfig.Center.Y + count * step) + EggConfig.ScaffoldGap)
+	local widestAbove = {}
+	local widest = 0
 	for index = count, 0, -1 do
-		local height = EggConfig.Center.Y + index * step
-		distance = math.max(distance, radiusAtHeight(height) + EggConfig.ScaffoldGap)
-		profile[index] = distance
-		distance += run
+		widest = math.max(widest, EggShape.ShellRadius(EggConfig.Center.Y + index * step))
+		widestAbove[index] = widest
 	end
+	local half = EggConfig.ScaffoldWidth / 2
+	local nest = EggConfig.ScaffoldNestRadius + half
+	local angle = 0
+	for index = 0, count do
+		local height = index * step
+		local hug = widestAbove[index] + EggConfig.ScaffoldShellClearance + half
+		local blend = math.clamp((height - EggConfig.ScaffoldNestTop) / EggConfig.ScaffoldNestBlend, 0, 1)
+		local distance = math.max(hug, nest + (hug - nest) * blend)
+		if index > 0 then
+			local radial = distance - profile[index - 1]
+			local tangential = math.sqrt(math.max(run * run - radial * radial, 0))
+			angle += tangential / ((distance + profile[index - 1]) / 2)
+		end
+		profile[index] = distance
+		spin[index] = angle
+	end
+end
+
+local function sample(list, height)
+	if not profile then
+		buildProfile()
+	end
+	local position = math.clamp((height - EggConfig.Center.Y) / EggConfig.ScaffoldProfileStep, 0, #profile)
+	local low = math.floor(position)
+	local high = math.min(low + 1, #profile)
+	return list[low] + (list[high] - list[low]) * (position - low)
 end
 
 function EggShape.ScaffoldDistance(height: number): number
 	if not profile then
 		buildProfile()
 	end
-	local step = EggConfig.ScaffoldProfileStep
-	local position = math.clamp((height - EggConfig.Center.Y) / step, 0, #profile)
-	local low = math.floor(position)
-	local high = math.min(low + 1, #profile)
-	local alpha = position - low
-	return profile[low] + (profile[high] - profile[low]) * alpha
+	return sample(profile, height)
+end
+
+function EggShape.ScaffoldAngle(height: number): number
+	if not profile then
+		buildProfile()
+	end
+	return sample(spin, height) * EggConfig.ScaffoldSpin
 end
 
 function EggShape.ScaffoldPoint(height: number): (Vector3, number)
-	local direction = EggConfig.ScaffoldDirection.Unit
+	local angle = EggShape.ScaffoldAngle(height)
+	local direction = CFrame.Angles(0, angle, 0):VectorToWorldSpace(EggConfig.ScaffoldDirection.Unit)
 	local center = EggConfig.Center
 	local distance = EggShape.ScaffoldDistance(height)
-	local point = Vector3.new(center.X + direction.X * distance, height, center.Z + direction.Z * distance)
-	return point, math.atan2(direction.Z, direction.X)
+	return Vector3.new(center.X + direction.X * distance, height, center.Z + direction.Z * distance), angle
 end
 
 function EggShape.RampSegment(ringIndex: number): (Vector3, Vector3)

@@ -109,8 +109,8 @@ return {
 	Intro = {
 		Enabled = true,
 		Shots = {
-			{ From = Vector3.new(120, 140, -520), To = Vector3.new(40, 120, -230), Focus = Vector3.new(0, 90, 0), Time = 2.4, Caption = "Build the giant egg together!" },
-			{ From = Vector3.new(70, 40, -485), To = Vector3.new(-50, 30, -455), Focus = Vector3.new(0, -4, -425), Time = 2.2, Caption = "Grab shell pieces at the quarry" },
+			{ From = Vector3.new(120, 140, -290), To = Vector3.new(40, 120, -230), Focus = Vector3.new(0, 90, 0), Time = 2.4, Caption = "Build the giant egg together!" },
+			{ From = Vector3.new(70, 40, -255), To = Vector3.new(-50, 30, -225), Focus = Vector3.new(0, -4, -195), Time = 2.2, Caption = "Grab shell pieces at the quarry" },
 			{ From = Vector3.new(-90, 60, -140), To = Vector3.new(-110, 70, -40), Focus = Vector3.new(0, 30, 0), Time = 2.2, Caption = "Carry them up to the glowing ring" },
 			{ From = Vector3.new(200, 60, 120), To = Vector3.new(230, 70, 0), Focus = Vector3.new(175, 5, 0), Time = 2, Caption = "Train in the gyms to get stronger" },
 		},

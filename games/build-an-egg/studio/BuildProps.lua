@@ -804,7 +804,6 @@ for _, segment in L.Segments do
 			decorPart({ Name = "Post", Size = Vector3.new(0.8, L.PostHeight, 0.8), CFrame = CFrame.new(base + Vector3.new(0, L.PostHeight / 2, 0)), Color = L.Post, Parent = lantern })
 			local lamp = decorPart({ Name = "Lamp", Size = Vector3.new(1.6, 1.6, 1.6), CFrame = CFrame.new(base + Vector3.new(0, L.PostHeight + 0.8, 0)), Color = L.Lamp, Material = Enum.Material.Neon, TopSurface = Enum.SurfaceType.Smooth, Parent = lantern })
 			decorPart({ Name = "Cap", Size = Vector3.new(2.2, 0.5, 2.2), CFrame = CFrame.new(base + Vector3.new(0, L.PostHeight + 1.85, 0)), Color = L.Post, Parent = lantern })
-			make("PointLight", { Range = L.LightRange, Brightness = L.LightBrightness, Color = L.Lamp, Shadows = false, Parent = lamp })
 		end
 	end
 end

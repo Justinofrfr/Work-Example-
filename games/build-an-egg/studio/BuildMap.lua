@@ -423,70 +423,78 @@ for index = 1, 44 do
 end
 
 local scaffold = make("Model", { Name = W.Scaffold, Parent = site })
-local stairDirection = EggConfig.ScaffoldDirection.Unit
-local stairRight = Vector3.new(-stairDirection.Z, 0, stairDirection.X)
 local stairWidth = EggConfig.ScaffoldWidth
 local stairThickness = EggConfig.ScaffoldThickness
 local rings = EggShape.Rings()
-local stairPoints = { [0] = EggShape.ScaffoldPoint(center.Y) }
-for index = 1, #rings do
-	stairPoints[index] = EggShape.ScaffoldPoint(EggShape.BandHeight(index))
-end
-local function slopeOf(index)
-	local low, high = stairPoints[index - 1], stairPoints[index]
-	if not low or not high then
-		return nil
-	end
-	return math.atan2(high.Y - low.Y, Vector2.new(high.X - low.X, high.Z - low.Z).Magnitude)
+local substeps = EggConfig.ScaffoldSubsteps
+local overlap = EggConfig.ScaffoldJointOverlap
+local function rampHeight(ring, fraction)
+	local lowHeight = ring > 1 and EggShape.BandHeight(ring - 1) or center.Y
+	return lowHeight + (EggShape.BandHeight(ring) - lowHeight) * fraction
 end
 for index = 1, #rings do
-	local low, high = stairPoints[index - 1], stairPoints[index]
-	local slope = slopeOf(index)
-	local before, after = slopeOf(index - 1), slopeOf(index + 1)
-	local extendLow = (before and math.abs(before - slope) > math.rad(0.5)) and EggConfig.ScaffoldJointOverlap or 0
-	local extendHigh = (after and math.abs(after - slope) > math.rad(0.5)) and EggConfig.ScaffoldJointOverlap or 0
-	local length = (high - low).Magnitude
-	local frame = CFrame.lookAt((low + high) / 2, high, Vector3.yAxis)
-	local surface = studded({
-		Name = "Step",
-		Size = Vector3.new(stairWidth + (index % 2) * 0.2, stairThickness, length + extendLow + extendHigh),
-		CFrame = frame * CFrame.new(0, -stairThickness / 2, (extendLow - extendHigh) / 2),
-		Color = EggConfig.ScaffoldSurfaceColor,
-		Parent = scaffold,
-	})
-	surface:SetAttribute("Height", (low.Y + high.Y) / 2)
-	surface:SetAttribute(A.Ring, index)
-	local arrowSize = math.min(EggConfig.RampArrowSize, length)
-	local arrow = part({
-		Name = "RampArrow",
-		Size = Vector3.new(arrowSize, 0.05, arrowSize),
-		CFrame = frame * CFrame.new(0, EggConfig.RampArrowLift, 0) * CFrame.Angles(0, math.rad(EggConfig.RampArrowRotation), 0),
-		Transparency = 1,
-		CanCollide = false,
-		CanQuery = false,
-		CanTouch = false,
-		CastShadow = false,
-		Parent = scaffold,
-	})
-	arrow:SetAttribute(A.Ring, index)
-	arrow:SetAttribute(A.Overlay, true)
-	make("Decal", { Name = "Arrow", Face = Enum.NormalId.Top, Texture = EggConfig.RampArrowImage, Transparency = EggConfig.RampArrowTransparency, Parent = arrow })
-	for side = -1, 1, 2 do
-		part({
-			Name = "Rail",
-			Size = Vector3.new(EggConfig.ScaffoldWallWidth, EggConfig.ScaffoldWallHeight, length),
-			CFrame = frame * CFrame.new(side * (stairWidth / 2 - EggConfig.ScaffoldWallWidth / 2 - 0.15), EggConfig.ScaffoldWallHeight / 2, 0),
-			Color = EggConfig.ScaffoldWallColor,
+	for sub = 1, substeps do
+		local low = EggShape.ScaffoldPoint(rampHeight(index, (sub - 1) / substeps))
+		local high = EggShape.ScaffoldPoint(rampHeight(index, sub / substeps))
+		local length = (high - low).Magnitude
+		local mid = (low + high) / 2
+		local frame = CFrame.lookAt(mid, high, Vector3.yAxis)
+		local parity = ((index - 1) * substeps + sub) % 2
+		local surface = studded({
+			Name = "Step",
+			Size = Vector3.new(stairWidth + parity * 0.2, stairThickness, length + overlap * 2),
+			CFrame = frame * CFrame.new(0, -stairThickness / 2 + parity * EggConfig.ScaffoldParityLift, 0),
+			Color = EggConfig.ScaffoldSurfaceColor,
 			Parent = scaffold,
-		}):SetAttribute(A.Ring, index)
-	end
-	local mid = (low + high) / 2
-	local flat = Vector2.new(mid.X - center.X, mid.Z - center.Z).Magnitude
-	if index % EggConfig.ScaffoldPillarEvery == 0 and flat - stairWidth / 2 > EggConfig.NestOuterRadius + EggConfig.ScaffoldPillarClearance then
-		local pillarTop = mid.Y - stairThickness / math.cos(slope) - center.Y
-		if pillarTop > 1 then
+		})
+		surface:SetAttribute("Height", mid.Y)
+		surface:SetAttribute(A.Ring, index)
+		for side = -1, 1, 2 do
+			part({
+				Name = "Rail",
+				Size = Vector3.new(EggConfig.ScaffoldWallWidth, EggConfig.ScaffoldWallHeight, length + overlap * 2),
+				CFrame = frame * CFrame.new(side * (stairWidth / 2 - EggConfig.ScaffoldWallWidth / 2 - 0.15), EggConfig.ScaffoldWallHeight / 2 + parity * EggConfig.ScaffoldParityLift, 0),
+				Color = EggConfig.ScaffoldWallColor,
+				Parent = scaffold,
+			}):SetAttribute(A.Ring, index)
+		end
+		if sub == math.ceil(substeps / 2) then
+			local arrowSize = math.min(EggConfig.RampArrowSize, length)
+			local arrow = part({
+				Name = "RampArrow",
+				Size = Vector3.new(arrowSize, 0.05, arrowSize),
+				CFrame = frame * CFrame.new(0, EggConfig.RampArrowLift + parity * EggConfig.ScaffoldParityLift, 0) * CFrame.Angles(0, math.rad(EggConfig.RampArrowRotation), 0),
+				Transparency = 1,
+				CanCollide = false,
+				CanQuery = false,
+				CanTouch = false,
+				CastShadow = false,
+				Parent = scaffold,
+			})
+			arrow:SetAttribute(A.Ring, index)
+			arrow:SetAttribute(A.Overlay, true)
+			make("Decal", { Name = "Arrow", Face = Enum.NormalId.Top, Texture = EggConfig.RampArrowImage, Transparency = EggConfig.RampArrowTransparency, Parent = arrow })
+		end
+		local inward = Vector3.new(center.X - mid.X, 0, center.Z - mid.Z)
+		local flat = inward.Magnitude
+		local shell = EggShape.ShellRadius(mid.Y)
+		if sub == substeps and shell > 0 then
+			local reach = flat - shell + EggConfig.ScaffoldBraceEmbed
+			local size = EggConfig.ScaffoldBraceSize
+			local origin = Vector3.new(mid.X, mid.Y - stairThickness - size / 2, mid.Z)
+			if reach > 1 then
+				studded({
+					Name = "Brace",
+					Size = Vector3.new(size, size, reach),
+					CFrame = CFrame.lookAt(origin + inward.Unit * reach / 2, origin + inward.Unit * reach),
+					Color = EggConfig.ScaffoldPillarColor,
+					Parent = scaffold,
+				}):SetAttribute(A.Ring, index)
+			end
+		elseif sub == substeps and mid.Y - stairThickness > 1 then
+			local pillarTop = mid.Y - stairThickness - center.Y
 			for side = -1, 1, 2 do
-				local base = mid + stairRight * side * (stairWidth / 2 - EggConfig.ScaffoldPillarSize / 2 - 0.6)
+				local base = mid + frame.RightVector * side * (stairWidth / 2 - EggConfig.ScaffoldPillarSize / 2 - 0.6)
 				studded({
 					Name = "Post",
 					Size = Vector3.new(EggConfig.ScaffoldPillarSize, pillarTop, EggConfig.ScaffoldPillarSize),
