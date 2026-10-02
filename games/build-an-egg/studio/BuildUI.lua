@@ -707,6 +707,9 @@ local cinematic = make("ScreenGui", {
 })
 gui.Cutscene.Parent = cinematic
 gui.Flash.Parent = cinematic
+local fade = make("Frame", { Name = "Fade", Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 1, BorderSizePixel = 0, ZIndex = 60, Parent = cinematic })
+label({ Name = "Text", Text = "", Size = UDim2.fromScale(0.7, 0.08), Position = UDim2.fromScale(0.5, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), TextTransparency = 1, ZIndex = 61, Parent = fade })
+label({ Name = "InteriorTimer", Text = "", Visible = false, Size = UDim2.fromScale(0.42, 0.045), Position = UDim2.fromScale(0.5, 0.2), AnchorPoint = Vector2.new(0.5, 0), TextColor3 = Color3.fromRGB(255, 220, 90), Parent = gui.Hud })
 
 local function screen(name, order)
 	local old = StarterGui:FindFirstChild(name)

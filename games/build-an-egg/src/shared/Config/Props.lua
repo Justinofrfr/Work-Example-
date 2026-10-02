@@ -1,6 +1,6 @@
 return {
 	HatchlingBaseHeight = 6,
-	HatchlingHeight = 60,
+	HatchlingHeight = 42,
 	HatchlingRise = 1.6,
 	HatchlingBob = 1.5,
 	HatchlingFlap = 25,

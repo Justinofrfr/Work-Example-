@@ -28,7 +28,7 @@ return {
 	StateSyncInterval = 0.25,
 	ServerProgressSyncInterval = 0.5,
 
-	CompletionCutsceneTime = 6,
+	CompletionCutsceneTime = 14,
 	InteriorDuration = 180,
 	HatchAutoClaimDelay = 15,
 	InteriorMinContribution = 1,

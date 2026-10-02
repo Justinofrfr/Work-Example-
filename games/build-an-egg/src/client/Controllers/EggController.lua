@@ -10,6 +10,7 @@ local MapConfig = require(Shared.Config.Map)
 local ProjectsConfig = require(Shared.Config.Projects)
 local EffectsConfig = require(Shared.Config.Effects)
 local PropsConfig = require(Shared.Config.Props)
+local PetsConfig = require(Shared.Config.Pets)
 local UIConfig = require(Shared.Config.UI)
 local Format = require(Shared.Util.Format)
 local EggShape = require(Shared.Util.EggShape)
@@ -30,6 +31,7 @@ local W = Names.World
 local A = Names.Attributes
 local ClientState
 local EffectController
+local NotifyController
 local remotes
 local player
 local gui
@@ -45,6 +47,7 @@ local camera = Workspace.CurrentCamera
 function EggController:Init(modules, context)
 	ClientState = modules.ClientState
 	EffectController = modules.EffectController
+	NotifyController = modules.NotifyController
 	remotes = context.Remotes
 	player = context.Player
 	gui = context.Gui
@@ -129,7 +132,8 @@ function EggController:Render(server, previous)
 		self:RevealRamp(previous.Ring, server.Ring)
 	end
 	if server.Phase == "Interior" and not self.Hatchling and not self.InCutscene then
-		self:Crack(3)
+		self:Crack(EffectsConfig.Cutscene.CrackRings)
+		self:HideRampTop(true)
 		self:SpawnHatchling(server.Project, false)
 	elseif server.Phase == "Building" and self.Hatchling then
 		self:RemoveHatchling()
@@ -248,6 +252,7 @@ function EggController:Animate()
 	if t - (self.LastHatchRender or 0) > 0.5 then
 		self.LastHatchRender = t
 		self:RenderHatch()
+		self:RenderInteriorTimer()
 	end
 	local pulse = 0.55 + 0.2 * math.sin(t * EffectsConfig.BandPulseSpeed * math.pi)
 	local ring = ringModels[self.Ring]
@@ -298,10 +303,37 @@ function EggController:RenderHatch()
 	end
 end
 
+function EggController:RenderInteriorTimer()
+	local label = gui.Hud:FindFirstChild("InteriorTimer")
+	local server = ClientState.Server
+	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+	if not label or not server then
+		return
+	end
+	local inside = root ~= nil and root.Position.Y < MapConfig.Interior.Center.Y + MapConfig.Interior.Height + 20
+	label.Visible = server.Phase == "Interior" and inside
+	if label.Visible then
+		local remaining = math.max(0, math.ceil(server.PhaseEndsAt - Workspace:GetServerTimeNow()))
+		label.Text = UIConfig.Messages.InteriorTimer:format(("%d:%02d"):format(remaining // 60, remaining % 60))
+		self.WasInside = true
+	end
+end
+
 function EggController:Claim()
+	if self.Claiming then
+		return
+	end
+	self.Claiming = true
+	gui.Hatch.Visible = false
+	local inside = EffectsConfig.Cutscene.Inside
+	self:Fade(inside.Caption, 0.3)
 	local ok, result = remotes[Names.Remotes.ClaimHatch]:InvokeServer()
-	if ok then
+	task.wait(0.4)
+	self:Unfade()
+	if ok or result == "Claimed" then
+		self.WasInside = true
 		Audio.Play("Hatch")
+		NotifyController:Banner(inside.Banner, Color3.fromRGB(255, 200, 60))
 		local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 		if root then
 			EffectController:Burst("Confetti", root.Position + Vector3.new(0, 4, 0), 30)
@@ -309,7 +341,7 @@ function EggController:Claim()
 	elseif result == "NotContributor" then
 		Audio.Play("Error")
 	end
-	gui.Hatch.Visible = false
+	self.Claiming = false
 end
 
 function EggController:SetGlow(alpha)
@@ -339,50 +371,98 @@ end
 function EggController:Restore()
 	self.Cracked = false
 	self.Visible = -1
+	self:HideRampTop(false)
+	if self.WasInside then
+		self.WasInside = false
+		task.spawn(function()
+			self:Fade(EffectsConfig.Cutscene.Outside.Caption, 0.8)
+			self:Unfade()
+		end)
+	end
+end
+
+function EggController:FocusPoint(name)
+	local top = EggConfig.Center + Vector3.new(0, EggShape.ScaffoldHeight(), 0)
+	if name == "EggTop" then
+		return top
+	elseif name == "Hatchling" then
+		return self:HatchlingBase().Position + Vector3.new(0, PropsConfig.HatchlingHeight * 0.5, 0)
+	end
+	return EggConfig.Center + Vector3.new(0, EggShape.ScaffoldHeight() * 0.5, 0)
+end
+
+function EggController:HatchlingName(project)
+	local def = PropsConfig.Hatchlings[project]
+	local species = def and PetsConfig.Species[def.Species]
+	return species and string.upper(species.Name) or "BABY"
+end
+
+function EggController:Fade(text, hold)
+	local fade = Cinematic.Gui().Fade
+	local time = EffectsConfig.Cutscene.FadeTime
+	fade.Text.Text = text or ""
+	Ui.Tween(fade, time, { BackgroundTransparency = 0 })
+	Ui.Tween(fade.Text, time, { TextTransparency = 0 }).Completed:Wait()
+	task.wait(hold or 0.4)
+end
+
+function EggController:Unfade()
+	local fade = Cinematic.Gui().Fade
+	local time = EffectsConfig.Cutscene.FadeTime
+	Ui.Tween(fade.Text, time, { TextTransparency = 1 })
+	Ui.Tween(fade, time, { BackgroundTransparency = 1 })
 end
 
 function EggController:PlayCutscene()
 	local cutscene = Cinematic.Gui().Cutscene
-	local contributor = self:IsContributor()
 	local def = EffectsConfig.Cutscene
-	local total = GameConfig.CompletionCutsceneTime
+	local server = ClientState.Server
+	local project = server and server.Project or "Common"
 	EffectController:Shake(EffectsConfig.Shake.LastPiece)
 	Audio.Play("LastPiece")
 	self.InCutscene = true
 	self.SkipRequested = false
 	local previousType = camera.CameraType
-	if contributor then
-		Cinematic.Enter()
-		cutscene.Visible = true
-		Ui.Tween(cutscene.Top, 0.4, { Position = UDim2.fromScale(0, 0) })
-		Ui.Tween(cutscene.Bottom, 0.4, { Position = UDim2.fromScale(0, 0.88) })
-		cutscene.Caption.Text = string.upper(ClientState.Server and ClientState.Server.ProjectName or "EGG") .. " COMPLETE!"
-		camera.CameraType = Enum.CameraType.Scriptable
-	end
-	local started = os.clock()
-	local focus = EggConfig.Center + Vector3.new(0, EggShape.ScaffoldHeight() * 0.5, 0)
-	local glowSound = Audio.Play("EggGlow")
-	local cracked = false
+	Cinematic.Enter()
+	cutscene.Visible = true
+	Ui.Tween(cutscene.Top, 0.4, { Position = UDim2.fromScale(0, 0) })
+	Ui.Tween(cutscene.Bottom, 0.4, { Position = UDim2.fromScale(0, 0.88) })
+	camera.CameraType = Enum.CameraType.Scriptable
+	self:HideRampTop(true)
+	local glowSound
 	local burst = false
-	while os.clock() - started < total and not self.SkipRequested do
-		local elapsed = os.clock() - started
-		local alpha = elapsed / total
-		if contributor then
-			local angle = math.rad(def.OrbitDegrees) * alpha
-			local position = EggConfig.Center + Vector3.new(math.sin(angle) * def.OrbitRadius, def.OrbitHeight * (0.6 + 0.4 * alpha), -math.cos(angle) * def.OrbitRadius)
-			camera.CFrame = CFrame.lookAt(position, focus)
+	for _, shot in def.Shots do
+		if self.SkipRequested then
+			break
 		end
-		self:SetGlow(math.clamp(elapsed / def.GlowTime, 0, 1))
-		if not cracked and elapsed >= def.GlowTime then
-			cracked = true
+		local caption = shot.Caption
+		if caption:find("%%s") then
+			caption = caption:format(shot.Burst and self:HatchlingName(project) or string.upper(server and server.ProjectName or "EGG"))
+		end
+		cutscene.Caption.Text = caption
+		Ui.Pop(cutscene.Caption, 1.12)
+		if shot.Glow then
+			glowSound = Audio.Play("EggGlow")
+		end
+		if shot.Crack then
 			Audio.Play("EggCrack")
-			EffectController:Shake({ Magnitude = 0.4, Duration = 0.3 })
+			EffectController:Shake({ Magnitude = 0.5, Duration = 0.4 })
 		end
-		if not burst and elapsed >= def.GlowTime + def.CrackTime then
+		if shot.Burst and not burst then
 			burst = true
 			self:Burst()
 		end
-		RunService.RenderStepped:Wait()
+		local started = os.clock()
+		while os.clock() - started < shot.Time and not self.SkipRequested do
+			local alpha = (os.clock() - started) / shot.Time
+			local eased = alpha * alpha * (3 - 2 * alpha)
+			local position = shot.From:Lerp(shot.To, eased)
+			camera.CFrame = CFrame.lookAt(position, self:FocusPoint(shot.Focus))
+			if shot.Glow then
+				self:SetGlow(alpha)
+			end
+			RunService.RenderStepped:Wait()
+		end
 	end
 	if glowSound then
 		glowSound:Stop()
@@ -390,15 +470,29 @@ function EggController:PlayCutscene()
 	if not burst then
 		self:Burst()
 	end
-	if contributor then
-		camera.CameraType = previousType == Enum.CameraType.Scriptable and Enum.CameraType.Custom or previousType
-		Ui.Tween(cutscene.Top, 0.3, { Position = UDim2.fromScale(0, -0.12) })
-		Ui.Tween(cutscene.Bottom, 0.3, { Position = UDim2.fromScale(0, 1) }).Completed:Wait()
-		cutscene.Visible = false
-		Cinematic.Exit()
-	end
+	camera.CameraType = previousType == Enum.CameraType.Scriptable and Enum.CameraType.Custom or previousType
+	Ui.Tween(cutscene.Top, 0.3, { Position = UDim2.fromScale(0, -0.12) })
+	Ui.Tween(cutscene.Bottom, 0.3, { Position = UDim2.fromScale(0, 1) }).Completed:Wait()
+	cutscene.Visible = false
+	Cinematic.Exit()
 	self.InCutscene = false
 	self:RenderHatch()
+end
+
+function EggController:HideRampTop(hidden)
+	local root = Workspace:FindFirstChild(W.Root)
+	local site = root and root:FindFirstChild(W.Site)
+	local scaffold = site and site:FindFirstChild(W.Scaffold)
+	if not scaffold then
+		return
+	end
+	local from = GameConfig.RingCount - EffectsConfig.Cutscene.CrackRings
+	for _, piece in scaffold:GetChildren() do
+		local ring = piece:GetAttribute(A.Ring)
+		if ring and ring > from and piece:IsA("BasePart") then
+			piece.LocalTransparencyModifier = hidden and 1 or 0
+		end
+	end
 end
 
 function EggController:Burst()
@@ -415,7 +509,7 @@ function EggController:Burst()
 	EffectController:Vfx("EggConfetti", top + Vector3.new(0, 10, 0))
 	EffectController:Fireworks(5)
 	self:SetGlow(0)
-	self:Crack(3)
+	self:Crack(EffectsConfig.Cutscene.CrackRings)
 	if ClientState.Server then
 		self:SpawnHatchling(ClientState.Server.Project, true)
 	end
@@ -453,8 +547,8 @@ function EggController:FlashRing(index)
 end
 
 function EggController:HatchlingBase()
-	local ring = EggShape.Rings()[GameConfig.RingCount - 3]
-	return CFrame.new(EggConfig.Center.X, ring.Top - PropsConfig.HatchlingHeight * 0.15, EggConfig.Center.Z)
+	local ring = EggShape.Rings()[GameConfig.RingCount - EffectsConfig.Cutscene.CrackRings]
+	return CFrame.new(EggConfig.Center.X, ring.Top - PropsConfig.HatchlingHeight * 0.2, EggConfig.Center.Z)
 end
 
 function EggController:SpawnHatchling(project, animated)

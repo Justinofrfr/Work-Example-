@@ -54,12 +54,17 @@ return {
 		Burst = { Magnitude = 0.8, Duration = 0.45, Range = 400 },
 	},
 	Cutscene = {
-		OrbitRadius = 230,
-		OrbitHeight = 120,
-		OrbitDegrees = 120,
-		GlowTime = 2.5,
-		CrackTime = 1.5,
-		BurstTime = 1,
+		CrackRings = 8,
+		FadeTime = 0.35,
+		Shots = {
+			{ Time = 2.6, From = Vector3.new(-40, 70, -330), To = Vector3.new(60, 120, -290), Focus = "Egg", Caption = "%s COMPLETE!" },
+			{ Time = 2.8, From = Vector3.new(-120, 150, -150), To = Vector3.new(-80, 175, -120), Focus = "EggTop", Caption = "It's glowing... something is inside!", Glow = true },
+			{ Time = 1.6, From = Vector3.new(-80, 175, -120), To = Vector3.new(-70, 180, -105), Focus = "EggTop", Caption = "CRACK!", Crack = true },
+			{ Time = 3.2, From = Vector3.new(0, 200, -150), To = Vector3.new(50, 215, -125), Focus = "Hatchling", Caption = "A %s HATCHED!", Burst = true },
+			{ Time = 3, From = Vector3.new(50, 215, -125), To = Vector3.new(120, 190, -110), Focus = "Hatchling", Caption = "Everyone who helped gets egg fragments for pets!" },
+		},
+		Inside = { Caption = "Going inside the egg...", Banner = "INSIDE THE EGG! Train 2x in the golden pool" },
+		Outside = { Caption = "Back outside! A new egg appeared" },
 	},
 	GymAnimations = {
 		Speed = "rbxassetid://913376220",

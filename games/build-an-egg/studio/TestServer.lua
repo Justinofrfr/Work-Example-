@@ -148,7 +148,7 @@ local ok, err = pcall(function()
 	end
 	BuildService:AddPieces(player, BuildService:Target(), true)
 	note("phase after fill", BuildService.Phase)
-	task.wait(6.5)
+	task.wait(require(ReplicatedStorage.Shared.Config.Game).CompletionCutsceneTime + 0.5)
 	note("phase after cutscene", BuildService.Phase)
 	local eggsBefore = data.Eggs
 	note("claim", BuildService:ClaimHatch(player))
