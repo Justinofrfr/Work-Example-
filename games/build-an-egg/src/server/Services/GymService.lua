@@ -12,6 +12,7 @@ local Formulas = require(Shared.Util.Formulas)
 local RateLimiter = require(Shared.Util.RateLimiter)
 
 local GymService = {
+	BubbleSerial = 0,
 	Pads = {},
 	Stopped = {},
 	LockNotified = {},
@@ -26,6 +27,9 @@ local remotes
 
 local templates
 local stopLimiter = RateLimiter.new(4, 1)
+local popLimiter = RateLimiter.new(GymsConfig.Bubbles.PopRate, 1)
+local random = Random.new()
+local B = GymsConfig.Bubbles
 local A = Names.Attributes
 
 function GymService:Init(modules, context)
@@ -50,7 +54,13 @@ function GymService:Start()
 			self:Stop(player, true)
 		end
 	end)
+	remotes[Names.Remotes.PopBubble].OnServerEvent:Connect(function(player, id)
+		if popLimiter:Check(player) then
+			self:PopBubble(player, id)
+		end
+	end)
 	Players.PlayerRemoving:Connect(function(player)
+		popLimiter:Remove(player)
 		self.Stopped[player] = nil
 		self.LockNotified[player] = nil
 		stopLimiter:Remove(player)
@@ -79,6 +89,61 @@ function GymService:Start()
 			end
 		end
 	end)
+	task.spawn(function()
+		while true do
+			task.wait(B.Tick)
+			local now = os.clock()
+			for player, runtime in StateService.Runtime do
+				if runtime.Training then
+					self:TickBubbles(player, runtime.Training, now)
+				end
+			end
+		end
+	end)
+end
+
+function GymService:TickBubbles(player, training, now)
+	local active = 0
+	for id, bubble in training.Bubbles do
+		if now > bubble.Expires + B.Grace then
+			training.Bubbles[id] = nil
+		else
+			active += 1
+		end
+	end
+	if now < training.NextBubble or active >= B.MaxActive then
+		return
+	end
+	training.NextBubble = now + random:NextNumber(B.Interval[1], B.Interval[2])
+	local kind = random:NextNumber() < B.Kinds.Rare.Chance and "Rare" or "Normal"
+	self.BubbleSerial += 1
+	local id = self.BubbleSerial
+	training.Bubbles[id] = { Kind = kind, Spawned = now, Expires = now + B.Kinds[kind].Lifetime }
+	remotes[Names.Remotes.Bubble]:FireClient(player, "Spawn", id, kind)
+end
+
+function GymService:PopBubble(player, id)
+	local runtime = StateService:Get(player)
+	local training = runtime and runtime.Training
+	local bubble = training and type(id) == "number" and training.Bubbles[id]
+	if not bubble then
+		return false
+	end
+	training.Bubbles[id] = nil
+	local now = os.clock()
+	if now > bubble.Expires + B.Grace or now - bubble.Spawned < B.MinReaction then
+		return false
+	end
+	local amount = StatsConfig.BaseGainPerRep * training.Multiplier * B.Kinds[bubble.Kind].Reps
+	local gain
+	if training.Stat == "Both" then
+		gain = StateService:AwardStat(player, "Speed", amount)
+		StateService:AwardStat(player, "Strength", amount)
+	else
+		gain = StateService:AwardStat(player, training.Stat, amount)
+	end
+	remotes[Names.Remotes.Bubble]:FireClient(player, "Popped", id, training.Stat, gain)
+	return true
 end
 
 function GymService:TierUnlocked(player, tier)
@@ -167,6 +232,8 @@ function GymService:Begin(player, runtime, pad)
 		Stat = stat,
 		Tier = tierKey,
 		Multiplier = multiplier,
+		Bubbles = {},
+		NextBubble = os.clock() + B.FirstDelay,
 	}
 	local character = player.Character
 	local rootPart = character and character:FindFirstChild("HumanoidRootPart")
@@ -266,6 +333,9 @@ function GymService:Stop(player, byJump)
 		self.Stopped[player] = pad
 	end
 	runtime.Training = nil
+	if player.Parent then
+		remotes[Names.Remotes.Bubble]:FireClient(player, "Clear")
+	end
 	self:SetRack(pad, true)
 	self:Release(player, pad)
 	local character = player.Character

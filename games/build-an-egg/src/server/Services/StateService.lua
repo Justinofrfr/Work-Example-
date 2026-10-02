@@ -89,7 +89,7 @@ end
 function StateService:AwardStat(player, stat, amount)
 	local data = DataService:Get(player)
 	if not data or (stat ~= "Speed" and stat ~= "Strength") then
-		return
+		return 0
 	end
 	local runtime = self.Runtime[player]
 	local gain = amount * self:BoostMultiplier(player, stat) * (1 + (runtime and runtime.FriendBoost or 0)) * (PetService and PetService:Multiplier(player, stat) or 1)
@@ -99,6 +99,7 @@ function StateService:AwardStat(player, stat, amount)
 		self:ApplyWalkSpeed(player)
 	end
 	self:Dirty(player)
+	return gain
 end
 
 function StateService:Grant(player, rewards)

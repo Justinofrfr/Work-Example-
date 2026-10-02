@@ -16,6 +16,8 @@ return {
 		Incubate = "Incubate",
 		PetAction = "PetAction",
 		LeaveEgg = "LeaveEgg",
+		Bubble = "Bubble",
+		PopBubble = "PopBubble",
 	},
 	RemoteKinds = {
 		StateSync = "RemoteEvent",
@@ -33,6 +35,8 @@ return {
 		Incubate = "RemoteFunction",
 		PetAction = "RemoteFunction",
 		LeaveEgg = "RemoteFunction",
+		Bubble = "RemoteEvent",
+		PopBubble = "RemoteEvent",
 	},
 	World = {
 		Root = "Game",
@@ -92,6 +96,7 @@ return {
 		Fx = "Fx",
 		Overlay = "Overlay",
 		PurchaseBlur = "PurchaseBlur",
+		Bubbles = "Bubbles",
 	},
 	Attributes = {
 		Pets = "Pets",

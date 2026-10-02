@@ -851,6 +851,56 @@ make("ImageLabel", {
 	}),
 })
 
+local bubblesGui = screen(Names.Gui.Bubbles, 45)
+local bubbleLayer = make("Frame", { Name = "Layer", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Parent = bubblesGui })
+local bubble = make("TextButton", {
+	Name = "Bubble",
+	AnchorPoint = Vector2.new(0.5, 0.5),
+	Size = UDim2.fromScale(0.075, 0.075),
+	BackgroundColor3 = Color3.fromRGB(95, 195, 255),
+	BackgroundTransparency = 0.1,
+	AutoButtonColor = false,
+	Text = "",
+	Visible = false,
+	ZIndex = 5,
+	Parent = bubbleLayer,
+}, {
+	make("UIAspectRatioConstraint", { AspectRatio = 1 }),
+	make("UICorner", { CornerRadius = UDim.new(1, 0) }),
+	make("UIStroke", { Thickness = 3, Color = Color3.new(1, 1, 1), ApplyStrokeMode = Enum.ApplyStrokeMode.Border }),
+	make("UIGradient", {
+		Rotation = 120,
+		Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.fromRGB(200, 200, 200)),
+		Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 0.35) }),
+	}),
+})
+make("Frame", {
+	Name = "Shine",
+	AnchorPoint = Vector2.new(0.5, 0.5),
+	Position = UDim2.fromScale(0.33, 0.28),
+	Size = UDim2.fromScale(0.3, 0.15),
+	Rotation = -35,
+	BackgroundColor3 = Color3.new(1, 1, 1),
+	BackgroundTransparency = 0.2,
+	BorderSizePixel = 0,
+	ZIndex = 6,
+	Parent = bubble,
+}, { make("UICorner", { CornerRadius = UDim.new(1, 0) }) })
+label({ Name = "Icon", Text = "+", Size = UDim2.fromScale(0.62, 0.62), Position = UDim2.fromScale(0.5, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), ZIndex = 7, Parent = bubble })
+make("Frame", {
+	Name = "Approach",
+	AnchorPoint = Vector2.new(0.5, 0.5),
+	Position = UDim2.fromScale(0.5, 0.5),
+	Size = UDim2.fromScale(2.2, 2.2),
+	BackgroundTransparency = 1,
+	ZIndex = 4,
+	Parent = bubble,
+}, {
+	make("UICorner", { CornerRadius = UDim.new(1, 0) }),
+	make("UIStroke", { Thickness = 3, Color = Color3.new(1, 1, 1), Transparency = 0.15, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }),
+})
+label({ Name = "Float", Text = "+0", Size = UDim2.fromScale(0.16, 0.05), AnchorPoint = Vector2.new(0.5, 0.5), Visible = false, ZIndex = 8, Parent = bubbleLayer })
+
 local Lighting = game:GetService("Lighting")
 local purchaseBlur = Lighting:FindFirstChild(Names.Gui.PurchaseBlur) or make("BlurEffect", { Name = Names.Gui.PurchaseBlur, Parent = Lighting })
 purchaseBlur.Size = 0

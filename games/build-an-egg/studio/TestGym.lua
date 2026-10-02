@@ -55,7 +55,26 @@ local ok, err = pcall(function()
 			local foot = character:FindFirstChild("LeftFoot") or character:FindFirstChild("Left Leg")
 			note("  belt top", beltTop, "foot bottom", foot and (foot.Position.Y - foot.Size.Y / 2))
 		end
-		task.wait(2)
+		local training = StateService:Get(player).Training
+		local waited = 0
+		while training and next(training.Bubbles) == nil and waited < 4 do
+			task.wait(0.1)
+			waited += 0.1
+		end
+		local id, bubble = next(training and training.Bubbles or {})
+		if id then
+			task.wait(0.2)
+			local before = DataService:Get(player)[stat]
+			local popped = GymService:PopBubble(player, id)
+			note("  bubble", id, bubble.Kind, "popped", popped, "gain", DataService:Get(player)[stat] - before, "double pop", GymService:PopBubble(player, id))
+		else
+			note("  NO BUBBLE SPAWNED")
+		end
+		GymService.BubbleSerial += 1
+		local fakeId = GymService.BubbleSerial
+		training.Bubbles[fakeId] = { Kind = "Rare", Spawned = os.clock() - 5, Expires = os.clock() - 3 }
+		note("  expired pop rejected", not GymService:PopBubble(player, fakeId), "bogus id rejected", not GymService:PopBubble(player, "x"))
+		task.wait(1)
 		GymService:Stop(player, true)
 		task.wait(0.5)
 		if rack then
