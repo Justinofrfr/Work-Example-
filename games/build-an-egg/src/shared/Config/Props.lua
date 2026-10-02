@@ -25,7 +25,7 @@ return {
 		EggHeight = 9,
 		Spots = 7,
 		Looks = {
-			Common = { Material = Enum.Material.SmoothPlastic }, Accent = Color3.fromRGB(150, 205, 110),
+			Common = { Material = Enum.Material.SmoothPlastic, Accent = Color3.fromRGB(150, 205, 110) },
 			Silver = { Material = Enum.Material.Metal, Accent = Color3.fromRGB(130, 150, 190), Sparkle = Color3.fromRGB(230, 240, 255) },
 			Golden = { Material = Enum.Material.Foil, Accent = Color3.fromRGB(255, 245, 190), Sparkle = Color3.fromRGB(255, 220, 90) },
 			Void = { Material = Enum.Material.Neon, Accent = Color3.fromRGB(230, 120, 255), Sparkle = Color3.fromRGB(220, 90, 255) },
