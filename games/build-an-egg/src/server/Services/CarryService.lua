@@ -242,7 +242,7 @@ function CarryService:OnCharacter(player, character)
 		local body = backpack.PrimaryPart
 		local mount = body:FindFirstChild("Mount")
 		local offset = GameConfig.Backpack.Offset
-		body.CFrame = torso.CFrame * CFrame.new(offset.X, offset.Y, torso.Size.Z / 2 + offset.Z)
+		backpack:PivotTo(torso.CFrame * CFrame.new(offset.X, offset.Y, torso.Size.Z / 2 + offset.Z))
 		mount.Part0 = torso
 		mount.C0 = CFrame.new(offset.X, offset.Y, torso.Size.Z / 2 + offset.Z)
 		backpack.Parent = character

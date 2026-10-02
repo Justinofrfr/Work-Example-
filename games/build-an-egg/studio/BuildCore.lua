@@ -172,14 +172,15 @@ local backpackBody = make("Part", {
 	Parent = backpack,
 })
 backpack.PrimaryPart = backpackBody
-local function backpackPiece(name, size, offset, color)
+local function backpackPiece(name, size, offset, color, shape, studs)
 	local piece = make("Part", {
 		Name = name,
+		Shape = shape or Enum.PartType.Block,
 		Size = size,
 		CFrame = backpackBody.CFrame * CFrame.new(offset),
 		Color = color,
 		Material = Enum.Material.Plastic,
-		TopSurface = Enum.SurfaceType.Smooth,
+		TopSurface = studs and Enum.SurfaceType.Studs or Enum.SurfaceType.Smooth,
 		BottomSurface = Enum.SurfaceType.Smooth,
 		CanCollide = false,
 		CanQuery = false,
@@ -190,11 +191,18 @@ local function backpackPiece(name, size, offset, color)
 	make("WeldConstraint", { Part0 = backpackBody, Part1 = piece, Parent = piece })
 	return piece
 end
-backpackPiece("Rim", Vector3.new(BP.Size.X + 0.3, 0.35, BP.Size.Z + 0.3), Vector3.new(0, BP.Size.Y / 2 - 0.1, 0), BP.TrimColor)
-backpackPiece("Pocket", Vector3.new(BP.Size.X * 0.7, BP.Size.Y * 0.4, 0.3), Vector3.new(0, -BP.Size.Y * 0.18, BP.Size.Z / 2 + 0.12), BP.TrimColor)
+local X, Y, Z = BP.Size.X, BP.Size.Y, BP.Size.Z
+backpackPiece("Lid", Vector3.new(X + 0.12, 0.3, Z + 0.12), Vector3.new(0, Y / 2 + 0.1, 0), BP.TrimColor, nil, true)
+backpackPiece("Flap", Vector3.new(X * 0.82, Y * 0.42, 0.14), Vector3.new(0, Y * 0.24, Z / 2 + 0.08), BP.TrimColor)
+backpackPiece("Buckle", Vector3.new(0.34, 0.3, 0.1), Vector3.new(0, Y * 0.06, Z / 2 + 0.19), BP.BuckleColor)
+backpackPiece("Pocket", Vector3.new(X * 0.62, Y * 0.36, 0.34), Vector3.new(0, -Y * 0.24, Z / 2 + 0.16), BP.PocketColor, nil, true)
+backpackPiece("Emblem", Vector3.new(0.42, 0.52, 0.1), Vector3.new(0, -Y * 0.24, Z / 2 + 0.36), BP.EmblemColor, Enum.PartType.Ball)
 for side = -1, 1, 2 do
-	backpackPiece("Strap", Vector3.new(0.35, BP.Size.Y + 0.4, 0.25), Vector3.new(side * BP.Size.X * 0.3, 0, -BP.Size.Z / 2 - 0.1), BP.StrapColor)
+	backpackPiece("SidePocket", Vector3.new(0.3, Y * 0.5, Z * 0.7), Vector3.new(side * (X / 2 + 0.14), -Y * 0.15, 0), BP.PocketColor, nil, true)
+	backpackPiece("Strap", Vector3.new(0.32, Y + 0.3, 0.22), Vector3.new(side * X * 0.3, 0, -Z / 2 - 0.1), BP.StrapColor)
+	backpackPiece("Band", Vector3.new(0.2, 0.86, 0.86), Vector3.new(side * X * 0.32, Y / 2 + 0.6, 0), BP.BandColor, Enum.PartType.Cylinder)
 end
+backpackPiece("Bedroll", Vector3.new(X + 0.5, 0.8, 0.8), Vector3.new(0, Y / 2 + 0.6, 0), BP.BedrollColor, Enum.PartType.Cylinder)
 make("Weld", { Name = "Mount", Part1 = backpackBody, Parent = backpackBody })
 
 local stackPiece = shellChunk(Names.Templates.StackPiece)

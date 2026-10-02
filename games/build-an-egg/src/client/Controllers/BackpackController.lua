@@ -41,7 +41,7 @@ function BackpackController:Build(character, body)
 	root.Name = "StackRoot"
 	root.Transparency = 1
 	root.Size = Vector3.new(0.2, 0.2, 0.2)
-	local top = body.Size.Y / 2
+	local top = body.Size.Y / 2 + BP.StackLift
 	root.CFrame = body.CFrame * CFrame.new(0, top, 0)
 	local mount = body:FindFirstChild("Mount"):Clone()
 	mount.Name = "StackMount"
