@@ -117,4 +117,19 @@ for _, root in roots do
 	end
 end
 
+if stats.Written > 0 or _G.__EggForceRefresh then
+	local shared = game:GetService("ReplicatedStorage"):FindFirstChild("Shared")
+	for _, module in shared and shared:GetDescendants() or {} do
+		if module:IsA("ModuleScript") then
+			local fresh = module:Clone()
+			local parent = module.Parent
+			for _, child in module:GetChildren() do
+				child.Parent = fresh
+			end
+			module:Destroy()
+			fresh.Parent = parent
+		end
+	end
+end
+
 print(("Sync done: %d written, %d removed"):format(stats.Written, stats.Removed))
