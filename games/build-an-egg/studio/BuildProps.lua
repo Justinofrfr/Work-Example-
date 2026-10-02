@@ -142,12 +142,13 @@ local function species(name)
 end
 
 local function faceForward(model)
-	local center = model:GetBoundingBox().Position
+	local boxCFrame, boxSize = model:GetBoundingBox()
+	local center = boxCFrame.Position
 	local sum, count = Vector3.zero, 0
 	for _, part in model:GetDescendants() do
 		if part:IsA("BasePart") then
 			local color = part.Color
-			if color.R * 0.299 + color.G * 0.587 + color.B * 0.114 < PetsConfig.DarkThreshold then
+			if color.R * 0.299 + color.G * 0.587 + color.B * 0.114 < PetsConfig.DarkThreshold and part.Size.Magnitude < boxSize.Magnitude * 0.5 then
 				sum += part.Position
 				count += 1
 			end
