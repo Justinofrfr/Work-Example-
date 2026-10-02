@@ -160,6 +160,12 @@ local ok, err = pcall(function()
 	StateService:Teleport(player, workspace.Game.Interior.Pool.CFrame)
 	task.wait(2.4)
 	note("pool training", runtime.Training and runtime.Training.Stat, "speed +", data.Speed - poolSpeed)
+	local fragmentTotal = 0
+	for _, count in data.Fragments do
+		fragmentTotal += count
+	end
+	note("fragments after hatch", fragmentTotal)
+	note("leave egg", BuildService:LeaveInterior(player), "pos", character.HumanoidRootPart.Position)
 	BuildService:ResetRound()
 	note("after reset phase", BuildService.Phase, "project", BuildService:Project(), "progress", BuildService.Progress)
 	task.wait(1.5)
