@@ -21,6 +21,7 @@ local ASSETS = {
 	Throne = 2293753659,
 	Sign = 12712225222,
 	Scaffold = 12947205672,
+	PetPack = 75471003737301,
 }
 
 local BLOCKED = { "Script", "LocalScript", "ModuleScript", "Tool", "Sound", "ClickDetector", "BodyMover", "Fire", "Smoke", "Explosion", "ForceField" }

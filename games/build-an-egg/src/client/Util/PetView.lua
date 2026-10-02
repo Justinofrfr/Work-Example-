@@ -1,7 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
-local PetsConfig = require(Shared.Config.Pets)
 local PetRules = require(Shared.Util.PetRules)
 
 local PetView = {}
@@ -13,9 +12,7 @@ function PetView.Template(collection, rarity)
 end
 
 function PetView.Name(collection, rarity)
-	local def = PetsConfig.Collections[collection]
-	local tier = PetsConfig.Rarities[rarity]
-	return ("%s %s"):format(def and def.Name or collection, tier and tier.Species or "?")
+	return PetRules.DisplayName(collection, rarity)
 end
 
 function PetView.Show(frame, collection, rarity, yaw)

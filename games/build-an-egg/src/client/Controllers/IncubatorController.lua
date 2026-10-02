@@ -226,7 +226,7 @@ function IncubatorController:RenderOdds(selectedTier)
 			end
 		end
 	end
-	local lines = { ('Result: <font color="%s">%s %s</font>'):format(hex(tier.Color), tier.Key, tier.Species) }
+	local lines = { ('Result: <font color="%s">%s pet</font>'):format(hex(tier.Color), tier.Key) }
 	local odds = PetRules.CollectionOdds(collections)
 	local keys = {}
 	for collection in odds do
@@ -237,7 +237,7 @@ function IncubatorController:RenderOdds(selectedTier)
 	end)
 	for _, collection in keys do
 		local def = PetsConfig.Collections[collection]
-		table.insert(lines, ('<font color="%s">%s</font> %d%% · %s'):format(hex(def.Color), def.Name, math.floor(odds[collection] * 100 + 0.5), PetRules.BoostText(collection, resultTier)))
+		table.insert(lines, ('<font color="%s">%s</font> %d%% · %s'):format(hex(def.Color), PetRules.DisplayName(collection, resultTier), math.floor(odds[collection] * 100 + 0.5), PetRules.BoostText(collection, resultTier)))
 	end
 	table.insert(lines, ("%d/%d picked"):format(#self.Selection, PetsConfig.Inputs))
 	body.Odds.Text = table.concat(lines, "\n")

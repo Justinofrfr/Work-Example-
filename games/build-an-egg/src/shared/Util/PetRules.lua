@@ -89,6 +89,22 @@ function PetRules.Score(collection: string, rarity: number): number
 	return PetRules.Boost(collection, rarity, "Speed") + PetRules.Boost(collection, rarity, "Strength")
 end
 
+function PetRules.Species(collection: string, rarity: number): string?
+	local def = PetsConfig.Collections[collection]
+	local tier = PetsConfig.Rarities[rarity]
+	if not def or not tier then
+		return nil
+	end
+	return tier.Species[(def.Index - 1) % #tier.Species + 1]
+end
+
+function PetRules.DisplayName(collection: string, rarity: number): string
+	local def = PetsConfig.Collections[collection]
+	local species = PetRules.Species(collection, rarity)
+	local info = species and PetsConfig.Species[species]
+	return ("%s %s"):format(def and def.Name or collection, info and info.Name or "?")
+end
+
 function PetRules.ModelName(collection: string, rarity: number): string
 	return collection .. "_" .. rarity
 end

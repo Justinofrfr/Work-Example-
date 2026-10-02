@@ -111,15 +111,6 @@ local function sparkles(parent, color, rate)
 	})
 end
 
-local function keepColor(name)
-	for _, pattern in PetsConfig.KeepColorPattern do
-		if name:find(pattern) then
-			return true
-		end
-	end
-	return false
-end
-
 local function tint(model, collectionKey)
 	local def = PetsConfig.Collections[collectionKey]
 	if not def then
@@ -127,7 +118,8 @@ local function tint(model, collectionKey)
 	end
 	local index = 0
 	for _, part in model:GetDescendants() do
-		if part:IsA("BasePart") and part.Name ~= "Root" and not keepColor(part.Name) then
+		local dark = part:IsA("BasePart") and part.Color.R * 0.299 + part.Color.G * 0.587 + part.Color.B * 0.114 < PetsConfig.DarkThreshold
+		if part:IsA("BasePart") and part.Name ~= "Root" and not dark then
 			index += 1
 			if def.Rainbow then
 				part.Color = Color3.fromHSV((index * 0.13) % 1, 0.65, 1)
@@ -142,6 +134,36 @@ local function tint(model, collectionKey)
 			end
 		end
 	end
+end
+
+local function species(name)
+	local pack = imported:WaitForChild(PetsConfig.Pack)
+	return pack:FindFirstChild(name, true)
+end
+
+local function faceForward(model)
+	local center = model:GetBoundingBox().Position
+	local sum, count = Vector3.zero, 0
+	for _, part in model:GetDescendants() do
+		if part:IsA("BasePart") then
+			local color = part.Color
+			if color.R * 0.299 + color.G * 0.587 + color.B * 0.114 < PetsConfig.DarkThreshold then
+				sum += part.Position
+				count += 1
+			end
+		end
+	end
+	if count == 0 then
+		return
+	end
+	local offset = sum / count - center
+	local front = Vector3.new(offset.X, 0, offset.Z)
+	if front.Magnitude < 0.01 then
+		return
+	end
+	local turn = CFrame.lookAt(Vector3.zero, front.Unit):Inverse()
+	local pivot = model:GetPivot()
+	model:PivotTo(CFrame.new(pivot.Position) * turn * pivot.Rotation)
 end
 
 local function primaryPart(model)
@@ -168,9 +190,9 @@ end
 hatchlings = make("Folder", { Name = "Hatchlings", Parent = ReplicatedStorage })
 
 for key, def in PropsConfig.Hatchlings do
-	local model = prepare(imported:WaitForChild(def.Source))
+	local model = prepare(species(def.Species))
 	model.Name = key
-	recolor(model, def.Recolor or {})
+	faceForward(model)
 	if def.Tint then
 		tint(model, def.Tint)
 	end
@@ -196,17 +218,19 @@ pets = make("Folder", { Name = "Pets", Parent = ReplicatedStorage })
 local petCount = 0
 for collectionKey, collection in PetsConfig.Collections do
 	for rarity, tier in PetsConfig.Rarities do
-		local species = PetsConfig.Species[tier.Species]
-		local model = prepare(imported:WaitForChild(species.Source))
+		local speciesName = PetRules.Species(collectionKey, rarity)
+		local info = PetsConfig.Species[speciesName]
+		local model = prepare(species(speciesName))
 		model.Name = PetRules.ModelName(collectionKey, rarity)
+		faceForward(model)
 		tint(model, collectionKey)
-		fit(model, "Height", species.Height, CFrame.Angles(0, math.rad(species.Yaw or 0), 0))
+		fit(model, "Height", tier.Height)
 		local root = primaryPart(model)
 		if collection.Sparkle and rarity >= 3 then
 			sparkles(root, collection.Sparkle, rarity * 2)
 		end
-		model:SetAttribute("Flying", species.Flying == true)
-		model:SetAttribute("Height", species.Height)
+		model:SetAttribute("Flying", info.Flying == true)
+		model:SetAttribute("Height", tier.Height)
 		model.Parent = pets
 		petCount += 1
 	end
@@ -263,6 +287,26 @@ for index, key in ProjectsConfig.Order do
 			part.Color = project.Color
 			part.Material = look.Material
 		end
+	end
+	local eggBox, eggSize = egg:GetBoundingBox()
+	for spot = 1, displayConfig.Spots do
+		local fraction = random:NextNumber(0.2, 0.8)
+		local y = (fraction - 0.5) * eggSize.Y
+		local radius = eggSize.X / 2 * math.sqrt(math.max(0, 1 - (2 * y / eggSize.Y) ^ 2)) - 0.1
+		local angle = spot / displayConfig.Spots * math.pi * 2 + random:NextNumber(-0.3, 0.3)
+		make("Part", {
+			Name = "Spot",
+			Shape = Enum.PartType.Ball,
+			Size = Vector3.one * random:NextNumber(1.1, 1.9),
+			CFrame = CFrame.new(eggBox.Position + Vector3.new(math.cos(angle) * radius, y, math.sin(angle) * radius)),
+			Color = look.Accent or project.Color:Lerp(Color3.new(1, 1, 1), 0.5),
+			Material = Enum.Material.SmoothPlastic,
+			Anchored = true,
+			CanCollide = false,
+			CanQuery = false,
+			CanTouch = false,
+			Parent = egg,
+		})
 	end
 	primaryPart(egg)
 	if look.Sparkle then
@@ -488,8 +532,9 @@ end
 ambient = make("Folder", { Name = "Ambient", Parent = world })
 for _, def in PropsConfig.Ambient do
 	for index = 1, def.Count do
-		local model = prepare(imported[def.Source])
-		model.Name = def.Source
+		local model = prepare(species(def.Species))
+		model.Name = def.Species
+		faceForward(model)
 		local position = def.Area + Vector3.new(random:NextNumber(-def.Spread, def.Spread), 0, random:NextNumber(-def.Spread, def.Spread))
 		fit(model, "Height", def.Height, CFrame.new(position) * CFrame.Angles(0, random:NextNumber(0, math.pi * 2), 0))
 		primaryPart(model)
