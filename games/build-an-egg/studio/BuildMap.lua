@@ -418,7 +418,7 @@ for index = 1, segmentCount do
 		part({
 			Name = "Rail",
 			Size = Vector3.new(EggConfig.ScaffoldWallWidth, EggConfig.ScaffoldWallHeight, length),
-			CFrame = frame * CFrame.new(side * (stairWidth / 2 - EggConfig.ScaffoldWallWidth / 2), EggConfig.ScaffoldWallHeight / 2, 0),
+			CFrame = frame * CFrame.new(side * (stairWidth / 2 - EggConfig.ScaffoldWallWidth / 2 - 0.15), EggConfig.ScaffoldWallHeight / 2, 0),
 			Color = EggConfig.ScaffoldWallColor,
 			Material = Enum.Material.SmoothPlastic,
 			Parent = scaffold,
@@ -430,7 +430,7 @@ for index = 1, segmentCount do
 		local pillarTop = mid.Y - stairThickness / math.cos(slope) - center.Y
 		if pillarTop > 1 then
 			for side = -1, 1, 2 do
-				local base = mid + stairRight * side * (stairWidth / 2 - EggConfig.ScaffoldPillarSize / 2)
+				local base = mid + stairRight * side * (stairWidth / 2 - EggConfig.ScaffoldPillarSize / 2 - 0.3)
 				studded({
 					Name = "Post",
 					Size = Vector3.new(EggConfig.ScaffoldPillarSize, pillarTop, EggConfig.ScaffoldPillarSize),
