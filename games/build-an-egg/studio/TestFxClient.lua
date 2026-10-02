@@ -38,7 +38,7 @@ task.spawn(function()
 	clientLog:FireServer("alerts " .. table.concat(alerts, " | "))
 	clientLog:FireServer("confetti bits " .. bits)
 	local shine = playerGui.Main:FindFirstChild("ShineFX", true)
-	local root = workspace:FindFirstChild("StackRoot")
+	local root = workspace:FindFirstChild("StackRoot", true)
 	local pieces = 0
 	for _, child in root and root:GetChildren() or {} do
 		if child.Name == "Piece" then
