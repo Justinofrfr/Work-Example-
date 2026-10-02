@@ -8,6 +8,7 @@ local Players = game:GetService("Players")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Names = require(Shared.Config.Names)
 local TutorialConfig = require(Shared.Config.Tutorial)
+local UpgradesConfig = require(Shared.Config.Upgrades)
 
 local Ui = require(script.Parent.Parent.Util.Ui)
 local Audio = require(script.Parent.Parent.Util.Audio)
@@ -30,7 +31,6 @@ local templates
 local guideTarget
 local guideBeam
 local playerAttachment
-local stepStarted = 0
 
 function TutorialController:Init(modules, context)
 	ClientState = modules.ClientState
@@ -137,8 +137,11 @@ function TutorialController:GuiTarget(name)
 		end
 		local hints = hud and hud:FindFirstChild("KeyHints")
 		return hints and hints.Visible and hints:FindFirstChild("Pickup") or nil
-	elseif name == "Shop" then
-		return hud and hud.Right:FindFirstChild("Shop")
+	elseif name == "UpgradeBuy" then
+		local panel = PanelController:Get("Upgrades")
+		local list = panel and panel.Visible and panel.Body:FindFirstChild("List")
+		local card = list and list:FindFirstChild(UpgradesConfig.Order[1])
+		return card and card:FindFirstChild("Buy")
 	end
 	return nil
 end
@@ -150,9 +153,9 @@ function TutorialController:ShowStep()
 		return
 	end
 	self.Active = true
-	stepStarted = os.clock()
 	self.StartPlaced = ClientState.State and ClientState.State.PiecesPlaced or 0
-	self.LastPanel = nil
+	self.BasePlaced = self.BasePlaced or self.StartPlaced
+	self.LastPanel = PanelController.Current and PanelController.Current.Name or nil
 	frame.Visible = true
 	local card = frame.Card
 	card.Step.Text = ("STEP %d/%d"):format(self.Step, #TutorialConfig.Steps)
@@ -212,21 +215,16 @@ function TutorialController:IsDone(def)
 	elseif def.Key == "Carry" then
 		return InteractController.Mode == "Place" or state.PiecesPlaced > self.StartPlaced
 	elseif def.Key == "Place" then
-		return state.PiecesPlaced > self.StartPlaced
-	elseif def.Key == "Upgrades" then
-		if self.LastPanel == "Upgrades" then
-			return true
-		end
+		return state.PiecesPlaced > self.StartPlaced or (state.Carry == 0 and state.PiecesPlaced > (self.BasePlaced or 0))
+	elseif def.Key == "OpenUpgrades" or def.Key == "BuyUpgrade" then
 		for _, level in state.Upgrades or {} do
 			if level > 0 then
 				return true
 			end
 		end
-		return false
+		return def.Key == "OpenUpgrades" and self.LastPanel == "Upgrades"
 	elseif def.Key == "Gym" then
 		return state.Training ~= nil
-	elseif def.Key == "Shop" then
-		return self.LastPanel == "Shop" or (def.AutoAdvance and os.clock() - stepStarted >= def.AutoAdvance)
 	end
 	return false
 end
@@ -315,12 +313,14 @@ function TutorialController:Update()
 		return
 	end
 	frame.Visible = true
-	if def.Target == "Gui" then
+	local panelOpen = not def.NeedsPanel or (PanelController.Current ~= nil and PanelController.Current.Name == def.NeedsPanel and PanelController.Current.Visible)
+	if def.Target == "Gui" and panelOpen then
 		self:SetSpot(self:GuiTarget(def.Gui))
+		self:SetGuide(nil)
 	else
 		self:SetSpot(nil)
+		self:SetGuide(def.World and self:WorldTarget(def.World) or nil)
 	end
-	self:SetGuide(def.World and self:WorldTarget(def.World) or nil)
 	if self:IsDone(def) then
 		self:Complete()
 	end
