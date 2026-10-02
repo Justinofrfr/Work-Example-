@@ -121,7 +121,9 @@ if stats.Written > 0 or _G.__EggForceRefresh then
 	local shared = game:GetService("ReplicatedStorage"):FindFirstChild("Shared")
 	for _, module in shared and shared:GetDescendants() or {} do
 		if module:IsA("ModuleScript") then
-			local fresh = module:Clone()
+			local fresh = Instance.new("ModuleScript")
+			fresh.Name = module.Name
+			fresh.Source = module.Source
 			local parent = module.Parent
 			for _, child in module:GetChildren() do
 				child.Parent = fresh
