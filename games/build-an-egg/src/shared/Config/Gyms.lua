@@ -17,4 +17,5 @@ return {
 	LieHeightOffset = 0.6,
 	TreadmillStandHeight = 4.4,
 	StepOffDistance = 3,
+	RackParts = { RackBar = true, Bar = true, Plate = true },
 }

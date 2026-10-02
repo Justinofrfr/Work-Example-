@@ -15,6 +15,7 @@ local GymService = {
 	Pads = {},
 	Stopped = {},
 	LockNotified = {},
+	HiddenRacks = {},
 }
 
 local DataService
@@ -59,6 +60,12 @@ function GymService:Start()
 			task.wait(GymsConfig.PadCheckInterval)
 			for player, runtime in StateService.Runtime do
 				self:CheckPlayer(player, runtime)
+			end
+			for pad, owner in self.HiddenRacks do
+				local runtime = StateService.Runtime[owner]
+				if not owner.Parent or not runtime or not runtime.Training or runtime.Training.Pad ~= pad then
+					self:SetRack(pad, true)
+				end
 			end
 		end
 	end)
@@ -185,6 +192,22 @@ function GymService:Begin(player, runtime, pad)
 	remotes[Names.Remotes.Effect]:FireClient(player, "TrainStart", stat, tierKey)
 end
 
+function GymService:SetRack(pad, visible, owner)
+	local machine = pad and pad.Parent
+	if not machine then
+		return
+	end
+	self.HiddenRacks[pad] = not visible and owner or nil
+	for _, descendant in machine:GetDescendants() do
+		if descendant:IsA("BasePart") and GymsConfig.RackParts[descendant.Name] then
+			if descendant:GetAttribute("RackTransparency") == nil then
+				descendant:SetAttribute("RackTransparency", descendant.Transparency)
+			end
+			descendant.Transparency = visible and descendant:GetAttribute("RackTransparency") or 1
+		end
+	end
+end
+
 function GymService:Snap(player, rootPart, pad, stat)
 	local floor = pad.CFrame * CFrame.new(0, -pad.Size.Y / 2, 0)
 	local target
@@ -196,6 +219,9 @@ function GymService:Snap(player, rootPart, pad, stat)
 	else
 		local position = floor.Position + Vector3.new(0, GymsConfig.TreadmillStandHeight, 0)
 		target = CFrame.lookAt(position, position + pad.CFrame.LookVector)
+	end
+	if stat == "Strength" then
+		self:SetRack(pad, false, player)
 	end
 	StateService:Teleport(player, target)
 	rootPart.AssemblyLinearVelocity = Vector3.zero
@@ -210,8 +236,23 @@ function GymService:Release(player, pad)
 	end
 	rootPart.Anchored = false
 	if pad and (rootPart.Position - pad.Position).Magnitude <= pad.Size.Magnitude + GymsConfig.StepOffDistance then
-		local side = pad.CFrame * CFrame.new(pad.Size.X / 2 + GymsConfig.StepOffDistance, -pad.Size.Y / 2 + 3, 0)
-		StateService:Teleport(player, CFrame.lookAt(side.Position, side.Position + pad.CFrame.RightVector))
+		local height = -pad.Size.Y / 2 + 3
+		local offsets = {
+			Vector3.new(0, height, pad.Size.Z / 2 + GymsConfig.StepOffDistance),
+			Vector3.new(0, height, -(pad.Size.Z / 2 + GymsConfig.StepOffDistance)),
+			Vector3.new(pad.Size.X / 2 + GymsConfig.StepOffDistance, height, 0),
+			Vector3.new(-(pad.Size.X / 2 + GymsConfig.StepOffDistance), height, 0),
+		}
+		local chosen = pad.CFrame * offsets[1]
+		for _, offset in offsets do
+			local candidate = pad.CFrame * offset
+			if not self:PadAt(candidate) then
+				chosen = candidate
+				break
+			end
+		end
+		local away = Vector3.new(chosen.X - pad.Position.X, 0, chosen.Z - pad.Position.Z)
+		StateService:Teleport(player, CFrame.lookAt(chosen, chosen + (away.Magnitude > 0.01 and away.Unit or pad.CFrame.LookVector)))
 	end
 end
 
@@ -225,6 +266,7 @@ function GymService:Stop(player, byJump)
 		self.Stopped[player] = pad
 	end
 	runtime.Training = nil
+	self:SetRack(pad, true)
 	self:Release(player, pad)
 	local character = player.Character
 	local rootPart = character and character:FindFirstChild("HumanoidRootPart")

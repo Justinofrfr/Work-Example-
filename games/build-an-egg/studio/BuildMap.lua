@@ -392,7 +392,7 @@ for index = 1, steps do
 	if up.Y < 0 then
 		up = -up
 	end
-	local cf = CFrame.fromMatrix(point, outward, up, -forward)
+	local cf = CFrame.fromMatrix(point, outward, up)
 	local plank = part({
 		Name = "Step",
 		Size = Vector3.new(EggConfig.ScaffoldWidth, 1.2, arc * 1.08),
@@ -405,8 +405,8 @@ for index = 1, steps do
 	for side = -1, 1, 2 do
 		part({
 			Name = "Rail",
-			Size = Vector3.new(0.6, 3, arc * 1.08),
-			CFrame = cf * CFrame.new(side * (EggConfig.ScaffoldWidth / 2 - 0.3), 2, 0),
+			Size = Vector3.new(0.6, 3, arc * 1.04),
+			CFrame = cf * CFrame.new(side * (EggConfig.ScaffoldWidth / 2 - 0.5), 2, 0),
 			Color = P.WoodDark,
 			Material = Enum.Material.Wood,
 			Parent = scaffold,
@@ -480,7 +480,7 @@ local startPoint = pitCenter + Vector3.new(0, 0.3, pitSize.Z / 2 + rampLength)
 local endPoint = EggShape.ScaffoldPoint(center.Y + 0.6)
 local pathVector = Vector3.new(endPoint.X, 0.3, endPoint.Z) - startPoint
 local distance = pathVector.Magnitude
-studded({ Name = "Path", Size = Vector3.new(14, 1, distance), CFrame = CFrame.lookAt(startPoint + pathVector / 2 - Vector3.new(0, 0.75, 0), startPoint + pathVector - Vector3.new(0, 0.75, 0)), Color = P.Path, Parent = groundFolder })
+studded({ Name = "Path", Size = Vector3.new(14, 1, distance), CFrame = CFrame.lookAt(startPoint + pathVector / 2 - Vector3.new(0, 0.6, 0), startPoint + pathVector - Vector3.new(0, 0.6, 0)), Color = P.Path, Parent = groundFolder })
 for index = 0, math.floor(distance / 18) do
 	local position = startPoint + pathVector.Unit * (index * 18 + 6) + Vector3.new(0, 0.2, 0)
 	local arrow = part({
@@ -600,7 +600,7 @@ for ringIndex = 1, wallRings do
 		local up = (outward * (r1 - r0) + Vector3.new(0, y1 - y0, 0)).Unit
 		part({
 			Name = "Wall",
-			Size = Vector3.new(2 * math.pi * mid / segments * 1.08, slant * 1.05, 2),
+			Size = Vector3.new(2 * math.pi * mid / segments * 1.08, slant * 1.05, 2 + (ringIndex % 2) * 0.6),
 			CFrame = CFrame.fromMatrix(inCenter + outward * mid + Vector3.new(0, (y0 + y1) / 2, 0), tangent, up),
 			Color = P.InteriorWall,
 			Parent = interior,

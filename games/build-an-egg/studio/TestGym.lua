@@ -49,7 +49,7 @@ local ok, err = pcall(function()
 		note(stat, "training", StateService:Get(player).Training and StateService:Get(player).Training.Stat, "anchored", root.Anchored)
 		note("  root rel pad", rel, "head rel pad", headRel, "look", root.CFrame.LookVector, "up", root.CFrame.UpVector)
 		if rackRel then
-			note("  rack rel pad", rackRel)
+			note("  rack rel pad", rackRel, "rack transparency while training", rack.Transparency)
 		end
 		if beltTop then
 			local foot = character:FindFirstChild("LeftFoot") or character:FindFirstChild("Left Leg")
@@ -58,6 +58,10 @@ local ok, err = pcall(function()
 		task.wait(2)
 		GymService:Stop(player, true)
 		task.wait(0.5)
+		if rack then
+			local after = StateService:Get(player).Training
+			note("  rack transparency after stop", rack.Transparency, "root anchored", character.HumanoidRootPart.Anchored, "training", after and (after.Stat .. " " .. after.Pad:GetFullName()), "same pad", after and after.Pad == pad, "rel", pad.CFrame:PointToObjectSpace(character.HumanoidRootPart.Position))
+		end
 	end
 end)
 if not ok then

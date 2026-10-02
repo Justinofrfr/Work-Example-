@@ -249,7 +249,7 @@ local function buildTreadmill(visual, floor, color)
 	gymPart(visual, { Name = "Belt", Size = Vector3.new(G.TreadmillWidth - 1, 0.3, G.TreadmillLength - 0.6), CFrame = floor * CFrame.new(0, 1.15, 0), Color = Color3.fromRGB(25, 25, 30), Material = Enum.Material.Fabric })
 	for side = -1, 1, 2 do
 		gymPart(visual, { Name = "Rail", Size = Vector3.new(0.5, 0.6, G.TreadmillLength), CFrame = floor * CFrame.new(side * (G.TreadmillWidth / 2 - 0.25), 1.3, 0), Color = color })
-		gymPart(visual, { Name = "Post", Size = Vector3.new(0.5, 4.2, 0.5), CFrame = floor * CFrame.new(side * (G.TreadmillWidth / 2 - 0.25), 3.1, -(G.TreadmillLength / 2 - 0.6)), Color = G.MachineLight, Material = Enum.Material.Metal })
+		gymPart(visual, { Name = "Post", Size = Vector3.new(0.9, 4.1, 0.9), CFrame = floor * CFrame.new(side * (G.TreadmillWidth / 2 - 0.25), 3.15, -(G.TreadmillLength / 2 - 0.6)), Color = G.MachineLight, Material = Enum.Material.Metal })
 		gymPart(visual, { Name = "Handle", Size = Vector3.new(0.4, 0.4, 2.4), CFrame = floor * CFrame.new(side * (G.TreadmillWidth / 2 - 0.25), 4.2, -(G.TreadmillLength / 2 - 1.8)), Color = color })
 	end
 	gymPart(visual, { Name = "Console", Size = Vector3.new(G.TreadmillWidth - 0.4, 1.6, 0.6), CFrame = floor * CFrame.new(0, 5.2, -(G.TreadmillLength / 2 - 0.6)) * CFrame.Angles(math.rad(-25), 0, 0), Color = color, Material = Enum.Material.Neon })
@@ -274,7 +274,7 @@ for _, gym in gyms:GetChildren() do
 		platform.Material = Enum.Material.SmoothPlastic
 		local size = platform.Size
 		local topCF = platform.CFrame * CFrame.new(0, size.Y / 2, 0)
-		for _, edge in { { 0, size.Z / 2, size.X, G.BorderWidth }, { 0, -size.Z / 2, size.X, G.BorderWidth }, { size.X / 2, 0, G.BorderWidth, size.Z }, { -size.X / 2, 0, G.BorderWidth, size.Z } } do
+		for _, edge in { { 0, size.Z / 2, size.X + G.BorderWidth, G.BorderWidth }, { 0, -size.Z / 2, size.X + G.BorderWidth, G.BorderWidth }, { size.X / 2, 0, G.BorderWidth, size.Z - G.BorderWidth }, { -size.X / 2, 0, G.BorderWidth, size.Z - G.BorderWidth } } do
 			gymPart(gym, { Name = "Border", Size = Vector3.new(edge[3], 0.3, edge[4]), CFrame = topCF * CFrame.new(edge[1], 0.15, edge[2]), Color = tierColor, Material = Enum.Material.Neon, CanCollide = false })
 		end
 	end
