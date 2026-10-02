@@ -48,10 +48,10 @@ end
 
 function NotifyController:Handle(kind, a, b)
 	if kind == "Toast" then
-		self:Toast(a)
+		self:Toast(a, b == "Bad" and UIConfig.Colors.Bad or (b == "Good" and UIConfig.Colors.Good) or nil)
 	elseif kind == "Full" then
-		self:Toast(a or M.Full, UIConfig.Colors.Bad)
 		Audio.Play("Full")
+		self:Toast(a or M.Full, UIConfig.Colors.Bad)
 	elseif kind == "Milestone" then
 		if a < 0.9 then
 			self:Banner(M.Milestone:format(math.floor(a * 100 + 0.5)), Color3.fromRGB(120, 220, 110))
@@ -93,8 +93,8 @@ function NotifyController:Handle(kind, a, b)
 			end
 			EffectController:FragmentShower(b or {})
 			task.wait(1.5)
-			self:Toast(PetsConfig.Messages.Fragments:format(a), UIConfig.Colors.Good)
 			Audio.Play("Reward")
+			self:Toast(PetsConfig.Messages.Fragments:format(a), UIConfig.Colors.Good)
 		end)
 	elseif kind == "Purchased" then
 		PurchaseFxController:Celebrate(a)
@@ -135,7 +135,8 @@ function NotifyController:Toast(text, color)
 	if #text > T.MaxChars then
 		text = text:sub(1, T.MaxChars - 2) .. ".."
 	end
-	local tone = (color == UIConfig.Colors.Good and T.Good) or (color == UIConfig.Colors.Bad and T.Bad) or T.Neutral
+	local toneKey = (color == UIConfig.Colors.Good and "Good") or (color == UIConfig.Colors.Bad and "Bad") or "Neutral"
+	local tone = T[toneKey]
 	local toast = toastTemplate:Clone()
 	toast.Name = "Toast"
 	toast.Text = text
@@ -159,9 +160,7 @@ function NotifyController:Toast(text, color)
 		table.remove(self.Toasts):Destroy()
 	end
 	self:Layout()
-	if color ~= UIConfig.Colors.Bad then
-		Audio.Play("Tick")
-	end
+	Audio.Play(T.Sounds[toneKey])
 	task.delay(T.Duration, function()
 		local index = table.find(self.Toasts, toast)
 		if index then

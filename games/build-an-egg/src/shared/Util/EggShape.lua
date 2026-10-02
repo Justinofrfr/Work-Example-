@@ -126,6 +126,11 @@ function EggShape.ScaffoldPoint(height: number): (Vector3, number)
 	return point, math.atan2(direction.Z, direction.X)
 end
 
+function EggShape.RampSegment(ringIndex: number): (Vector3, Vector3)
+	local lowHeight = ringIndex > 1 and EggShape.BandHeight(ringIndex - 1) or EggConfig.Center.Y
+	return EggShape.ScaffoldPoint(lowHeight), EggShape.ScaffoldPoint(EggShape.BandHeight(ringIndex))
+end
+
 function EggShape.InBand(position: Vector3, ringIndex: number, reachMultiplier: number, tolerance: number): boolean
 	local bandY = EggShape.BandHeight(ringIndex)
 	local feetY = position.Y - EggConfig.StandHeight

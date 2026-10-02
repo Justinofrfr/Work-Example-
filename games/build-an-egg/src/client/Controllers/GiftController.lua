@@ -53,11 +53,10 @@ function GiftController:Claim()
 	local ok, result = remotes[Names.Remotes.ClaimGift]:InvokeServer()
 	busy = false
 	if ok then
-		NotifyController:Toast(UIConfig.Messages.GiftOk, UIConfig.Colors.Good)
 		Audio.Play("Reward")
+		NotifyController:Toast(UIConfig.Messages.GiftOk, UIConfig.Colors.Good)
 	elseif result == "Group" then
 		NotifyController:Toast(UIConfig.Messages.GiftGroup, UIConfig.Colors.Bad)
-		Audio.Play("Error")
 	elseif result == "Claimed" then
 		NotifyController:Toast(UIConfig.Messages.GiftClaimed)
 	end

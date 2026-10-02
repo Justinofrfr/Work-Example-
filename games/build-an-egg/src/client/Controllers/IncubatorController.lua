@@ -259,8 +259,8 @@ function IncubatorController:Hatch()
 		PanelController:Close()
 		self:Reveal(result)
 	else
-		NotifyController:Toast(result == "PetsFull" and M.PetsFull or M.NeedFive, UIConfig.Colors.Bad)
 		Audio.Play("PurchaseFail")
+		NotifyController:Toast(result == "PetsFull" and M.PetsFull or M.NeedFive, UIConfig.Colors.Bad)
 	end
 	self.Busy = false
 	self:Render()

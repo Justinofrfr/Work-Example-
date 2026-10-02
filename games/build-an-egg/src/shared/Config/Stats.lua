@@ -1,5 +1,5 @@
 return {
-	BaseWalkSpeed = 16,
+	BaseWalkSpeed = 22,
 	WalkSpeedCoefficient = 13.8,
 	WalkSpeedDivisor = 2,
 	MaxWalkSpeed = 140,

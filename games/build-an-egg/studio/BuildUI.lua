@@ -654,10 +654,15 @@ label({ Name = "Caption", Text = "", Size = UDim2.fromScale(0.8, 0.09), Position
 button({ Name = "Skip", Text = "SKIP", Color = Color3.fromRGB(150, 150, 160), Size = UDim2.fromScale(0.09, 0.06), Position = UDim2.fromScale(0.985, 0.03), AnchorPoint = Vector2.new(1, 0), Parent = cutscene })
 
 local tutorial = make("Frame", { Name = "Tutorial", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Visible = false, ZIndex = 40, Parent = gui })
-for _, side in { "Top", "Bottom", "Left", "Right" } do
-	make("Frame", { Name = side, BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = require(Shared.Config.Tutorial).SpotlightTransparency, BorderSizePixel = 0, ZIndex = 40, Size = UDim2.fromScale(0, 0), Parent = tutorial })
-end
-make("Frame", { Name = "Ring", BackgroundTransparency = 1, ZIndex = 41, Size = UDim2.fromScale(0, 0), Parent = tutorial }, { corner(0.3), stroke(4, Color3.fromRGB(255, 230, 90)) })
+local TutorialConfig = require(Shared.Config.Tutorial)
+make("Frame", { Name = "Hole", BackgroundTransparency = 1, Visible = false, ZIndex = 40, Size = UDim2.fromScale(0, 0), Parent = tutorial }, {
+	make("UICorner", { CornerRadius = UDim.new(0, TutorialConfig.SpotlightCorner) }),
+	make("UIStroke", { Thickness = TutorialConfig.SpotlightShade, Color = Color3.new(0, 0, 0), Transparency = TutorialConfig.SpotlightTransparency, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }),
+})
+make("Frame", { Name = "Ring", BackgroundTransparency = 1, Visible = false, ZIndex = 41, Size = UDim2.fromScale(0, 0), Parent = tutorial }, {
+	make("UICorner", { CornerRadius = UDim.new(0, TutorialConfig.SpotlightCorner) }),
+	make("UIStroke", { Thickness = TutorialConfig.SpotlightOutline, Color = Color3.new(0, 0, 0), ApplyStrokeMode = Enum.ApplyStrokeMode.Border }),
+})
 iconElement({ Name = "Finger", Text = UIConfig.Icons.Finger, Size = UDim2.fromScale(require(Shared.Config.Tutorial).FingerSize, require(Shared.Config.Tutorial).FingerSize), AnchorPoint = Vector2.new(0.3, 0), ZIndex = 45, Parent = tutorial })
 aspect(1).Parent = tutorial.Finger
 local tutorialCard = panelFrame({

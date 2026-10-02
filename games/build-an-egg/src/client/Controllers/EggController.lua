@@ -186,19 +186,19 @@ function EggController:RenderBand(server)
 		step.Part.Color = inBand and MapConfig.Palette.Band or step.Color
 		step.Part.Material = inBand and Enum.Material.Neon or step.Material
 	end
-	local count = #anchors
-	for index, anchor in anchors do
-		local offset = ((index - 1) / math.max(count - 1, 1) - 1) * reach
-		local point = EggShape.ScaffoldPoint(bandY + offset)
-		anchor.CFrame = CFrame.new(point + Vector3.new(0, EggConfig.StandHeight, 0))
+	local low, high = EggShape.RampSegment(server.Ring)
+	local middle = (low + high) / 2
+	local length = (high - low).Magnitude
+	for _, anchor in anchors do
+		anchor.CFrame = CFrame.new(middle + Vector3.new(0, EggConfig.StandHeight, 0))
 		local prompt = anchor:FindFirstChildOfClass("ProximityPrompt")
 		if prompt then
 			prompt.Enabled = building and prompt.Enabled
 		end
 	end
-	if placeZone then
-		local point = EggShape.ScaffoldPoint(bandY)
-		placeZone.CFrame = CFrame.new(point + Vector3.new(0, 0.9, 0)) * CFrame.Angles(0, 0, math.rad(90))
+	if placeZone and length > 0.1 then
+		placeZone.Size = Vector3.new(placeZone.Size.X, placeZone.Size.Y, length)
+		placeZone.CFrame = CFrame.lookAt(middle, high, Vector3.yAxis) * CFrame.new(0, placeZone.Size.Y / 2 + EggConfig.PlaceZoneLift, 0)
 		self:RenderPlaceZone()
 	end
 end
@@ -235,7 +235,10 @@ function EggController:RenderPlaceZone()
 	local show = state ~= nil and server ~= nil and state.Carry > 0 and server.Phase == "Building"
 	if placeZone then
 		placeZone.Transparency = show and 0.45 or 1
-		placeZone.Label.Enabled = show
+	end
+	local label = anchors[1] and anchors[1]:FindFirstChild("Label")
+	if label then
+		label.Enabled = show
 	end
 end
 

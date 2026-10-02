@@ -31,6 +31,7 @@ return {
 		Good = Color3.fromRGB(120, 230, 170),
 		Bad = Color3.fromRGB(255, 120, 120),
 		Neutral = Color3.fromRGB(240, 244, 252),
+		Sounds = { Good = "QuestDone", Bad = "Error", Neutral = "Tick" },
 		TopSaturation = 0.55,
 		TopValue = 1.18,
 	},

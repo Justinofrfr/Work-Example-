@@ -205,7 +205,7 @@ function CarryService:Drop(player)
 	self:UpdateVisual(player)
 	StateService:Dirty(player)
 	if self:InQuarry(rootPart.Position) or not pileFolder then
-		remotes[Names.Remotes.Notify]:FireClient(player, "Toast", UIConfig.Messages.DropQuarry)
+		remotes[Names.Remotes.Notify]:FireClient(player, "Toast", UIConfig.Messages.DropQuarry, "Bad")
 		return
 	end
 	local count = 0

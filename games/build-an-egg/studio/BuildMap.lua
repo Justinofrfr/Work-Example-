@@ -490,15 +490,12 @@ for index = 1, 20 do
 end
 
 local band = make("Folder", { Name = W.Band, Parent = site })
-for index = 1, 5 do
-	local anchor = zone({ Name = "Point" .. index, Size = Vector3.new(1, 1, 1), CFrame = CFrame.new(center + Vector3.new(0, -50, 0)), Parent = band })
-	prompt(anchor, W.PlacePrompt, "Place Shells", "Egg", GameConfig.PlaceHoldTime)
-end
+local placeAnchor = zone({ Name = "Point1", Size = Vector3.new(1, 1, 1), CFrame = CFrame.new(center + Vector3.new(0, -50, 0)), Parent = band })
+prompt(placeAnchor, W.PlacePrompt, "Place Shells", "Egg", GameConfig.PlaceHoldTime).MaxActivationDistance = EggConfig.PlacePromptDistance
 local placeZone = part({
 	Name = "PlaceZone",
-	Shape = Enum.PartType.Cylinder,
-	Size = Vector3.new(0.4, EggConfig.ScaffoldWidth + 4, EggConfig.ScaffoldWidth + 4),
-	CFrame = CFrame.new(center + Vector3.new(0, -50, 0)) * CFrame.Angles(0, 0, math.rad(90)),
+	Size = Vector3.new(EggConfig.ScaffoldWidth - EggConfig.PlaceZoneInset, EggConfig.PlaceZoneThickness, 8),
+	CFrame = CFrame.new(center + Vector3.new(0, -50, 0)),
 	Color = P.Band,
 	Material = Enum.Material.Neon,
 	Transparency = 0.45,
@@ -515,24 +512,24 @@ make("ParticleEmitter", {
 	Rate = 14,
 	Lifetime = NumberRange.new(1.2, 2),
 	Speed = NumberRange.new(3, 6),
-	EmissionDirection = Enum.NormalId.Right,
+	EmissionDirection = Enum.NormalId.Top,
 	SpreadAngle = Vector2.new(8, 8),
 	Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.6), NumberSequenceKeypoint.new(1, 0) }),
 	Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.1), NumberSequenceKeypoint.new(1, 1) }),
 	Color = ColorSequence.new(P.Band),
 	LightEmission = 1,
-	Shape = Enum.ParticleEmitterShape.Cylinder,
-	ShapeStyle = Enum.ParticleEmitterShapeStyle.Surface,
+	Shape = Enum.ParticleEmitterShape.Box,
+	ShapeStyle = Enum.ParticleEmitterShapeStyle.Volume,
 	Parent = placeZone,
 })
 make("BillboardGui", {
 	Name = "Label",
 	Size = UDim2.fromScale(16, 5),
-	StudsOffsetWorldSpace = Vector3.new(0, 9, 0),
+	StudsOffsetWorldSpace = Vector3.new(0, EggConfig.PlaceLabelHeight, 0),
 	AlwaysOnTop = true,
 	LightInfluence = 0,
 	MaxDistance = 600,
-	Parent = placeZone,
+	Parent = placeAnchor,
 }, {
 	text({ Name = "Title", Text = "PLACE SHELLS HERE", Size = UDim2.fromScale(1, 0.55), TextColor3 = Color3.fromRGB(140, 255, 140) }),
 	text({ Name = "Arrow", Text = "⬇", Size = UDim2.fromScale(1, 0.45), Position = UDim2.fromScale(0, 0.55), TextColor3 = Color3.fromRGB(140, 255, 140) }),

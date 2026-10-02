@@ -95,7 +95,6 @@ function UpgradeController:Buy(key, card)
 		Ui.Pop(card, 1.05)
 		NotifyController:Toast(UIConfig.Messages.Bought, UIConfig.Colors.Good)
 	else
-		Audio.Play("Error")
 		task.spawn(Ui.Shake, card.Buy)
 		local message = result == "MaxLevel" and UIConfig.Messages.MaxLevel or UIConfig.Messages.NotEnough
 		NotifyController:Toast(message, UIConfig.Colors.Bad)

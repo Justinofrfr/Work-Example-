@@ -12,6 +12,7 @@ local Audio = {}
 
 local sounds = ReplicatedStorage:WaitForChild(Names.Effects.Folder):WaitForChild(Names.Effects.Sounds)
 local recent = {}
+local groupTimes = {}
 local anchor
 
 local function template(name)
@@ -24,11 +25,18 @@ end
 
 local function allowed(name)
 	local def = EffectsConfig.Sounds[name]
+	local now = os.clock()
+	local group = def and def.Group
+	if group then
+		if now - (groupTimes[group] or -math.huge) < EffectsConfig.SoundGroupGap then
+			return false
+		end
+		groupTimes[group] = now
+	end
 	local limit = def and def.MaxPerSecond
 	if not limit then
 		return true
 	end
-	local now = os.clock()
 	local list = recent[name] or {}
 	recent[name] = list
 	while list[1] and now - list[1] > 1 do

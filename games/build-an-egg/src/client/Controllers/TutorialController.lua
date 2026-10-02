@@ -109,7 +109,7 @@ function TutorialController:WorldTarget(name)
 		return zone and zone.Position
 	elseif name == "Band" then
 		local band = world:FindFirstChild(W.Site) and world.Site:FindFirstChild(W.Band)
-		local point = band and band:FindFirstChild("Point3")
+		local point = band and band:FindFirstChild("Point1")
 		return point and point.Position
 	elseif name == "UpgradesNPC" then
 		local npc = world:FindFirstChild(W.NPCs) and world.NPCs:FindFirstChild("Upgrades")
@@ -146,7 +146,7 @@ function TutorialController:GuiTarget(name)
 	return nil
 end
 
-function TutorialController:ShowStep()
+function TutorialController:ShowStep(quiet)
 	local def = self:CurrentDef()
 	if not def then
 		self:Finish(false)
@@ -161,7 +161,9 @@ function TutorialController:ShowStep()
 	card.Step.Text = ("STEP %d/%d"):format(self.Step, #TutorialConfig.Steps)
 	card.Text.Text = (UserInputService.TouchEnabled and def.MobileText) or def.Text
 	Ui.Pop(card, 1.08)
-	Audio.Play("Open")
+	if not quiet then
+		Audio.Play("Open")
+	end
 	if not guideTarget then
 		guideTarget = templates.GuideTarget:Clone()
 		guideTarget.Parent = Workspace
@@ -175,7 +177,7 @@ function TutorialController:Complete()
 	if self.Step > #TutorialConfig.Steps then
 		self:Finish(false)
 	else
-		self:ShowStep()
+		self:ShowStep(true)
 	end
 end
 
@@ -230,11 +232,8 @@ function TutorialController:IsDone(def)
 end
 
 function TutorialController:SetSpot(target)
-	local spots = { frame.Top, frame.Bottom, frame.Left, frame.Right }
 	if not target then
-		for _, spot in spots do
-			spot.Size = UDim2.fromScale(0, 0)
-		end
+		frame.Hole.Visible = false
 		frame.Ring.Visible = false
 		frame.Finger.Visible = false
 		if Lighting:FindFirstChild("SpotlightBlur") then
@@ -249,14 +248,9 @@ function TutorialController:SetSpot(target)
 	local y0 = math.clamp((target.AbsolutePosition.Y - origin.Y) / size.Y - pad, 0, 1)
 	local x1 = math.clamp((target.AbsolutePosition.X + target.AbsoluteSize.X - origin.X) / size.X + pad, 0, 1)
 	local y1 = math.clamp((target.AbsolutePosition.Y + target.AbsoluteSize.Y - origin.Y) / size.Y + pad, 0, 1)
-	frame.Top.Position = UDim2.fromScale(0, 0)
-	frame.Top.Size = UDim2.fromScale(1, y0)
-	frame.Bottom.Position = UDim2.fromScale(0, y1)
-	frame.Bottom.Size = UDim2.fromScale(1, 1 - y1)
-	frame.Left.Position = UDim2.fromScale(0, y0)
-	frame.Left.Size = UDim2.fromScale(x0, y1 - y0)
-	frame.Right.Position = UDim2.fromScale(x1, y0)
-	frame.Right.Size = UDim2.fromScale(1 - x1, y1 - y0)
+	frame.Hole.Visible = true
+	frame.Hole.Position = UDim2.fromScale(x0, y0)
+	frame.Hole.Size = UDim2.fromScale(x1 - x0, y1 - y0)
 	if Lighting:FindFirstChild("SpotlightBlur") then
 		Lighting.SpotlightBlur.Size = UserInputService.TouchEnabled and TutorialConfig.SpotlightBlurMobile or TutorialConfig.SpotlightBlur
 		Lighting.SpotlightBlur.Enabled = true

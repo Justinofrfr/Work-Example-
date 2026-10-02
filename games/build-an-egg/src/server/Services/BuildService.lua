@@ -175,11 +175,11 @@ function BuildService:TryPlace(player, rootPart)
 		return false
 	end
 	if self.Phase ~= "Building" then
-		remotes[Names.Remotes.Notify]:FireClient(player, "Toast", UIConfig.Messages.NotBuilding)
+		remotes[Names.Remotes.Notify]:FireClient(player, "Toast", UIConfig.Messages.NotBuilding, "Bad")
 		return false
 	end
 	if runtime.Carry <= 0 then
-		remotes[Names.Remotes.Notify]:FireClient(player, "Toast", UIConfig.Messages.NoPieces)
+		remotes[Names.Remotes.Notify]:FireClient(player, "Toast", UIConfig.Messages.NoPieces, "Bad")
 		return false
 	end
 	if not self:CanPlaceAt(player, rootPart.Position) then

@@ -36,6 +36,11 @@ return {
 	BandVerticalReach = 9,
 	BandHorizontalReach = 8,
 	StandHeight = 3,
+	PlaceZoneInset = 1.6,
+	PlaceZoneThickness = 0.2,
+	PlaceZoneLift = 0.06,
+	PlacePromptDistance = 16,
+	PlaceLabelHeight = 6,
 
 	NestInnerRadius = 50,
 	NestOuterRadius = 66,
