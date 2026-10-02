@@ -3,9 +3,16 @@ local HttpService = game:GetService("HttpService")
 local TARGET = "http://127.0.0.1:34878/"
 local PROPS = { "Visible", "Size", "Position", "AnchorPoint", "BackgroundColor3", "BackgroundTransparency", "BorderSizePixel", "ZIndex", "LayoutOrder", "Rotation", "ClipsDescendants", "Image", "ImageColor3", "ImageTransparency", "ScaleType", "SliceCenter", "SliceScale", "TileSize", "Text", "TextColor3", "TextScaled", "TextSize", "TextTransparency", "TextStrokeTransparency", "TextXAlignment", "TextYAlignment", "RichText", "FontFace", "AutomaticSize", "Color", "Thickness", "Transparency", "ApplyStrokeMode", "LineJoinMode", "CornerRadius", "Offset", "AspectRatio", "AspectType", "DominantAxis", "FillDirection", "HorizontalAlignment", "VerticalAlignment", "SortOrder", "Padding", "PaddingTop", "PaddingBottom", "PaddingLeft", "PaddingRight", "Scale", "MaxSize", "MinSize", "SoundId", "Volume", "PlaybackSpeed", "DisplayOrder", "IgnoreGuiInset", "ResetOnSpawn", "ZIndexBehavior", "ScreenInsets", "Enabled", "Texture", "Lifetime", "Rate", "Speed", "SpreadAngle", "Acceleration", "Drag", "RotSpeed", "LightEmission", "Brightness", "Width0", "Width1", "TextureLength", "TextureSpeed", "TextureMode", "FaceCamera", "Segments", "CurveSize0", "CurveSize1", "MaxTextSize", "MinTextSize", "CellSize", "CellPadding", "FillDirectionMaxCells", "StartCorner", "Value", "ZOffset", "EmissionDirection", "Shape", "ShapeStyle", "ShapeInOut", "ShapePartial", "FlipbookLayout", "FlipbookMode", "FlipbookFramerate", "FlipbookStartRandom", "Orientation", "LockedToPart", "VelocityInheritance", "LightInfluence", "Squash", "TimeScale", "WindAffectsDrag", "Rotation" }
 
-local function encode(value)
+local encode
+function encode(value)
 	local kind = typeof(value)
-	if kind == "string" or kind == "number" or kind == "boolean" then
+	if kind == "number" then
+		if value ~= value or value == math.huge or value == -math.huge then
+			return tostring(value)
+		end
+		return value
+	end
+	if kind == "string" or kind == "boolean" then
 		return value
 	end
 	if kind == "Color3" then
@@ -18,10 +25,10 @@ local function encode(value)
 		return { "UDim", value.Scale, value.Offset }
 	end
 	if kind == "Vector2" then
-		return { "Vector2", value.X, value.Y }
+		return { "Vector2", encode(value.X), encode(value.Y) }
 	end
 	if kind == "Vector3" then
-		return { "Vector3", value.X, value.Y, value.Z }
+		return { "Vector3", encode(value.X), encode(value.Y), encode(value.Z) }
 	end
 	if kind == "Rect" then
 		return { "Rect", value.Min.X, value.Min.Y, value.Max.X, value.Max.Y }
@@ -42,12 +49,12 @@ local function encode(value)
 	if kind == "NumberSequence" then
 		local keys = {}
 		for _, key in value.Keypoints do
-			table.insert(keys, { key.Time, key.Value, key.Envelope })
+			table.insert(keys, { encode(key.Time), encode(key.Value), encode(key.Envelope) })
 		end
 		return { "NumberSequence", keys }
 	end
 	if kind == "NumberRange" then
-		return { "NumberRange", value.Min, value.Max }
+		return { "NumberRange", encode(value.Min), encode(value.Max) }
 	end
 	return tostring(value)
 end
