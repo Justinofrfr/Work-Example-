@@ -567,7 +567,7 @@ end
 
 function EggController:HatchlingBase()
 	local ring = EggShape.Rings()[GameConfig.RingCount - EffectsConfig.Cutscene.CrackRings]
-	return CFrame.new(EggConfig.Center.X, ring.Top - PropsConfig.HatchlingHeight * 0.05, EggConfig.Center.Z)
+	return CFrame.new(EggConfig.Center.X, ring.Top + PropsConfig.HatchlingHeight * 0.02, EggConfig.Center.Z)
 end
 
 function EggController:SpawnHatchling(project, animated)
