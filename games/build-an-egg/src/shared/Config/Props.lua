@@ -155,7 +155,7 @@ return {
 			Title = "PET INCUBATOR",
 			Subtitle = "Fragments → Pets · Trade Up",
 			TitleColor = Color3.fromRGB(255, 150, 60),
-			Position = Vector3.new(62, 0, -268),
+			Position = Vector3.new(92, 0, -282),
 			FaceTarget = Vector3.new(0, 0, -300),
 			RingColor = Color3.fromRGB(255, 150, 60),
 			Body = { Skin = Color3.fromRGB(255, 205, 160), Torso = Color3.fromRGB(255, 140, 60), Legs = Color3.fromRGB(70, 60, 90) },
