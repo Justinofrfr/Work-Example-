@@ -22,9 +22,9 @@ return {
 		Eggs = "rbxassetid://15498677766",
 		Shop = "rbxassetid://114505581952233",
 		Gift = "rbxassetid://114440493073627",
-		Settings = "rbxassetid://7059346373",
+		Settings = "rbxassetid://74982984979313",
 		Codes = "rbxassetid://17480213324",
-		Finger = "rbxassetid://72050126365073",
+		Finger = "rbxassetid://126072725319432",
 	},
 	Studs = {
 		Texture = "rbxassetid://18878365966",

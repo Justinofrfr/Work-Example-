@@ -245,9 +245,10 @@ function TutorialController:SetSpot(target)
 	frame.Right.Position = UDim2.fromScale(x1, y0)
 	frame.Right.Size = UDim2.fromScale(1 - x1, y1 - y0)
 	if Lighting:FindFirstChild("SpotlightBlur") then
+		Lighting.SpotlightBlur.Size = UserInputService.TouchEnabled and TutorialConfig.SpotlightBlurMobile or TutorialConfig.SpotlightBlur
 		Lighting.SpotlightBlur.Enabled = true
 	end
-	frame.Ring.Visible = true
+	frame.Ring.Visible = TutorialConfig.SpotlightRing
 	frame.Ring.Position = UDim2.fromScale(x0, y0)
 	frame.Ring.Size = UDim2.fromScale(x1 - x0, y1 - y0)
 	local bob = math.sin(os.clock() * TutorialConfig.FingerSpeed) * TutorialConfig.FingerBob

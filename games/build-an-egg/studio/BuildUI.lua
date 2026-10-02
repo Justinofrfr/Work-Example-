@@ -540,10 +540,10 @@ button({ Name = "Skip", Text = "SKIP", Color = Color3.fromRGB(150, 150, 160), Si
 
 local tutorial = make("Frame", { Name = "Tutorial", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Visible = false, ZIndex = 40, Parent = gui })
 for _, side in { "Top", "Bottom", "Left", "Right" } do
-	make("Frame", { Name = side, BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 0.45, BorderSizePixel = 0, ZIndex = 40, Size = UDim2.fromScale(0, 0), Parent = tutorial })
+	make("Frame", { Name = side, BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = require(Shared.Config.Tutorial).SpotlightTransparency, BorderSizePixel = 0, ZIndex = 40, Size = UDim2.fromScale(0, 0), Parent = tutorial })
 end
 make("Frame", { Name = "Ring", BackgroundTransparency = 1, ZIndex = 41, Size = UDim2.fromScale(0, 0), Parent = tutorial }, { corner(0.3), stroke(4, Color3.fromRGB(255, 230, 90)) })
-iconElement({ Name = "Finger", Text = UIConfig.Icons.Finger, Size = UDim2.fromScale(0.07, 0.07), AnchorPoint = Vector2.new(0.3, 0), ZIndex = 45, Parent = tutorial })
+iconElement({ Name = "Finger", Text = UIConfig.Icons.Finger, Size = UDim2.fromScale(require(Shared.Config.Tutorial).FingerSize, require(Shared.Config.Tutorial).FingerSize), AnchorPoint = Vector2.new(0.3, 0), ZIndex = 45, Parent = tutorial })
 aspect(1).Parent = tutorial.Finger
 local tutorialCard = panelFrame({
 	Name = "Card",

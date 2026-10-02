@@ -230,13 +230,13 @@ make("Beam", {
 	TextureLength = TutorialConfig.BeamTextureLength,
 	TextureSpeed = TutorialConfig.BeamTextureSpeed,
 	Color = ColorSequence.new(TutorialConfig.BeamColor),
-	LightEmission = 1,
+	LightEmission = 0,
 	LightInfluence = 0,
 	Width0 = TutorialConfig.BeamWidth,
 	Width1 = TutorialConfig.BeamWidth,
 	FaceCamera = true,
 	Segments = 20,
-	Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.6), NumberSequenceKeypoint.new(0.15, 0.1), NumberSequenceKeypoint.new(1, 0.2) }),
+	Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.5), NumberSequenceKeypoint.new(0.1, 0), NumberSequenceKeypoint.new(1, 0) }),
 	Parent = templates,
 })
 make("Attachment", { Name = "GuideAttachment", Position = Vector3.new(0, -2.6, 0), Parent = templates })
