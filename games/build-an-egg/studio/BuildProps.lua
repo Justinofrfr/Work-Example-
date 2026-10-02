@@ -557,16 +557,18 @@ for _, def in PropsConfig.Ambient do
 	end
 end
 
-local eggMesh = imported.Egg:FindFirstChildWhichIsA("MeshPart", true)
-local function shellPart(old)
-	local piece = eggMesh:Clone()
-	for _, child in piece:GetChildren() do
-		child:Destroy()
-	end
+local SH = PropsConfig.Shells
+local shellTemplates = ReplicatedStorage:WaitForChild(Names.Templates.Folder):WaitForChild(Names.Templates.Shells):GetChildren()
+local function shellPart(old, size)
+	local template = shellTemplates[random:NextInteger(1, #shellTemplates)]
+	local piece = template:Clone()
 	piece.Name = old.Name
-	piece.Size = old.Size * PropsConfig.ShellPieceScale
+	piece.Size = template.Size * (size or math.max(old.Size.X, old.Size.Y, old.Size.Z)) * PropsConfig.ShellPieceScale
 	piece.CFrame = old.CFrame
-	piece.Color = old.Color
+	if template:GetAttribute("OpenDown") then
+		piece.CFrame = piece.CFrame * CFrame.Angles(math.pi, 0, 0)
+	end
+	piece.Color = SH.Colors[random:NextInteger(1, #SH.Colors)]
 	piece.Material = Enum.Material.SmoothPlastic
 	piece.Anchored = old.Anchored
 	piece.CanCollide = old.CanCollide
@@ -586,8 +588,9 @@ end
 local pieces = world:WaitForChild(Names.World.Quarry):WaitForChild(Names.World.Pieces)
 for _, old in pieces:GetChildren() do
 	if old:IsA("Part") then
-		local piece = shellPart(old)
-		piece.CFrame = piece.CFrame * CFrame.Angles(math.rad(random:NextNumber(60, 110)), 0, 0)
+		local piece = shellPart(old, SH.QuarrySize)
+		local flip = random:NextNumber() < SH.QuarryFlipChance and math.pi or 0
+		piece.CFrame = piece.CFrame * CFrame.Angles(flip + random:NextNumber(-SH.QuarryTilt, SH.QuarryTilt), random:NextNumber(0, math.pi * 2), random:NextNumber(-SH.QuarryTilt, SH.QuarryTilt))
 	end
 end
 local stack = ReplicatedStorage:WaitForChild(Names.Templates.Folder):WaitForChild(Names.Templates.CarryStack)

@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Names = require(Shared.Config.Names)
+local PropsConfig = require(Shared.Config.Props)
 local EffectsConfig = require(Shared.Config.Effects)
 local MapConfig = require(Shared.Config.Map)
 local GameConfig = require(Shared.Config.Game)
@@ -118,9 +119,39 @@ make("BillboardGui", {
 
 local imported = game:GetService("ServerStorage"):FindFirstChild("Imported")
 local eggMesh = imported and imported:FindFirstChild("Egg") and imported.Egg:FindFirstChildWhichIsA("MeshPart", true)
-local function shellChunk(name)
+local SH = PropsConfig.Shells
+local shellFolder = make("Folder", { Name = Names.Templates.Shells, Parent = templates })
+local shellSource = imported and imported:FindFirstChild(SH.Source)
+for _, mesh in shellSource and shellSource:GetDescendants() or {} do
+	if mesh:IsA("MeshPart") then
+		local shell = mesh:Clone()
+		for _, child in shell:GetChildren() do
+			child:Destroy()
+		end
+		local key = mesh.Name:match("^(EggShell%a)") or mesh.Name
+		shell.Name = key
+		shell.Size = shell.Size / math.max(shell.Size.X, shell.Size.Y, shell.Size.Z)
+		shell.Color = SH.Colors[1]
+		shell.Material = Enum.Material.SmoothPlastic
+		shell.Anchored = false
+		shell.CanCollide = false
+		shell.CanQuery = false
+		shell.CanTouch = false
+		shell.Massless = true
+		shell:SetAttribute("OpenDown", SH.OpenDown[key] == true)
+		make("SurfaceAppearance", { Name = "Shell", ColorMap = mesh.TextureID, AlphaMode = Enum.AlphaMode.Overlay, Parent = shell })
+		shell.Parent = shellFolder
+	end
+end
+local firstShell = shellFolder:FindFirstChild("EggShellA") or shellFolder:FindFirstChildWhichIsA("MeshPart")
+local function shellChunk(name, size)
 	local chunk
-	if eggMesh then
+	if firstShell then
+		chunk = firstShell:Clone()
+		chunk.Name = name
+		chunk.Size = firstShell.Size * (size or SH.ChunkSize)
+		return chunk
+	elseif eggMesh then
 		chunk = eggMesh:Clone()
 		for _, child in chunk:GetChildren() do
 			child:Destroy()
@@ -205,8 +236,7 @@ end
 backpackPiece("Bedroll", Vector3.new(X + 0.5, 0.8, 0.8), Vector3.new(0, Y / 2 + 0.6, 0), BP.BedrollColor, Enum.PartType.Cylinder)
 make("Weld", { Name = "Mount", Part1 = backpackBody, Parent = backpackBody })
 
-local stackPiece = shellChunk(Names.Templates.StackPiece)
-stackPiece.Size = BP.PieceSize
+local stackPiece = shellChunk(Names.Templates.StackPiece, SH.StackSize)
 stackPiece.Massless = true
 stackPiece.Parent = templates
 
@@ -274,7 +304,7 @@ for index, source in shardMeshes do
 	})
 end
 
-local pile = shellChunk(Names.Templates.DroppedPile)
+local pile = shellChunk(Names.Templates.DroppedPile, SH.PileSize)
 pile.Anchored = true
 pile.CanCollide = true
 pile.CanQuery = true

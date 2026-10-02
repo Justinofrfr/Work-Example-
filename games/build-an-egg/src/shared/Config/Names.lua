@@ -77,6 +77,7 @@ return {
 		StackPiece = "StackPiece",
 		StackLabel = "StackLabel",
 		Fragment = "Fragment",
+		Shells = "Shells",
 		DroppedPile = "DroppedPile",
 		PurchaseTag = "PurchaseTag",
 		GooseAura = "GooseAura",

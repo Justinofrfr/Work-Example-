@@ -6,6 +6,7 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Names = require(Shared.Config.Names)
 local GameConfig = require(Shared.Config.Game)
+local PropsConfig = require(Shared.Config.Props)
 
 local Ui = require(script.Parent.Parent.Util.Ui)
 
@@ -60,16 +61,24 @@ end
 
 function BackpackController:Resize(stack, wanted)
 	local pieces = stack.Pieces
-	local template = templates[Names.Templates.StackPiece]
+	local fallback = templates[Names.Templates.StackPiece]
+	local shells = templates:FindFirstChild(Names.Templates.Shells)
+	local variants = shells and shells:GetChildren() or {}
+	local colors = PropsConfig.Shells.Colors
 	while #pieces > wanted do
 		table.remove(pieces):Destroy()
 	end
 	local added = 0
 	while #pieces < wanted do
 		local index = #pieces + 1
+		local template = #variants > 0 and variants[(index * 7) % #variants + 1] or fallback
 		local piece = template:Clone()
 		piece.Name = "Piece"
-		local offset = CFrame.new(0, (index - 0.5) * BP.PieceSpacing, 0) * CFrame.Angles(0, math.rad(index * BP.PieceTwist), 0)
+		local size = #variants > 0 and template.Size * PropsConfig.Shells.StackSize or fallback.Size
+		piece.Size = size
+		piece.Color = colors[(index * 5) % #colors + 1]
+		local flip = template:GetAttribute("OpenDown") and CFrame.Angles(math.pi, 0, 0) or CFrame.identity
+		local offset = CFrame.new(0, (index - 0.5) * BP.PieceSpacing, 0) * CFrame.Angles(0, math.rad(index * BP.PieceTwist), 0) * flip
 		piece.CFrame = stack.Root.CFrame * offset
 		local weld = stack.Mount:Clone()
 		weld.Name = "Weld"
@@ -81,8 +90,8 @@ function BackpackController:Resize(stack, wanted)
 		table.insert(pieces, piece)
 		added += 1
 		if added <= 6 then
-			piece.Size = BP.PieceSize * 0.3
-			Ui.Tween(piece, BP.PopTime, { Size = BP.PieceSize }, Enum.EasingStyle.Back)
+			piece.Size = size * 0.3
+			Ui.Tween(piece, BP.PopTime, { Size = size }, Enum.EasingStyle.Back)
 		end
 	end
 	stack.Label.StudsOffset = Vector3.new(0, wanted * BP.PieceSpacing + BP.LabelOffset, 0)

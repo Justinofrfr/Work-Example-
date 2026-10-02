@@ -52,7 +52,7 @@ return {
 		EmblemColor = Color3.fromRGB(250, 244, 228),
 		StackLift = 1,
 		MaxStack = 200,
-		PieceSize = Vector3.new(1.5, 1.05, 1.5),
+		PieceSize = Vector3.new(1.9, 1.5, 1.9),
 		PieceSpacing = 0.95,
 		PieceTwist = 23,
 		Sway = 1.6,
