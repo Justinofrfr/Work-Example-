@@ -17,6 +17,7 @@ return {
 	ScaffoldTopDistance = 8,
 	ScaffoldStepRise = 1.6,
 	ScaffoldPostEvery = 8,
+	ScaffoldPostClearance = 6,
 	ScaffoldProfileStep = 0.5,
 
 	BandHeightPadding = 1,

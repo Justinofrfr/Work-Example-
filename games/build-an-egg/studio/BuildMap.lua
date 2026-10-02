@@ -410,7 +410,7 @@ for index = 1, stairSteps do
 			Parent = scaffold,
 		})
 	end
-	if index % EggConfig.ScaffoldPostEvery == 0 then
+	if index % EggConfig.ScaffoldPostEvery == 0 and near - EggConfig.ScaffoldWidth / 2 > EggConfig.NestOuterRadius + EggConfig.ScaffoldPostClearance then
 		local postHeight = height - 1.2 - center.Y
 		for side = -1, 1, 2 do
 			local base = position + stairRight * side * (stairWidth / 2 - 1.2)
