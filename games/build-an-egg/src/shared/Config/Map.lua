@@ -1,18 +1,18 @@
 return {
 	PersistentRoots = { "Quarry", "Spawn", "Site", "Gyms", "Interior", "EggDisplays", "Ambient", "NPCs" },
-	GroundSize = Vector3.new(1400, 8, 1400),
+	GroundSize = Vector3.new(1600, 8, 1600),
 	GroundTop = 0,
-	SpawnPosition = Vector3.new(0, 0, -465),
+	SpawnPosition = Vector3.new(0, 0, -525),
 	Quarry = {
-		Center = Vector3.new(0, 0, -365),
+		Center = Vector3.new(0, 0, -425),
 		Size = Vector3.new(96, 7, 56),
 		PieceCount = 36,
 		PieceSize = Vector3.new(3.2, 4, 3.2),
 	},
 	Gyms = {
-		Radius = 195,
-		StartAngle = 34,
-		AngleStep = 36.5,
+		Radius = 230,
+		StartAngle = 30,
+		AngleStep = 37.5,
 		PlatformSize = Vector3.new(44, 2, 34),
 		AdminHeight = 14,
 		MachinesPerStat = 2,
@@ -26,10 +26,10 @@ return {
 		WaterColor = Color3.fromRGB(255, 196, 40),
 	},
 	Stands = {
-		Gift = Vector3.new(-30, 0, -455),
-		Shop = Vector3.new(30, 0, -455),
-		Upgrades = Vector3.new(-62, 0, -365),
-		Codes = Vector3.new(62, 0, -365),
+		Gift = Vector3.new(-30, 0, -515),
+		Shop = Vector3.new(30, 0, -515),
+		Upgrades = Vector3.new(-62, 0, -425),
+		Codes = Vector3.new(62, 0, -425),
 	},
 	Lighting = {
 		ClockTime = 14.2,
@@ -59,7 +59,7 @@ return {
 	},
 	Hills = {
 		Count = 30,
-		Radius = 640,
+		Radius = 710,
 		Height = { 50, 110 },
 		Width = { 140, 200 },
 		Depth = 110,

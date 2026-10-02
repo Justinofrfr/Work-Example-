@@ -107,6 +107,7 @@ return {
 		GoldenGoose = "GoldenGoose",
 		Training = "Training",
 		Carrying = "Carrying",
+		Overlay = "Overlay",
 		CarryCount = "CarryCount",
 	},
 }

@@ -456,6 +456,21 @@ for index = 1, #rings do
 	})
 	surface:SetAttribute("Height", (low.Y + high.Y) / 2)
 	surface:SetAttribute(A.Ring, index)
+	local arrowSize = math.min(EggConfig.RampArrowSize, length)
+	local arrow = part({
+		Name = "RampArrow",
+		Size = Vector3.new(arrowSize, 0.05, arrowSize),
+		CFrame = frame * CFrame.new(0, EggConfig.RampArrowLift, 0),
+		Transparency = 1,
+		CanCollide = false,
+		CanQuery = false,
+		CanTouch = false,
+		CastShadow = false,
+		Parent = scaffold,
+	})
+	arrow:SetAttribute(A.Ring, index)
+	arrow:SetAttribute(A.Overlay, true)
+	make("Decal", { Name = "Arrow", Face = Enum.NormalId.Top, Texture = EggConfig.RampArrowImage, Transparency = EggConfig.RampArrowTransparency, Parent = arrow })
 	for side = -1, 1, 2 do
 		part({
 			Name = "Rail",

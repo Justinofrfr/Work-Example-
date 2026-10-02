@@ -4,6 +4,7 @@ local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local GameConfig = require(Shared.Config.Game)
+local EggConfig = require(Shared.Config.Egg)
 local ProjectsConfig = require(Shared.Config.Projects)
 local ProductsConfig = require(Shared.Config.Products)
 local UIConfig = require(Shared.Config.UI)
@@ -138,9 +139,17 @@ function BuildService:UpdateRamp()
 		local index = piece:GetAttribute(Names.Attributes.Ring)
 		if index and piece:IsA("BasePart") then
 			local shown = index <= ring
-			piece.Transparency = shown and 0 or 1
-			piece.CanCollide = shown
-			piece.CanQuery = shown
+			if piece:GetAttribute(Names.Attributes.Overlay) then
+				for _, decal in piece:GetChildren() do
+					if decal:IsA("Decal") then
+						decal.Transparency = shown and EggConfig.RampArrowTransparency or 1
+					end
+				end
+			else
+				piece.Transparency = shown and 0 or 1
+				piece.CanCollide = shown
+				piece.CanQuery = shown
+			end
 		end
 	end
 end

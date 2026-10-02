@@ -14,7 +14,7 @@ return {
 
 	ScaffoldWidth = 16,
 	ScaffoldDirection = Vector3.new(0, 0, -1),
-	ScaffoldMaxAngle = 38,
+	ScaffoldMaxAngle = 30,
 	ScaffoldGap = 5,
 	ScaffoldShellClearance = 3,
 	ScaffoldTopDistance = 8,
@@ -30,6 +30,10 @@ return {
 	ScaffoldWallColor = Color3.fromRGB(102, 64, 38),
 	ScaffoldPillarColor = Color3.fromRGB(150, 98, 56),
 	ScaffoldRevealTime = 0.45,
+	RampArrowImage = "rbxassetid://87020678216679",
+	RampArrowSize = 7,
+	RampArrowTransparency = 0.2,
+	RampArrowLift = 0.04,
 	RingShade = 0.07,
 
 	BandHeightPadding = 1,
