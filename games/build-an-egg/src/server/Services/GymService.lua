@@ -209,7 +209,7 @@ function GymService:Release(player, pad)
 		return
 	end
 	rootPart.Anchored = false
-	if pad then
+	if pad and (rootPart.Position - pad.Position).Magnitude <= pad.Size.Magnitude + GymsConfig.StepOffDistance then
 		local side = pad.CFrame * CFrame.new(pad.Size.X / 2 + GymsConfig.StepOffDistance, -pad.Size.Y / 2 + 3, 0)
 		StateService:Teleport(player, CFrame.lookAt(side.Position, side.Position + pad.CFrame.RightVector))
 	end
