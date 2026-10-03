@@ -38,5 +38,21 @@ task.spawn(function()
 			rows += 1
 		end
 	end
-	clientLog:FireServer(("incubator rows %d odds %s"):format(rows, main.Panels.Incubator.Body.Odds.Text:gsub("\n", " | ")))
+	clientLog:FireServer(("incubator rows %d odds %s"):format(rows, (main.Panels.Incubator.Body.Odds.Text:gsub("\n", " | "))))
+	local choices = main.Panels.Incubator.Body.Choices
+	local firstRow = choices:FindFirstChildWhichIsA("Frame")
+	clientLog:FireServer(("choices canvas %s window %s row %s"):format(tostring(choices.AbsoluteCanvasSize), tostring(choices.AbsoluteWindowSize), firstRow and tostring(firstRow.AbsoluteSize) or "none"))
+	PanelController:Close()
+	local IncubatorController = require(controllers.IncubatorController)
+	task.spawn(IncubatorController.Reveal, IncubatorController, { Collection = "Common", Rarity = 1, Id = 0 })
+	task.wait(3)
+	local view = main.Reveal.View
+	local pet = view:FindFirstChild("Pet")
+	local parts = 0
+	for _, d in pet and pet:GetDescendants() or {} do
+		if d:IsA("BasePart") then
+			parts += 1
+		end
+	end
+	clientLog:FireServer(("reveal visible %s view %s size %s pet %s parts %d current %s"):format(tostring(main.Reveal.Visible), tostring(view.Visible), tostring(view.AbsoluteSize), tostring(pet ~= nil), parts, tostring(view.CurrentCamera)))
 end)
