@@ -298,6 +298,7 @@ local function customEgg(key, project, look)
 			part.CanQuery = false
 			part.CanTouch = false
 			part.TextureID = ""
+			part.PivotOffset = CFrame.identity
 			part:SetAttribute("Role", roleName)
 			part.Material = roleName == "Body" and look.Material or displayConfig.RoleMaterials[roleName] or Enum.Material.SmoothPlastic
 			if roleName == "Body" then
