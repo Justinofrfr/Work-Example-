@@ -274,6 +274,46 @@ if displays then
 end
 displays = make("Folder", { Name = "EggDisplays", Parent = world })
 local displayConfig = PropsConfig.Displays
+local customEggs = imported:FindFirstChild(displayConfig.CustomSource)
+local function customEgg(key, project, look)
+	if not customEggs then
+		return nil
+	end
+	local egg = make("Model", { Name = "Egg" })
+	for _, source in customEggs:GetDescendants() do
+		local prefix, role = source.Name:match("^(%a+)_(%a+%d*)$")
+		if source:IsA("MeshPart") and prefix == key then
+			local part = source:Clone()
+			for _, child in part:GetChildren() do
+				child:Destroy()
+			end
+			local roleName, band = role:match("^(%a+)(%d*)$")
+			part.Anchored = true
+			part.CanCollide = false
+			part.CanQuery = false
+			part.CanTouch = false
+			part.TextureID = ""
+			part.Material = roleName == "Body" and look.Material or displayConfig.RoleMaterials[roleName] or Enum.Material.SmoothPlastic
+			if roleName == "Body" then
+				part.Color = project.Color
+			elseif roleName == "Band" then
+				part.Color = displayConfig.Bands[tonumber(band)] or project.Color
+			elseif roleName == "Glow" then
+				part.Color = look.Glow or look.Accent or project.Color
+			elseif roleName == "Metal" then
+				part.Color = look.Metal or look.Accent or Color3.fromRGB(215, 215, 225)
+			else
+				part.Color = look.Accent or project.Color
+			end
+			part.Parent = egg
+		end
+	end
+	if #egg:GetChildren() == 0 then
+		egg:Destroy()
+		return nil
+	end
+	return egg
+end
 for index, key in ProjectsConfig.Order do
 	local project = ProjectsConfig.List[key]
 	local look = displayConfig.Looks[key]
@@ -289,17 +329,22 @@ for index, key in ProjectsConfig.Order do
 		Anchored = true,
 		Parent = stand,
 	})
-	local egg = prepare(imported.Egg)
+	local custom = customEgg(key, project, look)
+	local egg = custom or prepare(imported.Egg)
 	egg.Name = "Egg"
+	if custom then
+		local box = egg:GetBoundingBox()
+		egg.WorldPivot = CFrame.new(box.Position)
+	end
 	fit(egg, "Height", displayConfig.EggHeight, CFrame.new(position + Vector3.new(0, displayConfig.PedestalHeight + 0.3, 0)))
-	for _, part in egg:GetDescendants() do
+	for _, part in custom and {} or egg:GetDescendants() do
 		if part:IsA("BasePart") then
 			part.Color = project.Color
 			part.Material = look.Material
 		end
 	end
 	local eggBox, eggSize = egg:GetBoundingBox()
-	for spot = 1, displayConfig.Spots do
+	for spot = 1, custom and 0 or displayConfig.Spots do
 		local fraction = random:NextNumber(0.2, 0.8)
 		local y = (fraction - 0.5) * eggSize.Y
 		local radius = eggSize.X / 2 * math.sqrt(math.max(0, 1 - (2 * y / eggSize.Y) ^ 2)) - 0.1
