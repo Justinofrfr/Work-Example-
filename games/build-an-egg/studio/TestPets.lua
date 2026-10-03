@@ -34,8 +34,10 @@ local ok, err = pcall(function()
 	end
 	note("granted fragments", total)
 	data.Fragments = { ["Silver:1"] = 3, ["Golden:1"] = 2, ["Gem:2"] = 1 }
-	note("mixed tiers rejected", tostring((PetService:HatchFragments(player, { "Silver:1", "Silver:1", "Silver:1", "Golden:1", "Gem:2" }))))
-	note("not enough rejected", tostring((PetService:HatchFragments(player, { "Silver:1", "Silver:1", "Silver:1", "Silver:1", "Golden:1" }))))
+	local mixed, mixedPet = PetService:HatchFragments(player, { "Silver:1", "Silver:1", "Silver:1", "Golden:1", "Gem:2" })
+	note("mixed tiers hatched", tostring(mixed), mixedPet and mixedPet.Collection, mixedPet and mixedPet.Rarity)
+	data.Fragments = { ["Silver:1"] = 3, ["Golden:1"] = 2 }
+	note("not enough hatched", tostring((PetService:HatchFragments(player, { "Silver:1", "Silver:1", "Silver:1", "Silver:1", "Golden:1" }))))
 	local hatched, pet = PetService:HatchFragments(player, { "Silver:1", "Silver:1", "Silver:1", "Golden:1", "Golden:1" })
 	note("hatch", tostring(hatched), pet and pet.Collection, pet and pet.Rarity, "left", data.Fragments["Silver:1"], data.Fragments["Golden:1"])
 	for _ = 1, 4 do
@@ -52,7 +54,7 @@ local ok, err = pcall(function()
 	PetService:EquipBest(player)
 	note("equip best", #data.Equipped, "attr", player:GetAttribute("Pets"))
 	note("multipliers speed", PetService:Multiplier(player, "Speed"), "strength", PetService:Multiplier(player, "Strength"))
-	task.wait(4)
+	task.wait(12)
 end)
 if not ok then
 	note("TEST ERROR", err)
