@@ -273,6 +273,11 @@ if displays then
 	displays:Destroy()
 end
 displays = make("Folder", { Name = "EggDisplays", Parent = world })
+local eggModels = ReplicatedStorage:FindFirstChild(Names.Templates.EggModels)
+if eggModels then
+	eggModels:Destroy()
+end
+eggModels = make("Folder", { Name = Names.Templates.EggModels, Parent = ReplicatedStorage })
 local displayConfig = PropsConfig.Displays
 local customEggs = imported:FindFirstChild(displayConfig.CustomSource)
 local function customEgg(key, project, look)
@@ -293,6 +298,7 @@ local function customEgg(key, project, look)
 			part.CanQuery = false
 			part.CanTouch = false
 			part.TextureID = ""
+			part:SetAttribute("Role", roleName)
 			part.Material = roleName == "Body" and look.Material or displayConfig.RoleMaterials[roleName] or Enum.Material.SmoothPlastic
 			if roleName == "Body" then
 				part.Color = project.Color
@@ -330,6 +336,18 @@ for index, key in ProjectsConfig.Order do
 		Parent = stand,
 	})
 	local custom = customEgg(key, project, look)
+	if custom then
+		local copy = custom:Clone()
+		copy.Name = key
+		for _, part in copy:GetChildren() do
+			if part:GetAttribute("Role") == "Body" then
+				copy.PrimaryPart = part
+				copy:SetAttribute("BodySize", part.Size)
+				copy.WorldPivot = part.CFrame
+			end
+		end
+		copy.Parent = eggModels
+	end
 	local egg = custom or prepare(imported.Egg)
 	egg.Name = "Egg"
 	if custom then

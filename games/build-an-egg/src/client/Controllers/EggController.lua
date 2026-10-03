@@ -146,6 +146,7 @@ function EggController:Render(server, previous)
 		self:Crack(EffectsConfig.Cutscene.CrackRings)
 		self:HideRampTop(true)
 		self:SpawnHatchling(server.Project, false)
+		self:Decorate(server.Project, true)
 	elseif server.Phase == "Building" and self.Hatchling then
 		self:RemoveHatchling()
 	end
@@ -410,6 +411,7 @@ function EggController:Crack(rings)
 end
 
 function EggController:Restore()
+	self:ClearDecor()
 	self.Cracked = false
 	self.Visible = -1
 	self:HideRampTop(false)
@@ -465,6 +467,7 @@ function EggController:PlayCutscene()
 	Audio.Play("LastPiece")
 	self.InCutscene = true
 	self.CutsceneStarted = os.clock()
+	self:Decorate(project, false)
 	self.SkipRequested = false
 	local previousType = camera.CameraType
 	Cinematic.Enter()
@@ -543,6 +546,63 @@ function EggController:HideRampTop(hidden)
 	end
 end
 
+function EggController:Decorate(project, cracked)
+	self:ClearDecor()
+	local models = ReplicatedStorage:FindFirstChild(Names.Templates.EggModels)
+	local template = models and models:FindFirstChild(project)
+	local bodySize = template and template:GetAttribute("BodySize")
+	if not bodySize then
+		return
+	end
+	local def = EffectsConfig.Cutscene
+	local bodyCenter = template:GetPivot().Position
+	local bottom = EggConfig.Center.Y + EggConfig.BaseOffset
+	local giantCenter = Vector3.new(EggConfig.Center.X, bottom + EggConfig.Height / 2, EggConfig.Center.Z)
+	local scaleXZ = EggConfig.MaxRadius * 2 / bodySize.X * def.DecorPush
+	local scaleY = EggConfig.Height / bodySize.Y * def.DecorPush
+	local crackY = bottom + EggConfig.Height * (1 - def.CrackRings / GameConfig.RingCount)
+	local decor = template:Clone()
+	decor.Name = "EggDecor"
+	for _, part in decor:GetChildren() do
+		if part:IsA("BasePart") then
+			if part:GetAttribute("Role") == "Body" then
+				part:Destroy()
+			else
+				local offset = part.Position - bodyCenter
+				part.Size = part.Size * Vector3.new(scaleXZ, scaleY, scaleXZ)
+				part.CFrame = CFrame.new(giantCenter + Vector3.new(offset.X * scaleXZ, offset.Y * scaleY, offset.Z * scaleXZ)) * part.CFrame.Rotation
+				part:SetAttribute("AboveCrack", part.Position.Y - part.Size.Y / 2 > crackY)
+				part.CastShadow = false
+				local target = part.Transparency
+				part.Transparency = 1
+				if not (cracked and part:GetAttribute("AboveCrack")) then
+					Ui.Tween(part, def.DecorFade, { Transparency = target })
+				end
+			end
+		end
+	end
+	decor.Parent = Workspace
+	self.Decor = decor
+end
+
+function EggController:CrackDecor()
+	if not self.Decor then
+		return
+	end
+	for _, part in self.Decor:GetChildren() do
+		if part:IsA("BasePart") and part:GetAttribute("AboveCrack") then
+			Ui.Tween(part, 0.3, { Transparency = 1 })
+		end
+	end
+end
+
+function EggController:ClearDecor()
+	if self.Decor then
+		self.Decor:Destroy()
+		self.Decor = nil
+	end
+end
+
 function EggController:Burst()
 	Audio.Play("EggBurst")
 	Audio.Play("Fanfare")
@@ -558,6 +618,7 @@ function EggController:Burst()
 	EffectController:Fireworks(5)
 	self:SetGlow(0)
 	self:Crack(EffectsConfig.Cutscene.CrackRings)
+	self:CrackDecor()
 	if ClientState.Server then
 		self:SpawnHatchling(ClientState.Server.Project, true)
 	end

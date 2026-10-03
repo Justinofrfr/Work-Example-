@@ -80,6 +80,7 @@ return {
 		StackLabel = "StackLabel",
 		Fragment = "Fragment",
 		Shells = "Shells",
+		EggModels = "EggModels",
 		ShellOutline = "ShellOutline",
 		ShellStack = "ShellStack",
 		DroppedPile = "DroppedPile",

@@ -61,6 +61,8 @@ return {
 	Cutscene = {
 		SkipKeys = { Enum.KeyCode.Space, Enum.KeyCode.ButtonA },
 		SkipDelay = 1.5,
+		DecorFade = 0.8,
+		DecorPush = 1.03,
 		CrackRings = 8,
 		FadeTime = 0.35,
 		Shots = {

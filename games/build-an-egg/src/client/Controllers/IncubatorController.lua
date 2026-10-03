@@ -302,13 +302,19 @@ function IncubatorController:Reveal(pet)
 	reveal.PetName.Visible = false
 	reveal.Boost.Visible = false
 	reveal.Collect.Visible = false
-	reveal.Egg.Visible = true
+	local eggModel = PetView.ShowEgg(reveal.View, pet.Collection)
+	reveal.View.Visible = eggModel ~= nil
+	reveal.Egg.Visible = eggModel == nil
 	reveal.Egg.TextColor3 = tier.Color
+	local eggBase = eggModel and eggModel:GetPivot()
 	local started = os.clock()
 	while os.clock() - started < R.ShakeTime do
 		local progress = (os.clock() - started) / R.ShakeTime
 		reveal.Egg.Rotation = math.sin(os.clock() * 30) * R.ShakeAngle * progress
 		reveal.Egg.Size = UDim2.fromScale(0.3 + progress * 0.08, 0.3 + progress * 0.08)
+		if eggModel then
+			eggModel:PivotTo(eggBase * CFrame.Angles(0, os.clock() * 2, math.rad(math.sin(os.clock() * 30) * R.ShakeAngle * progress)))
+		end
 		if math.random() < 0.15 then
 			Audio.Play("Tick")
 		end
