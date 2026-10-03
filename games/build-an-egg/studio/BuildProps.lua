@@ -372,8 +372,8 @@ for index, key in ProjectsConfig.Order do
 	CollectionService:AddTag(egg, "Wobble")
 	local gui = make("BillboardGui", {
 		Name = "Label",
-		Size = UDim2.fromOffset(220, 50),
-		StudsOffsetWorldSpace = Vector3.new(0, displayConfig.EggHeight + 3, 0),
+		Size = UDim2.fromScale(displayConfig.Spacing - 1, 2.4),
+		StudsOffsetWorldSpace = Vector3.new(0, displayConfig.EggHeight + 2.5, 0),
 		MaxDistance = 140,
 		LightInfluence = 0,
 		Parent = egg.PrimaryPart,
