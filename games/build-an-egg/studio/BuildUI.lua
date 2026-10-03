@@ -656,7 +656,7 @@ local cutscene = make("Frame", { Name = "Cutscene", Size = UDim2.fromScale(1, 1)
 make("Frame", { Name = "Top", Size = UDim2.fromScale(1, 0.12), Position = UDim2.fromScale(0, -0.12), BackgroundColor3 = Color3.new(0, 0, 0), BorderSizePixel = 0, Parent = cutscene })
 make("Frame", { Name = "Bottom", Size = UDim2.fromScale(1, 0.12), Position = UDim2.fromScale(0, 1), BackgroundColor3 = Color3.new(0, 0, 0), BorderSizePixel = 0, Parent = cutscene })
 label({ Name = "Caption", Text = "", Size = UDim2.fromScale(0.8, 0.09), Position = UDim2.fromScale(0.1, 0.8), Parent = cutscene })
-button({ Name = "Skip", Text = "SKIP", Color = Color3.fromRGB(150, 150, 160), Size = UDim2.fromScale(0.09, 0.06), Position = UDim2.fromScale(0.985, 0.03), AnchorPoint = Vector2.new(1, 0), Parent = cutscene })
+button({ Name = "Skip", Text = "SKIP [SPACE]", Color = Color3.fromRGB(150, 150, 160), Size = UDim2.fromScale(0.13, 0.06), Position = UDim2.fromScale(0.985, 0.03), AnchorPoint = Vector2.new(1, 0), Parent = cutscene })
 
 local tutorial = make("Frame", { Name = "Tutorial", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Visible = false, ZIndex = 40, Parent = gui })
 local TutorialConfig = require(Shared.Config.Tutorial)

@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -114,6 +115,11 @@ function EggController:Start()
 	end)
 	Cinematic.Gui():WaitForChild("Cutscene").Skip.Activated:Connect(function()
 		self.SkipRequested = true
+	end)
+	UserInputService.InputBegan:Connect(function(input, processed)
+		if self.InCutscene and not processed and table.find(EffectsConfig.Cutscene.SkipKeys, input.KeyCode) then
+			self.SkipRequested = true
+		end
 	end)
 	RunService.Heartbeat:Connect(function()
 		self:Animate()

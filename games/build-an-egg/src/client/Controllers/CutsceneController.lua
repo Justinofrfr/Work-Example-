@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -32,6 +33,11 @@ end
 function CutsceneController:Start()
 	Cinematic.Gui():WaitForChild("Cutscene").Skip.Activated:Connect(function()
 		self.SkipRequested = true
+	end)
+	UserInputService.InputBegan:Connect(function(input, processed)
+		if self.Playing and not processed and table.find(EffectsConfig.Cutscene.SkipKeys, input.KeyCode) then
+			self.SkipRequested = true
+		end
 	end)
 	local function tryIntro(state)
 		if self.IntroDone or not state then

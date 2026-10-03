@@ -59,6 +59,7 @@ return {
 		Burst = { Magnitude = 0.8, Duration = 0.45, Range = 400 },
 	},
 	Cutscene = {
+		SkipKeys = { Enum.KeyCode.Space, Enum.KeyCode.ButtonA },
 		CrackRings = 8,
 		FadeTime = 0.35,
 		Shots = {
