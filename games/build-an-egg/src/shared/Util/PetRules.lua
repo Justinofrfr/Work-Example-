@@ -65,10 +65,11 @@ function PetRules.Boost(collection: string, rarity: number, stat: string): numbe
 	if not def or not tier then
 		return 0
 	end
+	local power = def.Power or 1
 	if def.Stat == stat then
-		return tier.Boost
+		return tier.Boost * power
 	elseif def.Stat == "Both" then
-		return tier.Boost * PetsConfig.BothShare
+		return tier.Boost * PetsConfig.BothShare * power
 	end
 	return 0
 end
@@ -79,10 +80,11 @@ function PetRules.BoostText(collection: string, rarity: number): string
 	if not def or not tier then
 		return ""
 	end
+	local power = def.Power or 1
 	if def.Stat == "Both" then
-		return ("+%d%% Speed & Strength"):format(math.floor(tier.Boost * PetsConfig.BothShare * 100 + 0.5))
+		return ("+%d%% Speed & Strength"):format(math.floor(tier.Boost * PetsConfig.BothShare * power * 100 + 0.5))
 	end
-	return ("+%d%% %s"):format(math.floor(tier.Boost * 100 + 0.5), def.Stat)
+	return ("+%d%% %s"):format(math.floor(tier.Boost * power * 100 + 0.5), def.Stat)
 end
 
 function PetRules.Score(collection: string, rarity: number): number
