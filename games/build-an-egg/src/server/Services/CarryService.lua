@@ -222,8 +222,13 @@ function CarryService:Drop(player)
 		return
 	end
 	local pile = template:Clone()
-	pile.CFrame = CFrame.new(rootPart.Position - Vector3.new(0, 2, 0)) * CFrame.Angles(0, math.random() * math.pi * 2, 0)
 	self:SetPileCount(pile, amount)
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Exclude
+	params.FilterDescendantsInstances = { player.Character, pileFolder }
+	local hit = Workspace:Raycast(rootPart.Position, Vector3.new(0, -GameConfig.DropGroundReach, 0), params)
+	local groundY = hit and hit.Position.Y or rootPart.Position.Y - 3
+	pile.CFrame = CFrame.new(rootPart.Position.X, groundY + pile.Size.Y / 2, rootPart.Position.Z) * CFrame.Angles(0, math.random() * math.pi * 2, 0)
 	pile.Parent = pileFolder
 	self.Piles[pile] = true
 	Debris:AddItem(pile, GameConfig.DropLifetime)

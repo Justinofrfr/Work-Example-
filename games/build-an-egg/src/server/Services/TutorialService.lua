@@ -12,7 +12,7 @@ local DataService
 local StateService
 local remotes
 
-local limiter = RateLimiter.new(4, 1)
+local limiter = RateLimiter.new(10, 1)
 
 function TutorialService:Init(modules, context)
 	DataService = modules.DataService

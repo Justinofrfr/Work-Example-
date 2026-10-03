@@ -80,7 +80,7 @@ local function sign(parent, name, cframe, size, title, subtitle, color)
 		part({
 			Name = "Post",
 			Size = Vector3.new(1.4, cframe.Position.Y + size.Y / 2, 1.4),
-			CFrame = CFrame.new((cframe * CFrame.new(side * (size.X / 2 - 1), 0, 0)).Position * Vector3.new(1, 0, 1) + Vector3.new(0, (cframe.Position.Y + size.Y / 2) / 2 - 0.5, 0)),
+			CFrame = CFrame.new((cframe * CFrame.new(side * (size.X / 2 + 0.7), 0, 0)).Position * Vector3.new(1, 0, 1) + Vector3.new(0, (cframe.Position.Y + size.Y / 2) / 2 - 0.5, 0)),
 			Color = P.WoodDark,
 			Material = Enum.Material.Wood,
 			Parent = parent,
@@ -441,20 +441,28 @@ local scaffold = make("Model", { Name = W.Scaffold, Parent = site })
 local stairWidth = EggConfig.ScaffoldWidth
 local stairThickness = EggConfig.ScaffoldThickness
 local rings = EggShape.Rings()
-local substeps = EggConfig.ScaffoldSubsteps
 local overlap = EggConfig.ScaffoldJointOverlap
 local function rampHeight(ring, fraction)
 	local lowHeight = ring > 1 and EggShape.BandHeight(ring - 1) or center.Y
 	return lowHeight + (EggShape.BandHeight(ring) - lowHeight) * fraction
 end
 for index = 1, #rings do
+	local ringLength = 0
+	local previous = EggShape.ScaffoldPoint(rampHeight(index, 0))
+	for sample = 1, 8 do
+		local point = EggShape.ScaffoldPoint(rampHeight(index, sample / 8))
+		ringLength += (point - previous).Magnitude
+		previous = point
+	end
+	local turn = math.deg(math.abs(EggShape.ScaffoldAngle(rampHeight(index, 1)) - EggShape.ScaffoldAngle(rampHeight(index, 0))))
+	local substeps = math.clamp(math.max(math.ceil(ringLength / EggConfig.ScaffoldSegmentLength), math.ceil(turn / EggConfig.ScaffoldSegmentTurn)), EggConfig.ScaffoldSubsteps, EggConfig.ScaffoldMaxSubsteps)
 	for sub = 1, substeps do
 		local low = EggShape.ScaffoldPoint(rampHeight(index, (sub - 1) / substeps))
 		local high = EggShape.ScaffoldPoint(rampHeight(index, sub / substeps))
 		local length = (high - low).Magnitude
 		local mid = (low + high) / 2
 		local frame = CFrame.lookAt(mid, high, Vector3.yAxis)
-		local parity = ((index - 1) * substeps + sub) % 2
+		local parity = (index + sub) % 2
 		local surface = studded({
 			Name = "Step",
 			Size = Vector3.new(stairWidth + parity * 0.2, stairThickness, length + overlap * 2),
@@ -474,7 +482,7 @@ for index = 1, #rings do
 			}):SetAttribute(A.Ring, index)
 		end
 		if sub == math.ceil(substeps / 2) then
-			local arrowSize = math.min(EggConfig.RampArrowSize, length)
+			local arrowSize = EggConfig.RampArrowSize
 			local arrow = part({
 				Name = "RampArrow",
 				Size = Vector3.new(arrowSize, 0.05, arrowSize),
@@ -643,11 +651,13 @@ for index, tier in GymsConfig.Tiers do
 		Parent = gym,
 	})
 	if isAdmin then
-		local stairLength = 36
-		part({
+		local stairLength = gymConfig.AdminRampLength
+		local rise = height + size.Y / 2
+		make("WedgePart", {
 			Name = "Stairs",
-			Size = Vector3.new(12, 1, math.sqrt(stairLength ^ 2 + height ^ 2)),
-			CFrame = base * CFrame.new(0, height / 2 - 0.5 + 0.5, -size.Z / 2 - stairLength / 2 + 1) * CFrame.Angles(math.atan2(height, stairLength), 0, 0) * CFrame.new(0, -height / 2 + 0.5, 0),
+			Anchored = true,
+			Size = Vector3.new(gymConfig.AdminRampWidth, rise, stairLength),
+			CFrame = base * CFrame.new(0, size.Y / 2 - rise / 2, -size.Z / 2 - stairLength / 2),
 			Color = MapConfig.TierColors[tier.Key],
 			Material = Enum.Material.Marble,
 			Parent = gym,
@@ -662,7 +672,7 @@ for index, tier in GymsConfig.Tiers do
 	end
 	local title = isAdmin and "ADMIN GYM" or (tier.Multiplier .. "x GYM")
 	local subtitle = tier.RequiredEggs == 0 and "Free" or (tier.RequiredEggs == math.huge and "Gamepass only" or ("Hatch " .. tier.RequiredEggs .. " eggs"))
-	local board = sign(gym, "Sign", floor * CFrame.new(0, 9, size.Z / 2 - 1) * CFrame.Angles(0, math.pi, 0), Vector3.new(22, 7, 1), title, subtitle, MapConfig.TierColors[tier.Key])
+	local board = sign(gym, "Sign", floor * CFrame.new(0, 9, size.Z / 2 - 1), Vector3.new(22, 7, 1), title, subtitle, MapConfig.TierColors[tier.Key])
 	board:SetAttribute(A.Tier, tier.Key)
 end
 

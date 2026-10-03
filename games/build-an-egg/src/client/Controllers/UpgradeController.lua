@@ -72,12 +72,16 @@ function UpgradeController:Refresh()
 		card.Level.Text = ("Lv %d/%d"):format(level, max)
 		if cost then
 			card.Effect.Text = effectText(key, level)
-			Ui.SetText(card.Buy, cost == 0 and UpgradesConfig.FreeText or ("🪙 " .. Format.Short(cost)))
+			Ui.SetText(card.Buy, cost == 0 and UpgradesConfig.FreeText or Format.Short(cost))
+			card.Buy.Coin.Visible = cost > 0
+			card.Buy.Label.Position = UDim2.fromScale(cost > 0 and 0.6 or 0.5, 0.5)
 			local affordable = state and state.Coins >= cost
 			Ui.SetColor(card.Buy, affordable and UIConfig.Colors.Coins or UIConfig.Colors.Locked)
 		else
 			card.Effect.Text = "Fully upgraded!"
 			Ui.SetText(card.Buy, "MAX")
+			card.Buy.Coin.Visible = false
+			card.Buy.Label.Position = UDim2.fromScale(0.5, 0.5)
 			Ui.SetColor(card.Buy, UIConfig.Colors.Locked)
 		end
 	end

@@ -220,7 +220,7 @@ function GymService:Begin(player, runtime, pad)
 	local tierKey = pad:GetAttribute(A.Tier)
 	local multiplier
 	if tierKey == "Interior" then
-		if BuildService.Phase ~= "Interior" or not BuildService:IsContributor(player) then
+		if BuildService.Phase ~= "Interior" then
 			return
 		end
 		multiplier = GymsConfig.InteriorMultiplier * self:BestMultiplier(player)

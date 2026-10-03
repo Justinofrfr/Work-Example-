@@ -62,6 +62,8 @@ return {
 		LabelOffset = 2.5,
 	},
 	DropLifetime = 60,
+	DropGroundReach = 25,
+	RampClearHeight = 8,
 	MaxDroppedPiles = 60,
 	DropRateLimit = 3,
 	FriendBoostPerFriend = 0.1,

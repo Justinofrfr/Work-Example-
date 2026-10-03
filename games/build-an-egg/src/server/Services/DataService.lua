@@ -34,6 +34,7 @@ local function template()
 		Pets = {},
 		Equipped = {},
 		PetSerial = 0,
+		FirstHatchBonus = false,
 	}
 end
 

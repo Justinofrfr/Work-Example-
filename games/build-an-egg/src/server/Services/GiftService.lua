@@ -13,6 +13,7 @@ local GiftService = {
 
 local DataService
 local StateService
+local CarryService
 local remotes
 
 local limiter = RateLimiter.new(GameConfig.RequestRateLimit, GameConfig.RequestRateWindow)
@@ -20,6 +21,7 @@ local limiter = RateLimiter.new(GameConfig.RequestRateLimit, GameConfig.RequestR
 function GiftService:Init(modules, context)
 	DataService = modules.DataService
 	StateService = modules.StateService
+	CarryService = modules.CarryService
 	remotes = context.Remotes
 end
 
@@ -62,9 +64,29 @@ function GiftService:Claim(player)
 		return false, "Claimed"
 	end
 	data.GiftClaimed = true
-	StateService:Grant(player, GiftConfig.Rewards)
+	local rewards = self:Rewards(player, data)
+	StateService:Grant(player, { Speed = rewards.Speed, Strength = rewards.Strength, Coins = rewards.Coins })
+	local runtime = StateService:Get(player)
+	if runtime and rewards.Shells > 0 then
+		runtime.Carry += rewards.Shells
+		CarryService:UpdateVisual(player)
+		StateService:Dirty(player)
+	end
 	DataService:MarkDirty(player)
-	return true, GiftConfig.Rewards
+	return true, rewards
+end
+
+function GiftService:Rewards(player, data)
+	local R = GiftConfig.Rewards
+	local capacity = StateService:Capacity(player)
+	local runtime = StateService:Get(player)
+	local free = math.max(0, capacity - (runtime and runtime.Carry or 0))
+	return {
+		Speed = math.max(R.MinStat, math.floor(data.Speed * R.StatShare)),
+		Strength = math.max(R.MinStat, math.floor(data.Strength * R.StatShare)),
+		Coins = math.max(R.MinCoins, math.floor(capacity * R.CoinsPerCapacity)),
+		Shells = math.min(free, math.max(R.MinShells, math.floor(capacity * R.ShellShare))),
+	}
 end
 
 return GiftService

@@ -35,7 +35,7 @@ function CutsceneController:Start()
 		self.SkipRequested = true
 	end)
 	UserInputService.InputBegan:Connect(function(input, processed)
-		if self.Playing and not processed and table.find(EffectsConfig.Cutscene.SkipKeys, input.KeyCode) then
+		if self.Playing and not processed and os.clock() - (self.Started or 0) > EffectsConfig.Cutscene.SkipDelay and table.find(EffectsConfig.Cutscene.SkipKeys, input.KeyCode) then
 			self.SkipRequested = true
 		end
 	end)
@@ -81,6 +81,7 @@ function CutsceneController:Play(shots)
 	end
 	self.Playing = true
 	self.SkipRequested = false
+	self.Started = os.clock()
 	local previousType = camera.CameraType
 	camera.CameraType = Enum.CameraType.Scriptable
 	self:Letterbox(true)

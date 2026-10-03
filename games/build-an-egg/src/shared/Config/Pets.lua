@@ -43,6 +43,7 @@ return {
 	FragmentsPerHatch = { Base = 3, PerLog = 1, Max = 8 },
 	LuckPerLog = 0.6,
 	Inputs = 5,
+	FirstHatchFragments = 5,
 	MaxPets = 60,
 	MaxFragments = 999,
 	EquipSlots = 3,

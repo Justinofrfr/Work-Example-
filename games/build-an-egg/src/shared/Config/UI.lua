@@ -118,6 +118,7 @@ return {
 		CodeExpired = "This code has expired",
 		CodeBusy = "Try again in a moment",
 		GiftOk = "Free gift claimed!",
+		AlreadyOwned = "You already own %s!",
 		GiftClaimed = "Already claimed",
 		GiftGroup = "Join the group first!",
 		NotEnough = "Not enough coins",

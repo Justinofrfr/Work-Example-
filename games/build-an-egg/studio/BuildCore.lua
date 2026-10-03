@@ -316,7 +316,7 @@ end
 
 local pile = shellChunk(Names.Templates.DroppedPile, SH.PileSize)
 pile.Anchored = true
-pile.CanCollide = true
+pile.CanCollide = false
 pile.CanQuery = true
 pile.Parent = templates
 make("ProximityPrompt", {

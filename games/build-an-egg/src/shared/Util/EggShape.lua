@@ -111,6 +111,7 @@ local function buildProfile()
 		local height = index * step
 		local hug = widestAbove[index] + EggConfig.ScaffoldShellClearance + half
 		local blend = math.clamp((height - EggConfig.ScaffoldNestTop) / EggConfig.ScaffoldNestBlend, 0, 1)
+		blend = blend * blend * (3 - 2 * blend)
 		local distance = math.max(hug, nest + (hug - nest) * blend)
 		if index > 0 then
 			local radial = distance - profile[index - 1]

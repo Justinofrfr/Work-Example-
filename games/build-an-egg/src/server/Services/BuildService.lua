@@ -125,7 +125,7 @@ function BuildService:Snapshot()
 end
 
 function BuildService:UpdateRamp()
-	local ring = self.Phase == "Building" and self:ActiveRing() or GameConfig.RingCount
+	local ring = self.Phase == "Building" and self:ActiveRing() or 0
 	if ring == self.RampRing then
 		return
 	end
@@ -284,6 +284,7 @@ function BuildService:Complete()
 	end
 	local round = self.Round
 	self:SetPhase("Cutscene", GameConfig.CompletionCutsceneTime)
+	self:ClearRamp()
 	self.Completed:Fire(self:Project())
 	remotes[Names.Remotes.Notify]:FireAllClients("EggComplete", self:Project())
 	task.delay(GameConfig.CompletionCutsceneTime, function()
@@ -303,6 +304,25 @@ function BuildService:Complete()
 			end
 		end)
 	end)
+end
+
+function BuildService:ClearRamp()
+	local spawnFolder = world:FindFirstChild(Names.World.Spawn)
+	local spawn = spawnFolder and spawnFolder:FindFirstChildWhichIsA("SpawnLocation")
+	if not spawn then
+		return
+	end
+	local center = EggConfig.Center
+	local reach = EggConfig.ScaffoldNestRadius + EggConfig.ScaffoldWidth * 2
+	for _, player in Players:GetPlayers() do
+		local rootPart = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+		if rootPart then
+			local offset = rootPart.Position - center
+			if Vector2.new(offset.X, offset.Z).Magnitude <= reach and offset.Y > GameConfig.RampClearHeight then
+				StateService:Teleport(player, spawn.CFrame + Vector3.new(0, 4, 0))
+			end
+		end
+	end
 end
 
 function BuildService:CreditEgg(player)
@@ -333,7 +353,8 @@ function BuildService:ClaimHatch(player)
 		return false, "NotReady"
 	end
 	if not self:IsContributor(player) then
-		return false, "NotContributor"
+		self:SendToInterior(player)
+		return false, "Visitor"
 	end
 	if self.Claimed[player.UserId] then
 		self:SendToInterior(player)

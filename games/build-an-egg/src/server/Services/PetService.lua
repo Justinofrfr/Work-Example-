@@ -117,6 +117,10 @@ function PetService:GrantFragments(player, collection, pieces)
 	end
 	local weights = PetRules.TierWeights(PetRules.Luck(pieces))
 	local count = PetRules.FragmentCount(pieces)
+	if not data.FirstHatchBonus and #data.Pets == 0 then
+		data.FirstHatchBonus = true
+		count = math.max(count, PetsConfig.FirstHatchFragments)
+	end
 	local granted = {}
 	for _ = 1, count do
 		local key = PetRules.FragmentKey(collection, PetRules.Pick(weights, random:NextNumber()))

@@ -9,6 +9,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Names = require(Shared.Config.Names)
 local TutorialConfig = require(Shared.Config.Tutorial)
 local UpgradesConfig = require(Shared.Config.Upgrades)
+local PetsConfig = require(Shared.Config.Pets)
 
 local Ui = require(script.Parent.Parent.Util.Ui)
 local Audio = require(script.Parent.Parent.Util.Audio)
@@ -23,6 +24,8 @@ local ClientState
 local PanelController
 local CutsceneController
 local InteractController
+local EggController
+local IncubatorController
 local remotes
 local player
 local gui
@@ -37,6 +40,8 @@ function TutorialController:Init(modules, context)
 	PanelController = modules.PanelController
 	CutsceneController = modules.CutsceneController
 	InteractController = modules.InteractController
+	EggController = modules.EggController
+	IncubatorController = modules.IncubatorController
 	remotes = context.Remotes
 	player = context.Player
 	gui = context.Gui
@@ -61,6 +66,18 @@ function TutorialController:Start()
 			return
 		end
 		self.Step = saved + 1
+		self.BasePlaced = state.PiecesPlaced or 0
+		local skipped = false
+		while self:CurrentDef() and self:IsDone(self:CurrentDef()) do
+			self.Step += 1
+			skipped = true
+		end
+		if skipped then
+			remotes[Names.Remotes.Tutorial]:FireServer(self.Step - 1)
+		end
+		if self.Step > #TutorialConfig.Steps then
+			return
+		end
 		task.spawn(function()
 			while CutsceneController.Playing do
 				task.wait(0.2)
@@ -142,8 +159,75 @@ function TutorialController:GuiTarget(name)
 		local list = panel and panel.Visible and panel.Body:FindFirstChild("List")
 		local card = list and list:FindFirstChild(UpgradesConfig.Order[1])
 		return card and card:FindFirstChild("Buy")
+	elseif name == "PetsButton" then
+		local topLeft = hud and hud.Visible and hud:FindFirstChild("TopLeft")
+		return topLeft and topLeft:FindFirstChild("Pets")
+	elseif name == "IncubatorButton" then
+		local panel = PanelController:Get("Pets")
+		return panel and panel.Visible and panel.Body:FindFirstChild("Incubator") or nil
+	elseif name == "IncubatorAdd" or name == "IncubatorHatch" then
+		local panel = PanelController:Get("Incubator")
+		if not panel or not panel.Visible then
+			return nil
+		end
+		if IncubatorController.Mode ~= "Fragments" then
+			return panel.Body:FindFirstChild("FragmentsTab")
+		end
+		if name == "IncubatorHatch" then
+			return panel.Body:FindFirstChild("Hatch")
+		end
+		return self:FirstCard(panel.Body:FindFirstChild("Choices"), function(row)
+			return row.Count.Text ~= "x0"
+		end, "Add")
+	elseif name == "EquipButton" then
+		local panel = PanelController:Get("Pets")
+		return panel and panel.Visible and self:FirstCard(panel.Body:FindFirstChild("List"), nil, "Equip") or nil
 	end
 	return nil
+end
+
+function TutorialController:FirstCard(container, filter, buttonName)
+	local best
+	for _, child in container and container:GetChildren() or {} do
+		if child:IsA("GuiObject") and child.Visible and child:FindFirstChild(buttonName) and (not filter or filter(child)) then
+			if not best or child.LayoutOrder < best.LayoutOrder then
+				best = child
+			end
+		end
+	end
+	return best and best[buttonName]
+end
+
+function TutorialController:FragmentCount(state)
+	local total = 0
+	for _, count in state.Fragments or {} do
+		total += count
+	end
+	return total
+end
+
+function TutorialController:Waiting(def)
+	local state = ClientState.State
+	if not def.WaitFor or not state then
+		return false
+	end
+	if def.WaitFor == "Fragments" then
+		return #(state.Pets or {}) == 0 and self:FragmentCount(state) < PetsConfig.Inputs
+	end
+	return false
+end
+
+function TutorialController:StageCounts(def)
+	local index, total = 0, 0
+	for position, other in TutorialConfig.Steps do
+		if other.Stage == def.Stage then
+			total += 1
+			if position <= self.Step then
+				index += 1
+			end
+		end
+	end
+	return index, total
 end
 
 function TutorialController:ShowStep(quiet)
@@ -153,12 +237,16 @@ function TutorialController:ShowStep(quiet)
 		return
 	end
 	self.Active = true
-	self.StartPlaced = ClientState.State and ClientState.State.PiecesPlaced or 0
-	self.BasePlaced = self.BasePlaced or self.StartPlaced
+	self.BasePlaced = self.BasePlaced or (ClientState.State and ClientState.State.PiecesPlaced or 0)
 	self.LastPanel = PanelController.Current and PanelController.Current.Name or nil
-	frame.Visible = true
+	if self:Waiting(def) then
+		frame.Visible = false
+		quiet = true
+	else
+		frame.Visible = true
+	end
 	local card = frame.Card
-	card.Step.Text = ("STEP %d/%d"):format(self.Step, #TutorialConfig.Steps)
+	card.Step.Text = ("STEP %d/%d"):format(self:StageCounts(def))
 	card.Text.Text = (UserInputService.TouchEnabled and def.MobileText) or def.Text
 	Ui.Pop(card, 1.08)
 	if not quiet then
@@ -210,14 +298,27 @@ function TutorialController:IsDone(def)
 	if not state then
 		return false
 	end
+	local placedSince = state.PiecesPlaced > (self.BasePlaced or state.PiecesPlaced)
+	local hasPets = #(state.Pets or {}) > 0
+	local current = PanelController.Current and PanelController.Current.Visible and PanelController.Current.Name
 	if def.Key == "Quarry" then
-		return InteractController.Mode == "Pickup"
+		return InteractController.Mode == "Pickup" or state.Carry > 0 or placedSince
 	elseif def.Key == "Pickup" then
-		return state.Carry > 0
+		return state.Carry > 0 or placedSince
 	elseif def.Key == "Carry" then
-		return InteractController.Mode == "Place" or state.PiecesPlaced > self.StartPlaced
+		return InteractController.Mode == "Place" or placedSince
 	elseif def.Key == "Place" then
-		return state.PiecesPlaced > self.StartPlaced or (state.Carry == 0 and state.PiecesPlaced > (self.BasePlaced or 0))
+		return placedSince
+	elseif def.Key == "OpenPets" then
+		return hasPets or current == "Pets" or current == "Incubator"
+	elseif def.Key == "OpenIncubator" then
+		return hasPets or current == "Incubator"
+	elseif def.Key == "AddFragments" then
+		return hasPets or (IncubatorController.Mode == "Fragments" and #IncubatorController.Selection >= PetsConfig.Inputs)
+	elseif def.Key == "HatchPet" then
+		return hasPets
+	elseif def.Key == "EquipPet" then
+		return #(state.Equipped or {}) > 0
 	elseif def.Key == "OpenUpgrades" or def.Key == "BuyUpgrade" then
 		for _, level in state.Upgrades or {} do
 			if level > 0 then
@@ -303,14 +404,30 @@ function TutorialController:Update()
 	if not def then
 		return
 	end
-	if CutsceneController.Playing then
+	local reveal = gui:FindFirstChild("Reveal")
+	if CutsceneController.Playing or EggController.InCutscene or (reveal and reveal.Visible) or self:Waiting(def) then
 		frame.Visible = false
+		self:SetSpot(nil)
+		self:SetGuide(nil)
 		return
 	end
-	frame.Visible = true
+	if not frame.Visible then
+		frame.Visible = true
+		frame.Card.Step.Text = ("STEP %d/%d"):format(self:StageCounts(def))
+		frame.Card.Text.Text = (UserInputService.TouchEnabled and def.MobileText) or def.Text
+	end
 	local panelOpen = not def.NeedsPanel or (PanelController.Current ~= nil and PanelController.Current.Name == def.NeedsPanel and PanelController.Current.Visible)
+	local opener
+	if def.Target == "Gui" and not panelOpen then
+		for _, name in def.OpenGui or {} do
+			opener = opener or self:GuiTarget(name)
+		end
+	end
 	if def.Target == "Gui" and panelOpen then
 		self:SetSpot(self:GuiTarget(def.Gui))
+		self:SetGuide(nil)
+	elseif opener then
+		self:SetSpot(opener)
 		self:SetGuide(nil)
 	else
 		self:SetSpot(nil)

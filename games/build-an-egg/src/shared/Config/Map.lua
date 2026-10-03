@@ -10,11 +10,13 @@ return {
 		PieceSize = Vector3.new(3.2, 4, 3.2),
 	},
 	Gyms = {
-		Radius = 230,
-		StartAngle = 45,
-		AngleStep = 33.75,
+		Radius = 215,
+		StartAngle = 72,
+		AngleStep = 27,
 		PlatformSize = Vector3.new(44, 2, 34),
 		AdminHeight = 14,
+		AdminRampLength = 40,
+		AdminRampWidth = 14,
 		MachinesPerStat = 2,
 	},
 	Interior = {

@@ -96,6 +96,8 @@ end
 
 function ShopController:Buy(item)
 	if item.Kind == "Pass" and ClientState:OwnsPass(item.Key) then
+		local pass = ProductsConfig.GamePasses[item.Key]
+		NotifyController:Toast(UIConfig.Messages.AlreadyOwned:format(pass and pass.Name or item.Key), UIConfig.Colors.Good)
 		return
 	end
 	local id = self:ProductInfo(item)

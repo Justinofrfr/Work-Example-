@@ -490,6 +490,11 @@ make("Frame", { Name = "List", Size = UDim2.fromScale(1, 1), BackgroundTranspare
 	make("UIListLayout", { Padding = UDim.new(0.04, 0), SortOrder = Enum.SortOrder.LayoutOrder }),
 })
 
+local _, giftBody = panel("GiftReward", "THANK YOU!", UDim2.fromScale(0.4, 0.46), Color3.fromRGB(255, 120, 170), 1.25)
+label({ Name = "Message", Text = "Thanks for favoriting! Here's your reward:", Size = UDim2.fromScale(1, 0.16), Position = UDim2.fromScale(0, 0.02), Parent = giftBody })
+label({ Name = "Rewards", Text = "", Size = UDim2.fromScale(0.9, 0.5), Position = UDim2.fromScale(0.05, 0.2), TextColor3 = Color3.fromRGB(140, 255, 160), Parent = giftBody })
+button({ Name = "Collect", Text = "AWESOME!", Color = C.Good, Size = UDim2.fromScale(0.5, 0.2), Position = UDim2.fromScale(0.5, 0.76), AnchorPoint = Vector2.new(0.5, 0), Parent = giftBody })
+
 local _, lockedBody = panel("Locked", "GYM LOCKED", UDim2.fromScale(0.36, 0.36), Color3.fromRGB(120, 120, 130), 1.6)
 label({ Name = "Lock", Text = "🔒", Size = UDim2.fromScale(0.25, 0.4), Position = UDim2.fromScale(0.375, 0), Parent = lockedBody })
 label({ Name = "Desc", Text = "Hatch 1 egg or unlock now!", Size = UDim2.fromScale(1, 0.2), Position = UDim2.fromScale(0, 0.42), Parent = lockedBody })
@@ -549,8 +554,8 @@ make("ScrollingFrame", {
 	Parent = incubatorBody,
 }, {
 	corner(0.04),
-	make("UIListLayout", { Padding = UDim.new(0.012, 0), SortOrder = Enum.SortOrder.LayoutOrder }),
-	make("UIPadding", { PaddingTop = UDim.new(0.015, 0), PaddingLeft = UDim.new(0.02, 0), PaddingRight = UDim.new(0.05, 0), PaddingBottom = UDim.new(0.015, 0) }),
+	make("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder }),
+	make("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingLeft = UDim.new(0.02, 0), PaddingRight = UDim.new(0.05, 0), PaddingBottom = UDim.new(0, 6) }),
 })
 label({ Name = "Hint", Text = "Pick any 5 fragments. Each one adds its pet to the odds!", Size = UDim2.fromScale(0.5, 0.1), Position = UDim2.fromScale(0.5, 0.0), TextColor3 = Color3.fromRGB(255, 236, 190), StrokeThickness = 1.5, Parent = incubatorBody })
 local slots = make("Frame", { Name = "Slots", Size = UDim2.fromScale(0.5, 0.16), Position = UDim2.fromScale(0.5, 0.13), BackgroundTransparency = 1, Parent = incubatorBody }, {
@@ -600,7 +605,11 @@ label({ Name = "Icon", Text = "⬆️", Size = UDim2.fromScale(0.14, 0.8), Posit
 label({ Name = "Title", Text = "Bulk Pickup", Size = UDim2.fromScale(0.5, 0.42), Position = UDim2.fromScale(0.18, 0.08), TextXAlignment = Enum.TextXAlignment.Left, Parent = card })
 label({ Name = "Effect", Text = "1 → 2 per grab", Size = UDim2.fromScale(0.5, 0.3), Position = UDim2.fromScale(0.18, 0.55), TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.fromRGB(255, 236, 190), StrokeThickness = 1.5, Parent = card })
 label({ Name = "Level", Text = "Lv 0/5", Size = UDim2.fromScale(0.14, 0.4), Position = UDim2.fromScale(0.6, 0.3), TextColor3 = Color3.fromRGB(200, 240, 255), Parent = card })
-button({ Name = "Buy", Text = "🪙 50", Color = C.Coins, Size = UDim2.fromScale(0.22, 0.64), Position = UDim2.fromScale(0.97, 0.5), AnchorPoint = Vector2.new(1, 0.5), Parent = card })
+local upgradeBuy = button({ Name = "Buy", Text = "50", Color = C.Coins, Size = UDim2.fromScale(0.22, 0.64), Position = UDim2.fromScale(0.97, 0.5), AnchorPoint = Vector2.new(1, 0.5), Parent = card })
+upgradeBuy.Label.Size = UDim2.fromScale(0.62, 0.7)
+upgradeBuy.Label.Position = UDim2.fromScale(0.6, 0.5)
+local upgradeCoin = iconElement({ Name = "Coin", Text = UIConfig.Icons.Coins, Size = UDim2.fromScale(0.62, 0.62), Position = UDim2.fromScale(0.17, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), ZIndex = 2, Parent = upgradeBuy })
+aspect(1).Parent = upgradeCoin
 
 local petCard = panelFrame({ Name = "PetCard", Size = UDim2.fromScale(0.23, 0.3), BackgroundColor3 = Color3.fromRGB(255, 252, 240), Parent = templates })
 viewport({ Name = "View", Size = UDim2.fromScale(0.9, 0.5), Position = UDim2.fromScale(0.05, 0.02), Parent = petCard })
@@ -612,7 +621,7 @@ button({ Name = "Delete", Text = "X", Color = C.Bad, Size = UDim2.fromScale(0.24
 make("Frame", { Name = "EquippedMark", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Visible = false, Parent = petCard }, { corner(0.06), make("UIStroke", { Thickness = 4, Color = Color3.fromRGB(90, 255, 120) }) })
 
 local choice = panelFrame({ Name = "Choice", Size = UDim2.fromScale(1, 0.12), BackgroundColor3 = Color3.fromRGB(255, 252, 240), Parent = templates })
-aspect(6.5).Parent = choice
+make("UIAspectRatioConstraint", { AspectRatio = 6.5, AspectType = Enum.AspectType.ScaleWithParentSize, DominantAxis = Enum.DominantAxis.Width, Parent = choice })
 make("Frame", { Name = "Swatch", Size = UDim2.fromScale(0.1, 0.7), Position = UDim2.fromScale(0.03, 0.15), BackgroundColor3 = Color3.new(1, 1, 1), Parent = choice }, { corner(0.4), stroke(2) })
 label({ Name = "Title", Text = "Silver · Shiny", Size = UDim2.fromScale(0.5, 0.5), Position = UDim2.fromScale(0.16, 0.06), TextXAlignment = Enum.TextXAlignment.Left, Parent = choice })
 label({ Name = "Sub", Text = "+25% Speed", Size = UDim2.fromScale(0.5, 0.36), Position = UDim2.fromScale(0.16, 0.56), TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.fromRGB(255, 236, 190), StrokeThickness = 1.2, Parent = choice })

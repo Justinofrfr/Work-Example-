@@ -117,7 +117,7 @@ function EggController:Start()
 		self.SkipRequested = true
 	end)
 	UserInputService.InputBegan:Connect(function(input, processed)
-		if self.InCutscene and not processed and table.find(EffectsConfig.Cutscene.SkipKeys, input.KeyCode) then
+		if self.InCutscene and not processed and os.clock() - (self.CutsceneStarted or 0) > EffectsConfig.Cutscene.SkipDelay and table.find(EffectsConfig.Cutscene.SkipKeys, input.KeyCode) then
 			self.SkipRequested = true
 		end
 	end)
@@ -309,7 +309,8 @@ function EggController:RenderHatch()
 	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 	local inside = root ~= nil and root.Position.Y < MapConfig.Interior.Center.Y + MapConfig.Interior.Height + 20
 	local panelOpen = PanelController and PanelController.Current ~= nil and PanelController.Current.Visible
-	local show = server.Phase == "Interior" and self:IsContributor() and not self.InCutscene and not (state.Claimed and inside) and not panelOpen
+	local canClaim = self:IsContributor() and not state.Claimed
+	local show = server.Phase == "Interior" and not self.InCutscene and not inside and not panelOpen
 	if show and not hatch.Visible then
 		hatch.Visible = true
 		Ui.Pop(hatch.Button, 1.15)
@@ -317,9 +318,9 @@ function EggController:RenderHatch()
 		hatch.Visible = false
 	end
 	if show then
-		Ui.SetText(hatch.Button, state.Claimed and UIConfig.Messages.EnterPrompt or UIConfig.Messages.HatchPrompt)
-		hatch.Button.Icon.Text = state.Claimed and "🚪" or "🥚"
-		if state.Claimed then
+		Ui.SetText(hatch.Button, canClaim and UIConfig.Messages.HatchPrompt or UIConfig.Messages.EnterPrompt)
+		hatch.Button.Icon.Text = canClaim and "🥚" or "🚪"
+		if not canClaim then
 			hatch.Timer.Text = UIConfig.Messages.EnterHint
 		else
 			local remaining = math.max(0, math.ceil(server.PhaseEndsAt - GameConfig.InteriorDuration + GameConfig.HatchAutoClaimDelay - Workspace:GetServerTimeNow()))
@@ -370,7 +371,7 @@ function EggController:Claim()
 	local ok, result = remotes[Names.Remotes.ClaimHatch]:InvokeServer()
 	task.wait(0.4)
 	self:Unfade()
-	if ok or result == "Claimed" then
+	if ok or result == "Claimed" or result == "Visitor" then
 		self.WasInside = true
 		Audio.Play("Hatch")
 		NotifyController:Banner(inside.Banner, Color3.fromRGB(255, 200, 60))
@@ -463,6 +464,7 @@ function EggController:PlayCutscene()
 	EffectController:Shake(EffectsConfig.Shake.LastPiece)
 	Audio.Play("LastPiece")
 	self.InCutscene = true
+	self.CutsceneStarted = os.clock()
 	self.SkipRequested = false
 	local previousType = camera.CameraType
 	Cinematic.Enter()
