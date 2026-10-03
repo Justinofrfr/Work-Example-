@@ -10,6 +10,7 @@ local GameConfig = require(Shared.Config.Game)
 local InputConfig = require(Shared.Config.Input)
 local Formulas = require(Shared.Util.Formulas)
 local EggShape = require(Shared.Util.EggShape)
+local EggConfig = require(Shared.Config.Egg)
 
 local Ui = require(script.Parent.Parent.Util.Ui)
 
@@ -61,7 +62,7 @@ function InteractController:Start()
 		end
 	end)
 	UserInputService.InputBegan:Connect(function(input, processed)
-		if table.find(InputConfig.InteractKeys, input.KeyCode) and not processed then
+		if table.find(InputConfig.InteractKeys, input.KeyCode) and not UserInputService:GetFocusedTextBox() then
 			self.HoldingKey = true
 			if input.KeyCode == Enum.KeyCode.ButtonR2 and self.Mode then
 				self.LastPrompt = os.clock()
@@ -185,7 +186,9 @@ end
 
 function InteractController:TunePrompts(state)
 	local goose = ClientState:OwnsPass("GoldenGoose")
-	local range = Formulas.PromptDistance(state.Upgrades and state.Upgrades.Range or 0)
+	local reach = 1 + Formulas.UpgradeValue("Range", state.Upgrades and state.Upgrades.Range or 0)
+	local horizontal = EggConfig.ScaffoldWidth / 2 + EggConfig.BandHorizontalReach * reach
+	local range = math.sqrt(horizontal * horizontal + (EggConfig.BandVerticalReach * reach) ^ 2)
 	for _, prompt in prompts do
 		prompt.GamepadKeyCode = InputConfig.PromptGamepadKey
 		if prompt.Name == W.PickupPrompt then

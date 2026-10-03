@@ -447,14 +447,19 @@ local function rampHeight(ring, fraction)
 	return lowHeight + (EggShape.BandHeight(ring) - lowHeight) * fraction
 end
 for index = 1, #rings do
-	local ringLength = 0
+	local ringLength, turn = 0, 0
 	local previous = EggShape.ScaffoldPoint(rampHeight(index, 0))
-	for sample = 1, 8 do
-		local point = EggShape.ScaffoldPoint(rampHeight(index, sample / 8))
+	local heading
+	for sample = 1, 16 do
+		local point = EggShape.ScaffoldPoint(rampHeight(index, sample / 16))
+		local delta = (point - previous) * Vector3.new(1, 0, 1)
 		ringLength += (point - previous).Magnitude
+		if heading and delta.Magnitude > 0 then
+			turn += math.deg(math.acos(math.clamp(heading:Dot(delta.Unit), -1, 1)))
+		end
+		heading = delta.Magnitude > 0 and delta.Unit or heading
 		previous = point
 	end
-	local turn = math.deg(math.abs(EggShape.ScaffoldAngle(rampHeight(index, 1)) - EggShape.ScaffoldAngle(rampHeight(index, 0))))
 	local substeps = math.clamp(math.max(math.ceil(ringLength / EggConfig.ScaffoldSegmentLength), math.ceil(turn / EggConfig.ScaffoldSegmentTurn)), EggConfig.ScaffoldSubsteps, EggConfig.ScaffoldMaxSubsteps)
 	for sub = 1, substeps do
 		local low = EggShape.ScaffoldPoint(rampHeight(index, (sub - 1) / substeps))

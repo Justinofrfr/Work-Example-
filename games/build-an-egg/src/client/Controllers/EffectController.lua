@@ -391,8 +391,9 @@ function EffectController:Handle(kind, a, b)
 	if kind == "Pickup" then
 		if root then
 			Audio.PlayAt("Pickup", root.Position, 1 + 0.05 * math.max(0, (a or 1) - 1))
-			self:Burst("Dust", root.Position - Vector3.new(0, 2.5, 0), 6)
+			self:Burst("Dust", root.Position - Vector3.new(0, 2.5, 0), 14)
 			self:Vfx("Pickup", root.Position + Vector3.new(0, 4, 0))
+			self:Vfx("PickupPuff", root.Position - Vector3.new(0, 2, 0))
 		end
 	elseif kind == "Place" then
 		local ring = b or 1
@@ -414,6 +415,8 @@ function EffectController:Handle(kind, a, b)
 		if root then
 			Audio.PlayAt("Place", root.Position, 0.8)
 			self:Vfx("Drop", root.Position - Vector3.new(0, 2.5, 0))
+			self:Vfx("DropBling", root.Position)
+			self:Burst("Dust", root.Position - Vector3.new(0, 2.5, 0), 18)
 		end
 	elseif kind == "TrainStart" then
 		Audio.Play("TrainStart")
