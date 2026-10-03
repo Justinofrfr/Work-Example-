@@ -269,7 +269,7 @@ local function priceBadge(parent, text)
 	label({ Name = "Text", Text = text, Size = UDim2.fromScale(0.86, 0.8), Position = UDim2.fromScale(0.07, 0.1), ZIndex = 5, StrokeThickness = 1.5, Parent = badge })
 	return badge
 end
-for index, def in { { "Shop", UIConfig.Icons.Shop, "SHOP", Color3.fromRGB(255, 90, 140) }, { "SpeedBoost", UIConfig.Icons.Speed, "1.5x Speed", Color3.fromRGB(80, 160, 255) }, { "StrengthBoost", UIConfig.Icons.Strength, "2x Strength", Color3.fromRGB(255, 160, 40) } } do
+for index, def in { { "Shop", UIConfig.Icons.Shop, "SHOP", Color3.fromRGB(255, 90, 140) }, { "SpeedBoost", UIConfig.Icons.Speed, "2x Speed", Color3.fromRGB(80, 160, 255) }, { "StrengthBoost", UIConfig.Icons.Strength, "2x Strength", Color3.fromRGB(255, 160, 40) } } do
 	local b = button({ Name = def[1], Icon = def[2], Text = def[3], Color = def[4], Size = UDim2.fromScale(1, 0.3), LayoutOrder = index, Bare = true, Parent = right })
 	aspect(1).Parent = b
 	if index > 1 then

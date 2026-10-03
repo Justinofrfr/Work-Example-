@@ -13,8 +13,8 @@ return {
 	DevProducts = {
 		SpeedBoost = {
 			Stat = "Speed",
-			Multiplier = 1.5,
-			Name = "1.5x Speed",
+			Multiplier = 2,
+			Name = "2x Speed",
 			Tiers = {
 				{ Id = 3715925836, Price = 3 },
 				{ Id = 3715925857, Price = 9 },

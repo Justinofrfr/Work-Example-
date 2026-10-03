@@ -3,7 +3,7 @@ return {
 		{
 			Title = "BOOSTS",
 			Items = {
-				{ Key = "SpeedBoost", Kind = "Product", Icon = "⚡", Name = "1.5x Speed", Desc = "Permanent, stacks every buy" },
+				{ Key = "SpeedBoost", Kind = "Product", Icon = "⚡", Name = "2x Speed", Desc = "Permanent, stacks every buy" },
 				{ Key = "StrengthBoost", Kind = "Product", Icon = "💪", Name = "2x Strength", Desc = "Permanent, stacks every buy" },
 			},
 		},
