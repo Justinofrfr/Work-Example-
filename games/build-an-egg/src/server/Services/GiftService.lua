@@ -1,3 +1,4 @@
+local GroupService = game:GetService("GroupService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -42,8 +43,17 @@ function GiftService:InGroup(player)
 	if not GiftConfig.RequireGroup or GameConfig.GroupId == 0 then
 		return true
 	end
-	local ok, result = pcall(player.IsInGroup, player, GameConfig.GroupId)
-	return ok and result
+	local ok, groups = pcall(GroupService.GetGroupsAsync, GroupService, player.UserId)
+	if ok then
+		for _, group in groups do
+			if group.Id == GameConfig.GroupId then
+				return true
+			end
+		end
+		return false
+	end
+	local cached, result = pcall(player.IsInGroup, player, GameConfig.GroupId)
+	return cached and result
 end
 
 function GiftService:Claim(player)

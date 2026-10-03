@@ -33,7 +33,34 @@ function GiftController:Init(modules, context)
 	player = context.Player
 end
 
+function GiftController:InGroup()
+	if GameConfig.GroupId == 0 then
+		return true
+	end
+	local ok, inGroup = pcall(player.IsInGroup, player, GameConfig.GroupId)
+	return ok and inGroup
+end
+
+function GiftController:PromptGroup()
+	if self.Joined or self:InGroup() then
+		return
+	end
+	local ok, status = pcall(GroupService.PromptJoinAsync, GroupService, GameConfig.GroupId)
+	if ok and status == Enum.GroupMembershipStatus.Joined then
+		self.Joined = true
+	end
+end
+
 function GiftController:Start()
+	task.spawn(function()
+		task.wait(GiftConfig.GroupPrompt.First)
+		while true do
+			if not self.Joined and not self:InGroup() and not PanelController.Current then
+				self:PromptGroup()
+			end
+			task.wait(GiftConfig.GroupPrompt.Every)
+		end
+	end)
 	local body = PanelController:Get("GiftReward").Body
 	Ui.Feel(body.Collect, function()
 		PanelController:Close()
@@ -55,13 +82,17 @@ function GiftController:Claim()
 		return
 	end
 	busy = true
+	local favorited = false
+	local connection = AvatarEditorService.PromptSetFavoriteCompleted:Connect(function()
+		favorited = true
+	end)
 	pcall(AvatarEditorService.PromptSetFavorite, AvatarEditorService, game.PlaceId, Enum.AvatarItemType.Asset, true)
-	if GameConfig.GroupId ~= 0 then
-		local ok, inGroup = pcall(player.IsInGroup, player, GameConfig.GroupId)
-		if ok and not inGroup then
-			pcall(GroupService.PromptJoinAsync, GroupService, GameConfig.GroupId)
-		end
+	local started = os.clock()
+	while not favorited and os.clock() - started < GiftConfig.FavoriteWait do
+		task.wait(0.2)
 	end
+	connection:Disconnect()
+	self:PromptGroup()
 	local ok, result = remotes[Names.Remotes.ClaimGift]:InvokeServer()
 	busy = false
 	if ok then

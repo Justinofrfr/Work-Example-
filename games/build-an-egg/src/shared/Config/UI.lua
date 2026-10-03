@@ -74,6 +74,7 @@ return {
 	StatPulseScale = 1.15,
 	Icons = {
 		Pets = "🐾",
+		Daily = "📅",
 		Coins = "rbxassetid://107803545719047",
 		Speed = "rbxassetid://94039972266704",
 		Strength = "rbxassetid://6552275507",

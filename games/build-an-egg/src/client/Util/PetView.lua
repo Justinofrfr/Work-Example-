@@ -17,6 +17,11 @@ end
 
 function PetView.Show(frame, collection, rarity, yaw)
 	local camera = frame:FindFirstChildOfClass("Camera")
+	if not camera then
+		camera = Instance.new("Camera")
+		camera.FieldOfView = 40
+		camera.Parent = frame
+	end
 	frame.CurrentCamera = camera
 	local old = frame:FindFirstChild("Pet")
 	if old then

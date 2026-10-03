@@ -203,17 +203,24 @@ local hud = make("Frame", { Name = "Hud", Size = UDim2.fromScale(1, 1), Backgrou
 
 local topLeft = make("Frame", {
 	Name = "TopLeft",
-	Size = UDim2.fromScale(0.13, 0.075),
+	Size = UDim2.fromScale(0.175, 0.075),
 	Position = UDim2.fromScale(0.008, 0.075),
 	BackgroundTransparency = 1,
 	Parent = hud,
 }, {
 	make("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0.04, 0), SortOrder = Enum.SortOrder.LayoutOrder }),
-	aspect(3.4),
+	aspect(4.6),
 })
-for index, def in { { "Codes", UIConfig.Icons.Codes, Color3.fromRGB(80, 170, 255) }, { "Settings", UIConfig.Icons.Settings, Color3.fromRGB(150, 150, 160) }, { "Pets", UIConfig.Icons.Pets, Color3.fromRGB(255, 150, 60) } } do
-	local b = button({ Name = def[1], Icon = def[2], Color = def[3], Size = UDim2.fromScale(0.3, 1), LayoutOrder = index, Parent = topLeft })
+for index, def in { { "Codes", UIConfig.Icons.Codes, Color3.fromRGB(80, 170, 255) }, { "Settings", UIConfig.Icons.Settings, Color3.fromRGB(150, 150, 160) }, { "Pets", UIConfig.Icons.Pets, Color3.fromRGB(255, 150, 60) }, { "Daily", UIConfig.Icons.Daily, Color3.fromRGB(255, 110, 150) } } do
+	local b = button({ Name = def[1], Icon = def[2], Color = def[3], Size = UDim2.fromScale(0.22, 1), LayoutOrder = index, Parent = topLeft })
 	aspect(1).Parent = b
+	if def[1] == "Daily" then
+		make("Frame", { Name = "Badge", Size = UDim2.fromScale(0.36, 0.36), Position = UDim2.fromScale(0.82, -0.08), BackgroundColor3 = C.Bad, Visible = false, ZIndex = 3, Parent = b }, {
+			corner(1),
+			stroke(2),
+			label({ Name = "Mark", Text = "!", Size = UDim2.fromScale(1, 1), ZIndex = 4 }),
+		})
+	end
 end
 
 local stats = make("Frame", {
@@ -494,6 +501,19 @@ local _, giftBody = panel("GiftReward", "THANK YOU!", UDim2.fromScale(0.4, 0.46)
 label({ Name = "Message", Text = "Thanks for favoriting! Here's your reward:", Size = UDim2.fromScale(1, 0.16), Position = UDim2.fromScale(0, 0.02), Parent = giftBody })
 label({ Name = "Rewards", Text = "", Size = UDim2.fromScale(0.9, 0.5), Position = UDim2.fromScale(0.05, 0.2), TextColor3 = Color3.fromRGB(140, 255, 160), Parent = giftBody })
 button({ Name = "Collect", Text = "AWESOME!", Color = C.Good, Size = UDim2.fromScale(0.5, 0.2), Position = UDim2.fromScale(0.5, 0.76), AnchorPoint = Vector2.new(0.5, 0), Parent = giftBody })
+
+local _, dailyBody = panel("Daily", "DAILY REWARDS", UDim2.fromScale(0.64, 0.5), Color3.fromRGB(255, 110, 150), 2.1)
+local days = make("Frame", { Name = "Days", Size = UDim2.fromScale(1, 0.66), BackgroundTransparency = 1, Parent = dailyBody }, {
+	make("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Center, Padding = UDim.new(0.012, 0), SortOrder = Enum.SortOrder.LayoutOrder }),
+})
+for index = 1, 7 do
+	local day = panelFrame({ Name = "Day" .. index, Size = UDim2.fromScale(0.13, 1), LayoutOrder = index, BackgroundColor3 = Color3.fromRGB(255, 252, 240), Parent = days })
+	label({ Name = "Title", Text = "DAY " .. index, Size = UDim2.fromScale(0.9, 0.2), Position = UDim2.fromScale(0.05, 0.03), Parent = day })
+	label({ Name = "Reward", Text = "", Size = UDim2.fromScale(0.9, 0.7), Position = UDim2.fromScale(0.05, 0.25), TextColor3 = Color3.fromRGB(255, 236, 190), StrokeThickness = 1.5, Parent = day })
+	label({ Name = "Done", Text = "✅", Size = UDim2.fromScale(0.5, 0.3), Position = UDim2.fromScale(0.5, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), Visible = false, ZIndex = 3, Parent = day })
+end
+label({ Name = "Status", Text = "", Size = UDim2.fromScale(0.6, 0.12), Position = UDim2.fromScale(0.02, 0.76), TextXAlignment = Enum.TextXAlignment.Left, Parent = dailyBody })
+button({ Name = "Claim", Text = "CLAIM!", Color = C.Good, Size = UDim2.fromScale(0.3, 0.22), Position = UDim2.fromScale(0.98, 0.74), AnchorPoint = Vector2.new(1, 0), Parent = dailyBody })
 
 local _, lockedBody = panel("Locked", "GYM LOCKED", UDim2.fromScale(0.36, 0.36), Color3.fromRGB(120, 120, 130), 1.6)
 label({ Name = "Lock", Text = "🔒", Size = UDim2.fromScale(0.25, 0.4), Position = UDim2.fromScale(0.375, 0), Parent = lockedBody })

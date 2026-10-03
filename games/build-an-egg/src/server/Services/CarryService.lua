@@ -5,6 +5,9 @@ local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local GameConfig = require(Shared.Config.Game)
+local MapConfig = require(Shared.Config.Map)
+local GymsConfig = require(Shared.Config.Gyms)
+local EggConfig = require(Shared.Config.Egg)
 local ProductsConfig = require(Shared.Config.Products)
 local UIConfig = require(Shared.Config.UI)
 local Names = require(Shared.Config.Names)
@@ -76,6 +79,74 @@ function CarryService:Start()
 	end)
 	MonetizationService.PassChanged:Connect(function(player)
 		self:ApplyCosmetics(player)
+	end)
+	task.spawn(function()
+		for _ = 1, GameConfig.Scatter.Count do
+			self:SpawnScatter()
+		end
+	end)
+end
+
+function CarryService:ScatterSpot()
+	local S = GameConfig.Scatter
+	local center = EggConfig.Center
+	local gym = MapConfig.Gyms
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Exclude
+	params.FilterDescendantsInstances = { pileFolder }
+	for _ = 1, S.Tries do
+		local angle = math.random() * math.pi * 2
+		local radius = S.MinRadius + math.random() * (S.MaxRadius - S.MinRadius)
+		local spot = center + Vector3.new(math.sin(angle) * radius, 0, -math.cos(angle) * radius)
+		local clear = (spot - quarryZone.Position).Magnitude > S.SpawnClearance + quarryZone.Size.Magnitude / 2
+		for _, stand in MapConfig.Stands do
+			clear = clear and (spot - stand).Magnitude > S.SpawnClearance
+		end
+		for index = 1, #GymsConfig.Tiers do
+			local gymAngle = math.rad(gym.StartAngle + (index - 1) * gym.AngleStep)
+			local gymSpot = center + Vector3.new(math.sin(gymAngle) * gym.Radius, 0, -math.cos(gymAngle) * gym.Radius)
+			clear = clear and (spot - gymSpot).Magnitude > S.GymClearance + gym.PlatformSize.Magnitude / 2
+		end
+		if clear then
+			local hit = Workspace:Raycast(spot + Vector3.new(0, S.DropHeight, 0), Vector3.new(0, -S.DropHeight * 2, 0), params)
+			if hit and hit.Instance.Name == "Ground" then
+				return hit.Position
+			end
+		end
+	end
+	return nil
+end
+
+function CarryService:SpawnScatter()
+	local template = templates:FindFirstChild(Names.Templates.DroppedPile)
+	local spot = template and pileFolder and self:ScatterSpot()
+	if not spot then
+		return
+	end
+	local S = GameConfig.Scatter
+	local total = 0
+	for _, weight in S.Weights do
+		total += weight
+	end
+	local roll = math.random() * total
+	local amount = S.Amounts[1]
+	for index, weight in S.Weights do
+		roll -= weight
+		if roll <= 0 then
+			amount = S.Amounts[index]
+			break
+		end
+	end
+	local pile = template:Clone()
+	pile:SetAttribute("Scatter", true)
+	self:SetPileCount(pile, amount)
+	pile.CFrame = CFrame.new(spot + Vector3.new(0, pile.Size.Y / 2, 0)) * CFrame.Angles(0, math.random() * math.pi * 2, 0)
+	pile.Parent = pileFolder
+	self.Piles[pile] = true
+	pile.Destroying:Connect(function()
+		task.delay(S.Respawn[1] + math.random() * (S.Respawn[2] - S.Respawn[1]), function()
+			self:SpawnScatter()
+		end)
 	end)
 end
 
@@ -210,7 +281,7 @@ function CarryService:Drop(player)
 	end
 	local count = 0
 	for pile in self.Piles do
-		if pile.Parent then
+		if pile.Parent and not pile:GetAttribute("Scatter") then
 			count += 1
 		end
 	end

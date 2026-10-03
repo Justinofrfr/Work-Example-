@@ -1,5 +1,7 @@
 return {
 	RequireGroup = true,
+	FavoriteWait = 20,
+	GroupPrompt = { First = 300, Every = 900 },
 	Rewards = {
 		MinStat = 1500,
 		StatShare = 0.1,

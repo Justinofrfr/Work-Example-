@@ -35,6 +35,8 @@ local function template()
 		Equipped = {},
 		PetSerial = 0,
 		FirstHatchBonus = false,
+		DailyStreak = 0,
+		DailyLast = -1,
 	}
 end
 

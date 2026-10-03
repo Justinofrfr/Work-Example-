@@ -239,6 +239,8 @@ function StateService:Sync(player)
 		Upgrades = data.Upgrades,
 		BoostLevels = data.BoostLevels,
 		GiftClaimed = data.GiftClaimed,
+		DailyStreak = data.DailyStreak or 0,
+		DailyLast = data.DailyLast or -1,
 		Training = runtime.Training and runtime.Training.Stat or nil,
 		TrainingTier = runtime.Training and runtime.Training.Tier or nil,
 		RoundPieces = BuildService and BuildService:Contribution(player) or 0,

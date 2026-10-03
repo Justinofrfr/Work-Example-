@@ -18,6 +18,7 @@ return {
 		LeaveEgg = "LeaveEgg",
 		Bubble = "Bubble",
 		PopBubble = "PopBubble",
+		ClaimDaily = "ClaimDaily",
 	},
 	RemoteKinds = {
 		StateSync = "RemoteEvent",
@@ -37,6 +38,7 @@ return {
 		LeaveEgg = "RemoteFunction",
 		Bubble = "RemoteEvent",
 		PopBubble = "RemoteEvent",
+		ClaimDaily = "RemoteFunction",
 	},
 	World = {
 		Root = "Game",
