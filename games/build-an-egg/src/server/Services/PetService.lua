@@ -152,17 +152,15 @@ function PetService:HatchFragments(player, selection)
 		return false, "PetsFull"
 	end
 	local needed = {}
-	local collections = {}
-	local tier
+	local picks = {}
 	for index = 1, PetsConfig.Inputs do
 		local key = selection[index]
 		local collection, keyTier = PetRules.ParseFragment(key)
-		if not collection or (tier and keyTier ~= tier) then
+		if not collection or not keyTier then
 			return false, "NeedFive"
 		end
-		tier = keyTier
 		needed[key] = (needed[key] or 0) + 1
-		table.insert(collections, collection)
+		table.insert(picks, { Collection = collection, Tier = keyTier })
 	end
 	for key, amount in needed do
 		if (data.Fragments[key] or 0) < amount then
@@ -175,8 +173,8 @@ function PetService:HatchFragments(player, selection)
 			data.Fragments[key] = nil
 		end
 	end
-	local chosen = collections[random:NextInteger(1, #collections)]
-	local pet = self:AddPet(player, data, chosen, tier)
+	local chosen = picks[random:NextInteger(1, #picks)]
+	local pet = self:AddPet(player, data, chosen.Collection, chosen.Tier)
 	return true, pet
 end
 

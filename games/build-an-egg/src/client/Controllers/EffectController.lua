@@ -444,6 +444,11 @@ function EffectController:NextTrack()
 	end
 	trackIndex = trackIndex % #playlist + 1
 	music = playlist[trackIndex]
+	for _, track in playlist do
+		if track ~= music and track.IsPlaying then
+			track:Stop()
+		end
+	end
 	self.MusicKey = nil
 	self:UpdateMusic()
 end
@@ -460,6 +465,11 @@ function EffectController:UpdateMusic()
 		local sound, wanted = entry[1], entry[2]
 		if sound then
 			if wanted and not sound.IsPlaying then
+				for _, track in playlist do
+					if track ~= sound and track.IsPlaying then
+						track:Stop()
+					end
+				end
 				sound.Volume = 0
 				sound:Play()
 			end

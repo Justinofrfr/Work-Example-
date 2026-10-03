@@ -462,7 +462,8 @@ make("ScrollingFrame", {
 })
 
 local _, upgradeBody = panel("Upgrades", "UPGRADES", UDim2.fromScale(0.48, 0.54), Color3.fromRGB(255, 165, 50), 1.5)
-make("Frame", { Name = "List", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Parent = upgradeBody }, {
+label({ Name = "Note", Text = "🎒 Backpack size grows with 💪 Strength - train at the gym!", Size = UDim2.fromScale(1, 0.09), Position = UDim2.fromScale(0, 0.91), TextColor3 = Color3.fromRGB(255, 236, 190), StrokeThickness = 1.5, Parent = upgradeBody })
+make("Frame", { Name = "List", Size = UDim2.fromScale(1, 0.88), BackgroundTransparency = 1, Parent = upgradeBody }, {
 	make("UIListLayout", { Padding = UDim.new(0.03, 0), SortOrder = Enum.SortOrder.LayoutOrder }),
 })
 
@@ -551,7 +552,7 @@ make("ScrollingFrame", {
 	make("UIListLayout", { Padding = UDim.new(0.012, 0), SortOrder = Enum.SortOrder.LayoutOrder }),
 	make("UIPadding", { PaddingTop = UDim.new(0.015, 0), PaddingLeft = UDim.new(0.02, 0), PaddingRight = UDim.new(0.05, 0), PaddingBottom = UDim.new(0.015, 0) }),
 })
-label({ Name = "Hint", Text = "Pick 5 of the same tier. Each pick adds its collection to the odds!", Size = UDim2.fromScale(0.5, 0.1), Position = UDim2.fromScale(0.5, 0.0), TextColor3 = Color3.fromRGB(255, 236, 190), StrokeThickness = 1.5, Parent = incubatorBody })
+label({ Name = "Hint", Text = "Pick any 5 fragments. Each one adds its pet to the odds!", Size = UDim2.fromScale(0.5, 0.1), Position = UDim2.fromScale(0.5, 0.0), TextColor3 = Color3.fromRGB(255, 236, 190), StrokeThickness = 1.5, Parent = incubatorBody })
 local slots = make("Frame", { Name = "Slots", Size = UDim2.fromScale(0.5, 0.16), Position = UDim2.fromScale(0.5, 0.13), BackgroundTransparency = 1, Parent = incubatorBody }, {
 	make("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0.02, 0), HorizontalAlignment = Enum.HorizontalAlignment.Center, SortOrder = Enum.SortOrder.LayoutOrder }),
 })
@@ -635,17 +636,21 @@ label({ Name = "Text", Text = "50% BUILT!", Size = UDim2.fromScale(0.94, 0.8), P
 
 local hatch = make("Frame", {
 	Name = "Hatch",
-	Size = UDim2.fromScale(0.3, 0.32),
-	Position = UDim2.fromScale(0.5, 0.62),
+	Size = UDim2.fromScale(0.2, 0.1),
+	Position = UDim2.fromScale(0.5, 0.86),
 	AnchorPoint = Vector2.new(0.5, 0.5),
 	BackgroundTransparency = 1,
 	Visible = false,
 	Parent = gui,
-}, { aspect(1.2) })
-local hatchButton = button({ Name = "Button", Icon = "🥚", Text = "HATCH!", Color = Color3.fromRGB(255, 200, 60), Size = UDim2.fromScale(0.7, 0.75), Position = UDim2.fromScale(0.5, 0.4), AnchorPoint = Vector2.new(0.5, 0.5), Radius = 0.3, Parent = hatch })
+}, { aspect(3.4) })
+local hatchButton = button({ Name = "Button", Text = "GO INSIDE", Color = Color3.fromRGB(120, 210, 90), Size = UDim2.fromScale(1, 0.66), Position = UDim2.fromScale(0.5, 0.66), AnchorPoint = Vector2.new(0.5, 0.5), Radius = 0.5, Parent = hatch })
 hatchButton.ZIndex = 2
+hatchButton.Label.Size = UDim2.fromScale(0.66, 0.6)
+hatchButton.Label.Position = UDim2.fromScale(0.6, 0.5)
+local hatchIcon = iconElement({ Name = "Icon", Text = "🚪", Size = UDim2.fromScale(0.7, 0.7), Position = UDim2.fromScale(0.15, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), Parent = hatchButton })
+aspect(1).Parent = hatchIcon
 addHint(hatchButton)
-label({ Name = "Timer", Text = "", Size = UDim2.fromScale(1, 0.18), Position = UDim2.fromScale(0, 0.82), Parent = hatch })
+label({ Name = "Timer", Text = "", Size = UDim2.fromScale(1, 0.3), Position = UDim2.fromScale(0, 0), TextColor3 = Color3.fromRGB(255, 240, 200), StrokeThickness = 2, Parent = hatch })
 
 local cutscene = make("Frame", { Name = "Cutscene", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Visible = false, Parent = gui })
 make("Frame", { Name = "Top", Size = UDim2.fromScale(1, 0.12), Position = UDim2.fromScale(0, -0.12), BackgroundColor3 = Color3.new(0, 0, 0), BorderSizePixel = 0, Parent = cutscene })

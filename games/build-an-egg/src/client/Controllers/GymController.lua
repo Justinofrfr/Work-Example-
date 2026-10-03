@@ -45,7 +45,7 @@ function GymController:Start()
 		end
 	end
 	UserInputService.JumpRequest:Connect(function()
-		if self.Training then
+		if self.Training and self.Training ~= "Both" then
 			remotes[Names.Remotes.GymStop]:FireServer()
 		end
 	end)

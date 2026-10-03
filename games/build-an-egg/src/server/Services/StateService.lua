@@ -129,7 +129,8 @@ function StateService:ApplyWalkSpeed(player)
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	local runtime = self.Runtime[player]
 	if data and humanoid then
-		humanoid.WalkSpeed = runtime and runtime.Training and 0 or Formulas.WalkSpeed(data.Speed)
+		local frozen = runtime and runtime.Training and runtime.Training.Stat ~= "Both"
+		humanoid.WalkSpeed = frozen and 0 or Formulas.WalkSpeed(data.Speed)
 	end
 end
 

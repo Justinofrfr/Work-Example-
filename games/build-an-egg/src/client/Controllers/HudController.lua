@@ -119,7 +119,7 @@ function HudController:RenderState(state, previous)
 	stats.Rank.TextColor3 = rank.Color
 	progress.Contribution.Text = ("You: %s"):format(Ui.Comma(state.RoundPieces or 0))
 	hud.FriendBoost.Text.Text = ("Friend Boost: +%d%%"):format(math.floor((state.FriendBoost or 0) * 100 + 0.5))
-	gui.TrainHint.Visible = state.Training ~= nil
+	gui.TrainHint.Visible = state.Training ~= nil and state.Training ~= "Both"
 	for _, key in ProductsConfig.QuickBoosts do
 		local quickButton = hud.Right:FindFirstChild(key)
 		local badge = quickButton and quickButton:FindFirstChild("Badge")

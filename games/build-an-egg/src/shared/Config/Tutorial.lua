@@ -1,7 +1,7 @@
 return {
 	Steps = {
 		{ Key = "Quarry", Text = "Follow the green arrows to the SHELL QUARRY", Target = "World", World = "Quarry" },
-		{ Key = "Pickup", Text = "Walk up to a shell and hold its prompt to pick it up", Target = "World", World = "Shell" },
+		{ Key = "Pickup", Text = "Walk up to a shell and hold its prompt to pick it up", Target = "World", World = "Shell", MarkerHeight = 3.5 },
 		{ Key = "Carry", Text = "Carry it to the green PLACE zone on the egg", Target = "World", World = "PlaceZone" },
 		{ Key = "Place", Text = "Stand in the green zone and hold the Place prompt", Target = "World", World = "PlaceZone" },
 		{ Key = "OpenUpgrades", Text = "Talk to the UPGRADES NPC", Target = "World", World = "UpgradesNPC" },

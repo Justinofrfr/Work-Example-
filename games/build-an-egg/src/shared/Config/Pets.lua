@@ -66,7 +66,7 @@ return {
 	Messages = {
 		Fragments = "+%d egg fragments!",
 		PetsFull = "Pet inventory is full!",
-		NeedFive = "Pick 5 items of the same tier",
+		NeedFive = "Pick 5 items first",
 		Hatched = "You got a %s %s!",
 	},
 }

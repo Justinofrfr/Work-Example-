@@ -176,7 +176,8 @@ function IncubatorController:Render()
 		row.Title.TextColor3 = tier.Color
 		row.Sub.Text = def.Stat == "Both" and "Speed & Strength pets" or (def.Stat .. " pets")
 		row.Count.Text = entry.Pet and "" or ("x" .. entry.Count)
-		local allowed = entry.Count > 0 and #self.Selection < PetsConfig.Inputs and (not selectedTier or selectedTier == entry.Tier)
+		local sameTierOnly = self.Mode == "Pets"
+		local allowed = entry.Count > 0 and #self.Selection < PetsConfig.Inputs and (not sameTierOnly or not selectedTier or selectedTier == entry.Tier)
 		Ui.SetColor(row.Add, allowed and UIConfig.Colors.Good or UIConfig.Colors.Locked)
 		Ui.Feel(row.Add, function()
 			if allowed then
@@ -209,11 +210,15 @@ end
 
 function IncubatorController:RenderOdds(selectedTier)
 	if #self.Selection == 0 then
-		body.Odds.Text = self.Mode == "Fragments" and "Add 5 fragments of the same tier.\nEach one adds its collection to the odds!" or "Add 5 pets of the same rarity to trade up\nfor one pet of the next rarity!"
+		body.Odds.Text = self.Mode == "Fragments" and "Add any 5 fragments.\nEach one adds its pet to the odds!" or "Add 5 pets of the same rarity to trade up\nfor one pet of the next rarity!"
 		Ui.SetColor(body.Hatch, UIConfig.Colors.Locked)
 		return
 	end
-	local resultTier = self.Mode == "Fragments" and selectedTier or selectedTier + 1
+	if self.Mode == "Fragments" then
+		self:RenderFragmentOdds()
+		return
+	end
+	local resultTier = selectedTier + 1
 	local tier = PetsConfig.Rarities[resultTier]
 	local collections = {}
 	for _, value in self.Selection do
@@ -238,6 +243,29 @@ function IncubatorController:RenderOdds(selectedTier)
 	for _, collection in keys do
 		local def = PetsConfig.Collections[collection]
 		table.insert(lines, ('<font color="%s">%s</font> %d%% · %s'):format(hex(def.Color), PetRules.DisplayName(collection, resultTier), math.floor(odds[collection] * 100 + 0.5), PetRules.BoostText(collection, resultTier)))
+	end
+	table.insert(lines, ("%d/%d picked"):format(#self.Selection, PetsConfig.Inputs))
+	body.Odds.Text = table.concat(lines, "\n")
+	Ui.SetColor(body.Hatch, #self.Selection == PetsConfig.Inputs and Color3.fromRGB(190, 110, 255) or UIConfig.Colors.Locked)
+end
+
+function IncubatorController:RenderFragmentOdds()
+	local share = {}
+	local order = {}
+	for _, value in self.Selection do
+		if not share[value] then
+			table.insert(order, value)
+		end
+		share[value] = (share[value] or 0) + 1 / PetsConfig.Inputs
+	end
+	table.sort(order, function(a, b)
+		return share[a] > share[b]
+	end)
+	local lines = { "Possible pets:" }
+	for _, value in order do
+		local collection, tierIndex = PetRules.ParseFragment(value)
+		local tier = PetsConfig.Rarities[tierIndex]
+		table.insert(lines, ('<font color="%s">%s %s</font> %d%% · %s'):format(hex(tier.Color), tier.Key, PetRules.DisplayName(collection, tierIndex), math.floor(share[value] * 100 + 0.5), PetRules.BoostText(collection, tierIndex)))
 	end
 	table.insert(lines, ("%d/%d picked"):format(#self.Selection, PetsConfig.Inputs))
 	body.Odds.Text = table.concat(lines, "\n")

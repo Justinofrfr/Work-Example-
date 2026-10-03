@@ -266,7 +266,7 @@ function TutorialController:SetSpot(target)
 	frame.Finger.Position = UDim2.fromScale((x0 + x1) / 2, (below and y1 or y0) + (below and bob or -bob))
 end
 
-function TutorialController:SetGuide(position)
+function TutorialController:SetGuide(position, markerHeight)
 	local character = player.Character
 	local root = character and character:FindFirstChild("HumanoidRootPart")
 	if not position or not root or not guideTarget then
@@ -280,7 +280,8 @@ function TutorialController:SetGuide(position)
 	end
 	guideTarget.CFrame = CFrame.new(position)
 	guideTarget.Marker.Enabled = true
-	guideTarget.Marker.StudsOffsetWorldSpace = Vector3.new(0, TutorialConfig.MarkerHeight + math.sin(os.clock() * 4) * 1.5, 0)
+	local height = markerHeight or TutorialConfig.MarkerHeight
+	guideTarget.Marker.StudsOffsetWorldSpace = Vector3.new(0, height + math.sin(os.clock() * 4) * math.min(1.5, height * 0.2), 0)
 	if not playerAttachment or playerAttachment.Parent ~= root then
 		if playerAttachment then
 			playerAttachment:Destroy()
@@ -313,7 +314,7 @@ function TutorialController:Update()
 		self:SetGuide(nil)
 	else
 		self:SetSpot(nil)
-		self:SetGuide(def.World and self:WorldTarget(def.World) or nil)
+		self:SetGuide(def.World and self:WorldTarget(def.World) or nil, def.MarkerHeight)
 	end
 	if self:IsDone(def) then
 		self:Complete()

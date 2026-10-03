@@ -42,11 +42,13 @@ local anchors = {}
 local arrows = {}
 local board
 local placeZone
+local PanelController
 local camera = Workspace.CurrentCamera
 
 function EggController:Init(modules, context)
 	ClientState = modules.ClientState
 	EffectController = modules.EffectController
+	PanelController = modules.PanelController
 	NotifyController = modules.NotifyController
 	remotes = context.Remotes
 	player = context.Player
@@ -217,8 +219,18 @@ function EggController:RevealRamp(fromRing, toRing)
 			local target = piece.CFrame
 			piece.CFrame = target - Vector3.new(0, 4, 0)
 			piece.LocalTransparencyModifier = 1
+			for _, decal in piece:GetChildren() do
+				if decal:IsA("Decal") then
+					decal.LocalTransparencyModifier = 1
+				end
+			end
 			task.delay((index - fromRing - 1) * revealTime * 0.5, function()
 				piece.LocalTransparencyModifier = 0
+				for _, decal in piece:GetChildren() do
+					if decal:IsA("Decal") then
+						decal.LocalTransparencyModifier = 0
+					end
+				end
 				Ui.Tween(piece, revealTime, { CFrame = target }, Enum.EasingStyle.Back)
 				if piece.Name == "Step" then
 					EffectController:Vfx("RampReveal", target.Position)
@@ -290,7 +302,8 @@ function EggController:RenderHatch()
 	end
 	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 	local inside = root ~= nil and root.Position.Y < MapConfig.Interior.Center.Y + MapConfig.Interior.Height + 20
-	local show = server.Phase == "Interior" and self:IsContributor() and not self.InCutscene and not (state.Claimed and inside)
+	local panelOpen = PanelController and PanelController.Current ~= nil and PanelController.Current.Visible
+	local show = server.Phase == "Interior" and self:IsContributor() and not self.InCutscene and not (state.Claimed and inside) and not panelOpen
 	if show and not hatch.Visible then
 		hatch.Visible = true
 		Ui.Pop(hatch.Button, 1.15)
@@ -513,6 +526,11 @@ function EggController:HideRampTop(hidden)
 		local ring = piece:GetAttribute(A.Ring)
 		if ring and piece:IsA("BasePart") then
 			piece.LocalTransparencyModifier = hidden and 1 or 0
+			for _, decal in piece:GetChildren() do
+				if decal:IsA("Decal") then
+					decal.LocalTransparencyModifier = hidden and 1 or 0
+				end
+			end
 		end
 	end
 end

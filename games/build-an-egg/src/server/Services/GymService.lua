@@ -50,7 +50,9 @@ function GymService:Start()
 		end
 	end
 	remotes[Names.Remotes.GymStop].OnServerEvent:Connect(function(player)
-		if stopLimiter:Check(player) then
+		local runtime = StateService:Get(player)
+		local swimming = runtime and runtime.Training and runtime.Training.Stat == "Both"
+		if stopLimiter:Check(player) and not swimming then
 			self:Stop(player, true)
 		end
 	end)

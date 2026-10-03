@@ -134,5 +134,6 @@ return {
 	TrailFirstTripOnly = true,
 	MusicCrossfade = 2,
 	SoundGroupGap = 0.15,
+	SoundRepeatGap = 0.06,
 	Playlist = { "Music", "Music2", "Music3", "Music4", "Music5", "Music6" },
 }

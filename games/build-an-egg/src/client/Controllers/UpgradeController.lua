@@ -25,9 +25,9 @@ local busy = false
 
 local function effectText(key, level)
 	if key == "BulkPickup" then
-		return ("%d → %d per grab"):format(Formulas.PickupAmount(level), Formulas.PickupAmount(level + 1))
+		return ("Grab %d → %d shells at once"):format(Formulas.PickupAmount(level), Formulas.PickupAmount(level + 1))
 	elseif key == "BulkPlace" then
-		return ("%d → %d per place"):format(Formulas.PlaceAmount(level), Formulas.PlaceAmount(level + 1))
+		return ("Place %d → %d shells at once"):format(Formulas.PlaceAmount(level), Formulas.PlaceAmount(level + 1))
 	end
 	local now = math.floor(Formulas.UpgradeValue(key, level) * 100 + 0.5)
 	local nextValue = math.floor(Formulas.UpgradeValue(key, level + 1) * 100 + 0.5)
