@@ -150,7 +150,7 @@ return {
 		},
 		Arch = { Position = Vector3.new(70, 0, -300), Face = Vector3.new(0, 0, -300), Title = "GYM DISTRICT" },
 		Cliffs = { Count = 58, Radius = 612, Jitter = 14, Scale = { 0.9, 1.35 } },
-		Hills = { Count = 22, Radius = { 500, 560 }, Scale = { 0.7, 1.3 } },
+		Hills = { Count = 40, Radius = { 520, 590 }, Scale = { 0.5, 0.9 } },
 		Trees = { Count = 300, Pines = 0.3, Scale = { 0.75, 1.3 }, Cluster = 0.012 },
 		Rocks = { Count = 110, Scale = { 0.6, 1.5 } },
 		Bushes = { Count = 170, Scale = { 0.7, 1.3 } },

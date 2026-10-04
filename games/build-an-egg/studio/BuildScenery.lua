@@ -197,7 +197,7 @@ end
 
 local function blocked(p, margin)
 	local flatP = flat(p)
-	if flatP.Magnitude > SC.Radius then
+	if flatP.Magnitude > SC.Radius + margin then
 		return true
 	end
 	for _, zone in SC.Exclusions do
@@ -269,8 +269,11 @@ for index = 1, SC.Hills.Count do
 	local angle = index / SC.Hills.Count * math.pi * 2 + random:NextNumber(-0.1, 0.1)
 	local radius = random:NextNumber(SC.Hills.Radius[1], SC.Hills.Radius[2])
 	local position = Vector3.new(math.cos(angle) * radius, -3, math.sin(angle) * radius)
-	if not blocked(position, 20) then
-		place(pick(hills), CFrame.new(position) * yaw(), random:NextNumber(SC.Hills.Scale[1], SC.Hills.Scale[2]), folder("Hills"))
+	local choice = pick(hills)
+	local scale = random:NextNumber(SC.Hills.Scale[1], SC.Hills.Scale[2])
+	local _, size = templates[choice]:GetBoundingBox()
+	if not blocked(position, size.X / 2 * scale) then
+		place(choice, CFrame.new(position) * yaw(), scale, folder("Hills"))
 	end
 end
 
