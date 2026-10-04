@@ -215,9 +215,9 @@ return {
 			{ Center = Vector3.new(-395, 0, 45), Radius = 20, Face = Vector3.new(-430, 0, 330) },
 		},
 		Plazas = {
-			{ Name = "SpawnPlaza", Min = Vector3.new(-62, 0, -368), Max = Vector3.new(62, 0, -255), Color = Color3.fromRGB(214, 196, 160) },
-			{ Name = "GymAvenue", Min = Vector3.new(62, 0, -314), Max = Vector3.new(378, 0, -286), Color = Color3.fromRGB(196, 186, 172) },
-			{ Name = "Gallery", Min = Vector3.new(-200, 0, -358), Max = Vector3.new(-82, 0, -242), Color = Color3.fromRGB(214, 196, 160) },
+			{ Name = "SpawnPlaza", Min = Vector3.new(-62, 0, -368), Max = Vector3.new(62, 0, -255), Color = Color3.fromRGB(190, 162, 120) },
+			{ Name = "GymAvenue", Min = Vector3.new(62, 0, -314), Max = Vector3.new(378, 0, -286), Color = Color3.fromRGB(168, 156, 146) },
+			{ Name = "Gallery", Min = Vector3.new(-200, 0, -358), Max = Vector3.new(-82, 0, -242), Color = Color3.fromRGB(190, 162, 120) },
 		},
 		Exclusions = {
 			{ Center = Vector3.new(0, 0, 0), Radius = 145 },
@@ -257,7 +257,7 @@ return {
 			FlowLift = 0.07,
 			FlowTextureLength = 26,
 		},
-		WindSpots = { Count = 70, Radius = { 60, 470 }, Height = { 4, 16 }, Scale = { 0.9, 1.6 } },
+		WindSpots = { Count = 120, Radius = { 60, 470 }, Height = { 4, 18 }, Scale = { 1.5, 2.6 } },
 		Falls = {
 			Lip = Vector3.new(-470, 70, 360),
 			Ledge = Vector3.new(-466, 36, 357),

@@ -187,6 +187,7 @@ function AmbientController:StepWind(dt, t, cameraPosition)
 			local streak = template:Clone()
 			local roll = CFrame.Angles(0, 0, random:NextNumber(-0.6, 0.6))
 			if streak:IsA("Model") then
+				streak:ScaleTo(random:NextNumber(WIND.GustScale[1], WIND.GustScale[2]))
 				streak:PivotTo(CFrame.lookAt(origin, origin + windDirection) * roll)
 			else
 				streak.CFrame = CFrame.new(origin)

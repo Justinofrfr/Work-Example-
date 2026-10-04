@@ -219,7 +219,7 @@ for prefix, group in groups do
 				elseif prefix:find("^World_Falls") then
 					part.Parent = folder("Waterfall")
 				else
-					part.CanQuery = true
+					part.CanQuery = false
 					part.CastShadow = entry.Role ~= "Surface"
 					part.Parent = folder("Water")
 				end
