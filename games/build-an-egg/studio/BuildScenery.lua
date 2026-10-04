@@ -414,7 +414,7 @@ for _, path in SC.Paths do
 			local thickness, center = slab(SC.PathTops[level], level)
 			studded({
 				Name = "Path",
-				Size = Vector3.new(path.Width + 1, thickness, length + path.Width * 0.5),
+				Size = Vector3.new(path.Width + 0.8 + level * 0.2, thickness, length + path.Width * 0.5),
 				CFrame = CFrame.lookAt(mid, b) + Vector3.new(0, center, 0),
 				Color = SC.PathColor,
 				Parent = pathFolder,
