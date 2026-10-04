@@ -93,11 +93,12 @@ return {
 		InteriorWall = Color3.fromRGB(250, 244, 228),
 	},
 	Scenery = {
-		Sources = { "MapKit", "MapKit2", "MapKit3", "MapKit4", "MapKit5", "MapKit6", "MapKit7", "MapKit8" },
+		Sources = { "MapKit", "MapKit2", "MapKit3", "MapKit4", "MapKit5", "MapKit6", "MapKit7", "MapKit8", "MapKit10" },
 		OrganicTrails = true,
 		TrailLift = { World_TrailSpawn = 0, World_TrailGallery = 0.03, World_TrailAvenue = 0.06, World_Trail = 0.09 },
 		LampOffset = 5,
-		KitFolders = { World_Quarry = "QuarryKit", World_Incubator = "Incubator", World_Shop = "Shop", World_Nest = "Nest", World_Goose = "Goose" },
+		KitFolders = { World_Quarry = "QuarryKit", World_Incubator = "Incubator", World_Shop = "Shop", World_Nest = "Nest", World_Goose = "Goose", World_Splash = "Waterfall", World_Ripple = "Waterfall" },
+		KitTags = { World_Ripple = "Ripple" },
 		KitRoles = {
 			World_Nest = {
 				Mound = { Colors = { Color3.fromRGB(110, 76, 46) } },
@@ -172,7 +173,18 @@ return {
 				Pedestal = { Colors = { Color3.fromRGB(250, 244, 226) } },
 				Coin = { Colors = { Color3.fromRGB(255, 205, 50) }, Reflectance = 0.12 },
 				GoldEgg = { Colors = { Color3.fromRGB(255, 214, 80) }, Reflectance = 0.12 },
+				BeakKnob = { Colors = { Color3.fromRGB(255, 110, 24) } },
+				Blush = { Colors = { Color3.fromRGB(255, 130, 140) } },
+				Leg = { Colors = { Color3.fromRGB(255, 135, 30) } },
+				Crown = { Colors = { Color3.fromRGB(255, 214, 60) }, Reflectance = 0.15 },
+				GoldTrim = { Colors = { Color3.fromRGB(255, 200, 50) }, Reflectance = 0.12 },
+				Tassel = { Colors = { Color3.fromRGB(255, 210, 80) } },
 			},
+			World_Splash = {
+				Foam = { Colors = { Color3.fromRGB(240, 250, 255) } },
+				Churn = { Colors = { Color3.fromRGB(255, 255, 255) } },
+			},
+			World_Ripple = { Ring = { Colors = { Color3.fromRGB(225, 245, 255) }, Transparency = 0.3 } },
 			World_Trail = { Dirt = { Colors = { Color3.fromRGB(150, 104, 66) } } },
 			World_TrailSpawn = { Sand = { Colors = { Color3.fromRGB(190, 162, 120) } } },
 			World_TrailGallery = { Sand = { Colors = { Color3.fromRGB(190, 162, 120) } } },

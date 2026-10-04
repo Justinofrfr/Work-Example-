@@ -227,6 +227,17 @@ for prefix, group in groups do
 					make("SurfaceAppearance", { ColorMap = SC.Hills.Studs, AlphaMode = Enum.AlphaMode.Overlay, Parent = part })
 					part.Parent = folder("Paths")
 				elseif SC.KitFolders[baseName(prefix)] then
+					local family = (prefix:gsub("%d+$", ""))
+					if SC.KitTags[family] then
+						part.CastShadow = false
+						part.CanQuery = false
+						part:SetAttribute("Phase", tonumber(prefix:match("%d+$")) or 0)
+						CollectionService:AddTag(part, SC.KitTags[family])
+					end
+					if family == "World_Splash" then
+						part.CastShadow = false
+						part.CanQuery = false
+					end
 					part.Parent = folder(SC.KitFolders[baseName(prefix)])
 				elseif prefix:find("^World_Falls") then
 					part.Parent = folder("Waterfall")

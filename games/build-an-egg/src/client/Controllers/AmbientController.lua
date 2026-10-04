@@ -132,6 +132,16 @@ function AmbientController:Start()
 		addSway(model)
 	end
 	CollectionService:GetInstanceAddedSignal("Sway"):Connect(addSway)
+	self.Ripples = {}
+	local function addRipple(part)
+		if part:IsA("BasePart") then
+			self.Ripples[part] = { Size = part.Size, Phase = part:GetAttribute("Phase") or 0 }
+		end
+	end
+	for _, part in CollectionService:GetTagged("Ripple") do
+		addRipple(part)
+	end
+	CollectionService:GetInstanceAddedSignal("Ripple"):Connect(addRipple)
 	templates = ReplicatedStorage:WaitForChild(Names.Templates.Folder)
 	local leafTemplate = templates:FindFirstChild("WindLeaves")
 	if leafTemplate then
@@ -224,6 +234,16 @@ end
 function AmbientController:Step(dt)
 	local t = os.clock()
 	local cameraPosition = camera.CFrame.Position
+	for part, state in self.Ripples or {} do
+		if not part.Parent then
+			self.Ripples[part] = nil
+		elseif (part.Position - cameraPosition).Magnitude < WIND.RippleRadius then
+			local p = (t / WIND.RipplePeriod + state.Phase / 3) % 1
+			local grow = 0.55 + 0.75 * p
+			part.Size = Vector3.new(state.Size.X * grow, state.Size.Y, state.Size.Z * grow)
+			part.Transparency = 0.2 + 0.8 * p
+		end
+	end
 	self:StepWind(dt, t, cameraPosition)
 	local display = PropsConfig.Displays
 	for model, state in self.Wobblers do
