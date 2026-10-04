@@ -93,7 +93,7 @@ return {
 		InteriorWall = Color3.fromRGB(250, 244, 228),
 	},
 	Scenery = {
-		Sources = { "MapKit", "MapKit2", "MapKit3", "MapKit4", "MapKit5" },
+		Sources = { "MapKit", "MapKit2", "MapKit3", "MapKit4", "MapKit5", "MapKit6", "MapKit7" },
 		OrganicTrails = true,
 		LampOffset = 5,
 		KitFolders = { World_Quarry = "QuarryKit", World_Incubator = "Incubator", World_Shop = "Shop", World_Nest = "Nest" },
