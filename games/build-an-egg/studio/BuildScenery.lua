@@ -673,7 +673,9 @@ end
 
 local settleParams = RaycastParams.new()
 settleParams.FilterType = Enum.RaycastFilterType.Include
-settleParams.FilterDescendantsInstances = { hillParts, world:FindFirstChild("Ground") }
+local settleTargets = table.clone(hillParts)
+table.insert(settleTargets, world:FindFirstChild("Ground"))
+settleParams.FilterDescendantsInstances = settleTargets
 local function settle(model, sink)
 	local pivot = model:GetPivot()
 	local _, size = model:GetBoundingBox()
@@ -709,7 +711,7 @@ for _, gym in gymsFolder and gymsFolder:GetChildren() or {} do
 	local platform = gym:FindFirstChild("Platform")
 	if platform then
 		local top = platform.CFrame * CFrame.new(0, platform.Size.Y / 2, 0)
-		local kit = fitTo("GymPlatform", top * CFrame.new(0, -SC.GymFloorLift + 3.2 - 1, 0), Vector3.new(platform.Size.X / 44, 1, platform.Size.Z / 34), gym)
+		local kit = fitTo("GymPlatform", top * CFrame.new(0, 0.06 - SC.GymFloorLift + 2.2, 0), Vector3.new(platform.Size.X / 44, 1, platform.Size.Z / 34), gym)
 		if kit then
 			kit.Name = "KitPlatform"
 			for _, part in kit:GetChildren() do
