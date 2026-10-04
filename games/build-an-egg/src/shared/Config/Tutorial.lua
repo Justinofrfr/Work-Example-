@@ -1,9 +1,9 @@
 return {
 	Steps = {
 		{ Key = "Quarry", Text = "Follow the green arrows to the SHELL QUARRY", Target = "World", World = "Quarry" },
-		{ Key = "Pickup", Text = "Walk up to a shell and hold its prompt to pick it up", Target = "World", World = "Shell", MarkerHeight = 3.5 },
+		{ Key = "Pickup", Text = "Walk up to the shells", Target = "World", World = "Shell", MarkerHeight = 3.5, ActionMode = "Pickup", ActionText = "Hold E to PICK UP the shells!", MobileActionText = "Hold the PICK UP button to grab shells!" },
 		{ Key = "Carry", Text = "Carry it to the green PLACE zone on the egg", Target = "World", World = "PlaceZone" },
-		{ Key = "Place", Text = "Stand in the green zone and hold the Place prompt", Target = "World", World = "PlaceZone" },
+		{ Key = "Place", Text = "Stand in the green zone on the egg", Target = "World", World = "PlaceZone", ActionMode = "Place", ActionText = "Hold E to PLACE your shells!", MobileActionText = "Hold the PLACE button to build the egg!" },
 		{ Key = "OpenUpgrades", Text = "Talk to the UPGRADES NPC", Target = "World", World = "UpgradesNPC" },
 		{ Key = "BuyUpgrade", Text = "Buy Bulk Pickup - your first upgrade is FREE!", Target = "Gui", Gui = "UpgradeBuy", World = "UpgradesNPC", NeedsPanel = "Upgrades" },
 		{ Key = "Gym", Text = "Step on a treadmill to train your Speed", Target = "World", World = "Gym" },

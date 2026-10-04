@@ -432,11 +432,13 @@ function TutorialController:Update()
 		self:ShowInterlude(server)
 		return
 	end
-	if not frame.Visible or self.InInterlude then
+	local action = def.ActionMode and InteractController.Mode == def.ActionMode and self:GuiTarget("Action") or nil
+	local text = action and ((UserInputService.TouchEnabled and def.MobileActionText) or def.ActionText) or (UserInputService.TouchEnabled and def.MobileText) or def.Text
+	if not frame.Visible or self.InInterlude or frame.Card.Text.Text ~= text then
 		self.InInterlude = false
 		frame.Visible = true
 		frame.Card.Step.Text = ("STEP %d/%d"):format(self:StageCounts(def))
-		frame.Card.Text.Text = (UserInputService.TouchEnabled and def.MobileText) or def.Text
+		frame.Card.Text.Text = text
 	end
 	local panelOpen = not def.NeedsPanel or (PanelController.Current ~= nil and PanelController.Current.Name == def.NeedsPanel and PanelController.Current.Visible)
 	local opener
@@ -450,6 +452,9 @@ function TutorialController:Update()
 		self:SetGuide(nil)
 	elseif opener then
 		self:SetSpot(opener)
+		self:SetGuide(nil)
+	elseif action then
+		self:SetSpot(action)
 		self:SetGuide(nil)
 	else
 		self:SetSpot(nil)

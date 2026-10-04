@@ -8,6 +8,8 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Names = require(Shared.Config.Names)
 local MapConfig = require(Shared.Config.Map)
 local EffectsConfig = require(Shared.Config.Effects)
+local PropsConfig = require(Shared.Config.Props)
+local Trails = require(Shared.Config.Trails)
 
 local SC = MapConfig.Scenery
 local W = Names.World
@@ -49,7 +51,8 @@ local function baseName(prefix)
 end
 
 local function roleDef(prefix, role)
-	return SC.Roles[baseName(prefix) .. role] or SC.Roles[role] or SC.Roles.Grass
+	local kit = SC.KitRoles[baseName(prefix)]
+	return kit and kit[role] or SC.Roles[baseName(prefix) .. role] or SC.Roles[role] or SC.Roles.Grass
 end
 
 local function solidFor(prefix, role)
@@ -216,6 +219,14 @@ for prefix, group in groups do
 				elseif prefix:find("^World_Path") then
 					part.CastShadow = false
 					part.Parent = folder("PathStones")
+				elseif prefix:find("^World_Trail") then
+					part.CastShadow = false
+					part.CanCollide = false
+					part.CanQuery = false
+					make("SurfaceAppearance", { ColorMap = SC.Hills.Studs, AlphaMode = Enum.AlphaMode.Overlay, Parent = part })
+					part.Parent = folder("Paths")
+				elseif SC.KitFolders[baseName(prefix)] then
+					part.Parent = folder(SC.KitFolders[baseName(prefix)])
 				elseif prefix:find("^World_Falls") then
 					part.Parent = folder("Waterfall")
 				else
@@ -313,6 +324,24 @@ local function nearWater(p, margin)
 	return false
 end
 
+local function trailDistance(p)
+	local best = math.huge
+	for _, trail in Trails do
+		for i = 1, #trail - 1 do
+			local a, b = trail[i], trail[i + 1]
+			local ax, az, bx, bz = a[1], a[2], b[1], b[2]
+			local dx, dz = bx - ax, bz - az
+			local length = dx * dx + dz * dz
+			local t = length > 0 and math.clamp(((p.X - ax) * dx + (p.Z - az) * dz) / length, 0, 1) or 0
+			local distance = math.sqrt((ax + dx * t - p.X) ^ 2 + (az + dz * t - p.Z) ^ 2) - (a[3] + (b[3] - a[3]) * t)
+			if distance < best then
+				best = distance
+			end
+		end
+	end
+	return best
+end
+
 local function blocked(p, margin)
 	local flatP = flat(p)
 	for _, zone in SC.Exclusions do
@@ -324,9 +353,15 @@ local function blocked(p, margin)
 			return true
 		end
 	end
-	for _, path in SC.Paths do
-		if polylineDistance(p, path.Points) < path.Width / 2 + margin then
+	if SC.OrganicTrails then
+		if trailDistance(p) < margin + 1 then
 			return true
+		end
+	else
+		for _, path in SC.Paths do
+			if polylineDistance(p, path.Points) < path.Width / 2 + margin then
+				return true
+			end
 		end
 	end
 	if nearWater(p, margin) then
@@ -334,6 +369,11 @@ local function blocked(p, margin)
 	end
 	for _, lookout in SC.Lookouts do
 		if (flatP - flat(lookout.Center)).Magnitude < lookout.Radius + margin then
+			return true
+		end
+	end
+	for _, npc in PropsConfig.NPCs do
+		if (flatP - flat(npc.Position)).Magnitude < SC.NPCClearance + margin then
 			return true
 		end
 	end
@@ -402,7 +442,46 @@ local function slab(top, level)
 	local thickness = SC.SlabThickness[level]
 	return thickness, top - thickness / 2
 end
-for _, path in SC.Paths do
+local function inPlazaRect(spot, margin)
+	for _, plaza in SC.Plazas do
+		if spot.X > plaza.Min.X - margin and spot.X < plaza.Max.X + margin and spot.Z > plaza.Min.Z - margin and spot.Z < plaza.Max.Z + margin then
+			return true
+		end
+	end
+	return false
+end
+local function trailEdges(spacing, callback)
+	for _, trail in Trails do
+		local carried = 0
+		for i = 1, #trail - 1 do
+			local a, b = trail[i], trail[i + 1]
+			local pa, pb = Vector3.new(a[1], 0, a[2]), Vector3.new(b[1], 0, b[2])
+			local length = (pb - pa).Magnitude
+			if length > 0 then
+				local direction = (pb - pa) / length
+				local right = Vector3.new(-direction.Z, 0, direction.X)
+				local along = spacing - carried
+				while along <= length do
+					local t = along / length
+					callback(pa + direction * along, direction, right, a[3] + (b[3] - a[3]) * t)
+					along += spacing
+				end
+				carried = length - (along - spacing)
+			end
+		end
+	end
+end
+if SC.OrganicTrails then
+	local lampSide = 1
+	trailEdges(SC.LampSpacing, function(center, direction, right, halfWidth)
+		lampSide = -lampSide
+		local spot = center + right * lampSide * (halfWidth + SC.LampOffset)
+		if not inPlazaRect(spot, 4) and trailDistance(spot) > 2 and not nearWater(spot, 2) then
+			place("Lamp", CFrame.lookAt(spot, spot - right * lampSide), 1, folder("Lamps"))
+		end
+	end)
+end
+for _, path in SC.OrganicTrails and {} or SC.Paths do
 	if not path.Hidden then
 		for i = 1, #path.Points - 1 do
 			local a, b = path.Points[i], path.Points[i + 1]
@@ -431,7 +510,7 @@ for _, path in SC.Paths do
 	end
 end
 
-for _, plaza in SC.Plazas do
+for _, plaza in SC.OrganicTrails and {} or SC.Plazas do
 	local size = plaza.Max - plaza.Min
 	studded({
 		Name = plaza.Name,
@@ -455,13 +534,15 @@ for _, bridge in SC.Bridges do
 end
 
 for _, lookout in SC.Lookouts do
-	studded({
-		Name = "Lookout",
-		Size = Vector3.new(lookout.Radius * 1.6, SC.SlabThickness[#SC.SlabThickness], lookout.Radius * 1.6),
-		CFrame = CFrame.lookAt(lookout.Center, Vector3.new(lookout.Face.X, 0, lookout.Face.Z)) + Vector3.new(0, SC.PlazaTop - SC.SlabThickness[#SC.SlabThickness] / 2, 0),
-		Color = SC.PathColor,
-		Parent = pathFolder,
-	})
+	if not SC.OrganicTrails then
+		studded({
+			Name = "Lookout",
+			Size = Vector3.new(lookout.Radius * 1.6, SC.SlabThickness[#SC.SlabThickness], lookout.Radius * 1.6),
+			CFrame = CFrame.lookAt(lookout.Center, Vector3.new(lookout.Face.X, 0, lookout.Face.Z)) + Vector3.new(0, SC.PlazaTop - SC.SlabThickness[#SC.SlabThickness] / 2, 0),
+			Color = SC.PathColor,
+			Parent = pathFolder,
+		})
+	end
 	local toward = flat(lookout.Face - lookout.Center).Unit
 	local right = Vector3.new(-toward.Z, 0, toward.X)
 	for k = -1, 1 do
@@ -601,7 +682,17 @@ local function inPlaza(spot)
 	end
 	return false
 end
-for _, path in SC.Paths do
+if SC.OrganicTrails then
+	trailEdges(F.EdgeGrass.Spacing, function(center, direction, right, halfWidth)
+		for side = -1, 1, 2 do
+			local spot = center + direction * random:NextNumber(-1, 1) + right * side * (halfWidth + random:NextNumber(0.9, 2.6))
+			if not inPlaza(spot) and not inPlazaRect(spot, 1) and trailDistance(spot) > 0.6 and not nearWater(spot, -4) then
+				grassAt(spot, F.EdgeGrass.Scale)
+			end
+		end
+	end)
+end
+for _, path in SC.OrganicTrails and {} or SC.Paths do
 	if not path.Hidden then
 		for i = 1, #path.Points - 1 do
 			local a, b = path.Points[i], path.Points[i + 1]
@@ -788,6 +879,80 @@ for _, area in { world:FindFirstChild(W.Gyms), world:FindFirstChild(W.Quarry), w
 			post.CanCollide = false
 			local size = post.Size
 			fitTo("SignPost", post.CFrame * CFrame.new(0, -size.Y / 2, 0), Vector3.new(size.X, size.Y, size.Z), post.Parent)
+		end
+	end
+end
+
+local quarry = world:FindFirstChild(W.Quarry)
+if folders.QuarryKit and quarry then
+	for _, part in quarry:GetChildren() do
+		if part:IsA("BasePart") and (part.Name == "PitRock" or part.Name == "PitRamp") then
+			part.Transparency = 1
+		end
+	end
+end
+local site = world:FindFirstChild(W.Site)
+local nest = site and site:FindFirstChild("Nest")
+if folders.Nest and nest then
+	for _, child in nest:GetChildren() do
+		if child:IsA("Model") then
+			child:Destroy()
+		elseif child:IsA("BasePart") then
+			child.Transparency = 1
+		end
+	end
+end
+local npcFolder = world:FindFirstChild(W.NPCs)
+for _, station in SC.Stations do
+	local npc = npcFolder and npcFolder:FindFirstChild(station.NPC)
+	local root = npc and npc:FindFirstChild("HumanoidRootPart")
+	if root then
+		local ring = npc:FindFirstChild("Ring")
+		if ring and station.HideRing then
+			ring.Transparency = 1
+		end
+		local base = npc:GetPivot()
+		if station.Tilt then
+			local feet = base * CFrame.new(-station.Shift, -3, 0)
+			npc:PivotTo(feet * CFrame.Angles(0, 0, math.rad(station.Tilt)) * CFrame.new(0, 3, 0))
+			local function pose(partName, motorName, rotation)
+				local part = npc:FindFirstChild(partName)
+				local motor = part and part:FindFirstChild(motorName)
+				if motor then
+					motor.C0 = motor.C0 * rotation
+				end
+			end
+			pose("LeftUpperArm", "LeftShoulder", CFrame.Angles(math.rad(-38), 0, math.rad(-28)))
+			pose("LeftLowerArm", "LeftElbow", CFrame.Angles(math.rad(95), 0, 0))
+			pose("RightUpperArm", "RightShoulder", CFrame.Angles(math.rad(-34), 0, math.rad(30)))
+			pose("RightLowerArm", "RightElbow", CFrame.Angles(math.rad(95), 0, 0))
+			pose("RightUpperLeg", "RightHip", CFrame.Angles(0, 0, math.rad(-9)))
+			pose("LeftUpperLeg", "LeftHip", CFrame.Angles(0, 0, math.rad(4)))
+		end
+		if station.SignText then
+			local def
+			for _, entry in PropsConfig.NPCs do
+				if entry.Name == station.NPC then
+					def = entry
+				end
+			end
+			local forward = flat(def.FaceTarget - def.Position).Unit
+			local position = def.Position + forward * station.SignForward + Vector3.new(0, station.SignHeight, 0)
+			local board = make("Part", { Name = "StationSign", Anchored = true, CanCollide = false, CanQuery = false, CanTouch = false, Transparency = 1, Size = station.SignSize, CFrame = CFrame.lookAt(position, position + forward), Parent = folder("Shop") })
+			local gui = make("SurfaceGui", { Name = "Gui", Face = Enum.NormalId.Front, SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud, PixelsPerStud = 40, LightInfluence = 0.3, Parent = board })
+			local label = make("TextLabel", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Font = Enum.Font.FredokaOne, TextScaled = true, Text = station.SignText, TextColor3 = Color3.new(1, 1, 1), Parent = gui })
+			make("UIStroke", { Thickness = 3, Color = station.TextColor, Parent = label })
+		end
+	end
+end
+
+for _, area in { world:FindFirstChild(W.Gyms), world:FindFirstChild(W.Quarry), world:FindFirstChild(W.Spawn) } do
+	for _, gui in area and area:GetDescendants() or {} do
+		if gui:IsA("SurfaceGui") and gui.Face == Enum.NormalId.Front and not gui:FindFirstAncestor("Leaderboards") and not gui.Parent:FindFirstChild(gui.Name .. "Back") then
+			local back = gui:Clone()
+			back.Name = gui.Name .. "Back"
+			back.Face = Enum.NormalId.Back
+			back.Parent = gui.Parent
 		end
 	end
 end

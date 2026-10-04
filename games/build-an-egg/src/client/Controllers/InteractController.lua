@@ -171,6 +171,11 @@ function InteractController:UpdateMode()
 			end
 		end
 	end
+	for _, prompt in prompts do
+		if prompt.Name == W.PlacePrompt then
+			prompt.Enabled = mode == "Place"
+		end
+	end
 	if mode ~= self.Mode then
 		self.Mode = mode
 		Ui.SetText(button, mode == "Place" and "PLACE" or "PICK UP")
@@ -196,7 +201,6 @@ function InteractController:TunePrompts(state)
 		else
 			prompt.HoldDuration = goose and 0 or GameConfig.PlaceHoldTime
 			prompt.MaxActivationDistance = range
-			prompt.Enabled = state.Carry > 0
 		end
 	end
 end
