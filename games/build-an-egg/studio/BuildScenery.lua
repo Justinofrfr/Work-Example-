@@ -116,12 +116,36 @@ for prefix, group in groups do
 		for _, entry in group.Entries do
 			local part = entry.Part:Clone()
 			style(part, prefix, entry.Role)
+			part.Name = entry.Role
 			part.Parent = model
 		end
-		local box, size = model:GetBoundingBox()
-		model.WorldPivot = CFrame.new(box.Position.X, box.Position.Y - size.Y / 2, box.Position.Z)
+		local origin = SC.KitOrigins[prefix]
+		if origin then
+			model.WorldPivot = CFrame.new(-group.Offset + origin)
+		else
+			local box, size = model:GetBoundingBox()
+			model.WorldPivot = CFrame.new(box.Position.X, box.Position.Y - size.Y / 2, box.Position.Z)
+		end
 		templates[prefix] = model
 	end
+end
+
+local function fitTo(prefix, target, scale, parent)
+	local template = templates[prefix]
+	if not template then
+		return nil
+	end
+	local model = template:Clone()
+	local pivot = model:GetPivot()
+	for _, part in model:GetChildren() do
+		local rel = pivot:ToObjectSpace(part.CFrame)
+		part.Size = part.Size * scale
+		part.CFrame = target * CFrame.new(rel.Position * scale) * rel.Rotation
+		part.Color = pick(roleDef(prefix, part:GetAttribute("Role")).Colors)
+	end
+	model.WorldPivot = target
+	model.Parent = parent
+	return model
 end
 
 local function variants(base)
@@ -383,7 +407,7 @@ for _, path in SC.Paths do
 			studded({
 				Name = "Path",
 				Size = Vector3.new(path.Width + 1, 0.4, length + path.Width * 0.5),
-				CFrame = CFrame.lookAt(mid, b) + Vector3.new(0, SC.PathLift - 0.2 + (i % 2) * 0.02, 0),
+				CFrame = CFrame.lookAt(mid, b) + Vector3.new(0, SC.PathLift - 0.2 + (i % 2) * 0.06, 0),
 				Color = SC.PathColor,
 				Parent = pathFolder,
 			})
@@ -405,7 +429,7 @@ for _, plaza in SC.Plazas do
 	studded({
 		Name = plaza.Name,
 		Size = Vector3.new(size.X, 0.4, size.Z),
-		CFrame = CFrame.new((plaza.Min + plaza.Max) / 2 + Vector3.new(0, SC.PathLift - 0.19, 0)),
+		CFrame = CFrame.new((plaza.Min + plaza.Max) / 2 + Vector3.new(0, SC.PathLift - 0.08, 0)),
 		Color = plaza.Color,
 		Parent = pathFolder,
 	})
@@ -427,7 +451,7 @@ for _, lookout in SC.Lookouts do
 	studded({
 		Name = "Lookout",
 		Size = Vector3.new(lookout.Radius * 1.6, 0.4, lookout.Radius * 1.6),
-		CFrame = CFrame.lookAt(lookout.Center, Vector3.new(lookout.Face.X, 0, lookout.Face.Z)) + Vector3.new(0, SC.PathLift - 0.2, 0),
+		CFrame = CFrame.lookAt(lookout.Center, Vector3.new(lookout.Face.X, 0, lookout.Face.Z)) + Vector3.new(0, SC.PathLift - 0.12, 0),
 		Color = SC.PathColor,
 		Parent = pathFolder,
 	})
@@ -645,6 +669,108 @@ if sign then
 	local gui = make("SurfaceGui", { Name = "Gui", Face = Enum.NormalId.Front, SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud, PixelsPerStud = 24, LightInfluence = 0.2, Parent = sign })
 	local label = make("TextLabel", { Name = "Title", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Font = Enum.Font.FredokaOne, TextScaled = true, Text = SC.Arch.Title, TextColor3 = Color3.fromRGB(120, 72, 40), Parent = gui })
 	make("UIStroke", { Thickness = 2, Color = Color3.fromRGB(255, 240, 200), Parent = label })
+end
+
+local settleParams = RaycastParams.new()
+settleParams.FilterType = Enum.RaycastFilterType.Include
+settleParams.FilterDescendantsInstances = { hillParts, world:FindFirstChild("Ground") }
+local function settle(model, sink)
+	local pivot = model:GetPivot()
+	local _, size = model:GetBoundingBox()
+	local reach = math.min(size.X, size.Z) * (model:GetAttribute("SwayLeaves") and 0.12 or 0.4)
+	local lowest = math.huge
+	for _, offset in { Vector3.zero, Vector3.new(reach, 0, 0), Vector3.new(-reach, 0, 0), Vector3.new(0, 0, reach), Vector3.new(0, 0, -reach) } do
+		local hit = Workspace:Raycast(pivot.Position + offset + Vector3.new(0, 80, 0), Vector3.new(0, -200, 0), settleParams)
+		if hit then
+			lowest = math.min(lowest, hit.Position.Y)
+		end
+	end
+	if lowest < math.huge then
+		local delta = lowest - sink - pivot.Position.Y
+		model:PivotTo(pivot + Vector3.new(0, delta, 0))
+	end
+end
+for folderName, sink in SC.Settle do
+	for _, model in folders[folderName] and folders[folderName]:GetChildren() or {} do
+		if model:IsA("Model") then
+			settle(model, sink)
+		end
+	end
+end
+
+local gymsFolder = world:FindFirstChild(W.Gyms)
+for _, gym in gymsFolder and gymsFolder:GetChildren() or {} do
+	local tierColor = MapConfig.TierColors[gym.Name] or Color3.new(1, 1, 1)
+	for _, child in gym:GetChildren() do
+		if child.Name == "Border" or child.Name == "KitPlatform" then
+			child:Destroy()
+		end
+	end
+	local platform = gym:FindFirstChild("Platform")
+	if platform then
+		local top = platform.CFrame * CFrame.new(0, platform.Size.Y / 2, 0)
+		local kit = fitTo("GymPlatform", top * CFrame.new(0, -SC.GymFloorLift + 3.2 - 1, 0), Vector3.new(platform.Size.X / 44, 1, platform.Size.Z / 34), gym)
+		if kit then
+			kit.Name = "KitPlatform"
+			for _, part in kit:GetChildren() do
+				if part.Name == "Trim" then
+					part.Color = tierColor
+				elseif part.Name == "Floor" then
+					make("SurfaceAppearance", { ColorMap = SC.Hills.Studs, AlphaMode = Enum.AlphaMode.Overlay, Parent = part })
+				end
+			end
+			platform.Transparency = platform.Size.Y > 3 and 0 or 1
+			platform.Color = Color3.fromRGB(150, 150, 160)
+		end
+	end
+	for _, machine in gym:GetChildren() do
+		local pad = machine:IsA("Model") and machine:FindFirstChild(W.Pad)
+		local visual = pad and machine:FindFirstChild("Visual")
+		if visual then
+			for _, part in visual:GetChildren() do
+				if part:IsA("BasePart") and not part:IsA("Seat") then
+					part:Destroy()
+				end
+			end
+			for _, old in machine:GetChildren() do
+				if old.Name == "KitMachine" then
+					old:Destroy()
+				end
+			end
+			local floor = pad.CFrame * CFrame.new(0, -pad.Size.Y / 2, 0)
+			local kit = fitTo(machine.Name == "Treadmill" and "Treadmill" or "Bench", floor, Vector3.one, machine)
+			if kit then
+				kit.Name = "KitMachine"
+				for _, part in kit:GetChildren() do
+					if part.Name == "Trim" then
+						part.Color = tierColor
+					end
+				end
+			end
+		end
+	end
+end
+
+for _, area in { world:FindFirstChild(W.Gyms), world:FindFirstChild(W.Quarry), world:FindFirstChild(W.Spawn) } do
+	for _, gui in area and area:GetDescendants() or {} do
+		local board = gui:IsA("SurfaceGui") and gui.Parent
+		if board and board:IsA("BasePart") and board.Size.Z <= 1.6 and not board:FindFirstAncestor("Leaderboards") and not board:GetAttribute("KitSign") then
+			board:SetAttribute("KitSign", true)
+			board.Transparency = 1
+			local size = board.Size
+			local scale = Vector3.new(size.X / SC.SignSize.X, size.Y / SC.SignSize.Y, size.Z * SC.SignDepth / SC.SignSize.Z)
+			fitTo("SignBoard", board.CFrame * CFrame.new(0, 0, size.Z * (1 - SC.SignDepth) / 2), scale, board.Parent)
+		end
+	end
+	for _, post in area and area:GetDescendants() or {} do
+		if post:IsA("BasePart") and post.Name == "Post" and not post:FindFirstAncestor("Leaderboards") and not post:GetAttribute("KitSign") then
+			post:SetAttribute("KitSign", true)
+			post.Transparency = 1
+			post.CanCollide = false
+			local size = post.Size
+			fitTo("SignPost", post.CFrame * CFrame.new(0, -size.Y / 2, 0), Vector3.new(size.X, size.Y, size.Z), post.Parent)
+		end
+	end
 end
 
 local falls = SC.Falls
