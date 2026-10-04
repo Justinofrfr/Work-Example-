@@ -45,6 +45,7 @@ function IncubatorController:Init(modules, context)
 end
 
 function IncubatorController:Start()
+	Ui.BindCanvas(body.Choices)
 	Ui.Feel(body.FragmentsTab, function()
 		self:SetMode("Fragments")
 	end)

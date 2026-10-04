@@ -37,6 +37,7 @@ local function template()
 		FirstHatchBonus = false,
 		DailyStreak = 0,
 		DailyLast = -1,
+		TrainBoostUntil = 0,
 	}
 end
 

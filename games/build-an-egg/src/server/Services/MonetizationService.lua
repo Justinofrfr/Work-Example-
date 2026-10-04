@@ -129,12 +129,15 @@ function MonetizationService:ProcessReceipt(receipt)
 	end
 	local product = ProductsConfig.DevProducts[entry.Key]
 	local previousLevel = data.BoostLevels[entry.Key]
+	local previousBoost = data.TrainBoostUntil or 0
 	local coinsGranted = 0
 	if product.Tiers then
 		data.BoostLevels[entry.Key] = (previousLevel or 0) + 1
 	elseif product.Pieces then
 		coinsGranted = product.Coins or 0
 		data.Coins += coinsGranted
+	elseif product.Duration then
+		data.TrainBoostUntil = math.max(os.time(), previousBoost) + product.Duration
 	end
 	table.insert(data.Purchases, receipt.PurchaseId)
 	while #data.Purchases > ProductsConfig.PurchaseHistoryCap do
@@ -148,6 +151,8 @@ function MonetizationService:ProcessReceipt(receipt)
 		end
 		if product.Tiers then
 			data.BoostLevels[entry.Key] = previousLevel
+		elseif product.Duration then
+			data.TrainBoostUntil = previousBoost
 		else
 			data.Coins -= coinsGranted
 		end

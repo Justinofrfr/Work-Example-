@@ -131,6 +131,19 @@ function Ui.SetColor(button, color)
 	end
 end
 
+function Ui.BindCanvas(scroller, extra)
+	local layout = scroller:FindFirstChildWhichIsA("UIGridStyleLayout")
+	if not layout then
+		return
+	end
+	scroller.AutomaticCanvasSize = Enum.AutomaticSize.None
+	local function fit()
+		scroller.CanvasSize = UDim2.fromOffset(0, layout.AbsoluteContentSize.Y + (extra or 24))
+	end
+	fit()
+	layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(fit)
+end
+
 function Ui.Comma(value)
 	local text = tostring(math.floor(value))
 	local formatted = text:reverse():gsub("(%d%d%d)", "%1,"):reverse()

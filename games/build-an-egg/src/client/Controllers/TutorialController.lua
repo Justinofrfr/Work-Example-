@@ -440,10 +440,11 @@ function TutorialController:ShowInterlude()
 	self.InInterlude = true
 	frame.Visible = true
 	frame.Card.Step.Text = interlude.Label
-	frame.Card.Text.Text = inside and interlude.Inside or interlude.Outside
 	local hatch = gui:FindFirstChild("Hatch")
-	self:SetSpot(not inside and hatch and hatch.Visible and hatch.Button or nil)
-	self:SetGuide(nil)
+	local canEnter = not inside and hatch ~= nil and hatch.Visible
+	frame.Card.Text.Text = inside and interlude.Inside or canEnter and interlude.Outside or interlude.Train
+	self:SetSpot(canEnter and hatch.Button or nil)
+	self:SetGuide((not inside and not canEnter) and self:WorldTarget("Gym") or nil)
 end
 
 function TutorialController:Update()

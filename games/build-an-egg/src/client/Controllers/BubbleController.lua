@@ -5,7 +5,11 @@ local Names = require(Shared.Config.Names)
 local GymsConfig = require(Shared.Config.Gyms)
 local Format = require(Shared.Util.Format)
 
+local RunService = game:GetService("RunService")
+local ProductsConfig = require(Shared.Config.Products)
+
 local Ui = require(script.Parent.Parent.Util.Ui)
+local Purchase = require(script.Parent.Parent.Util.Purchase)
 local Audio = require(script.Parent.Parent.Util.Audio)
 
 local BubbleController = {
@@ -82,6 +86,23 @@ function BubbleController:Spawn(id, kind)
 	bubble.Icon.Text = def.Icon
 	bubble.Approach.UIStroke.Color = def.Color
 	bubble.Approach.Size = UDim2.fromScale(B.ApproachScale, B.ApproachScale)
+	local gradient = bubble:FindFirstChildOfClass("UIGradient")
+	local rainbowGradient = bubble:FindFirstChild("Rainbow")
+	if def.Product and rainbowGradient then
+		if gradient then
+			gradient.Enabled = false
+		end
+		rainbowGradient.Enabled = true
+		bubble.BackgroundTransparency = 0
+		local spin
+		spin = RunService.RenderStepped:Connect(function(dt)
+			if not bubble.Parent then
+				spin:Disconnect()
+				return
+			end
+			rainbowGradient.Rotation = (rainbowGradient.Rotation + dt * B.Rainbow.GradientSpeed) % 360
+		end)
+	end
 	bubble.Visible = true
 	bubble.Parent = layer
 	local entry = { Bubble = bubble, Position = position, Kind = kind }
@@ -90,7 +111,13 @@ function BubbleController:Spawn(id, kind)
 	Ui.Tween(bubble.Approach, def.Lifetime, { Size = UDim2.fromScale(1, 1) }, Enum.EasingStyle.Linear)
 	Audio.Play("Tick", def.SpawnPitch)
 	bubble.Activated:Connect(function()
-		self:Pop(id)
+		if def.Product then
+			local product = ProductsConfig.DevProducts[def.Product]
+			Purchase.Product(product and product.Id)
+			self:Miss(id)
+		else
+			self:Pop(id)
+		end
 	end)
 	task.delay(def.Lifetime, function()
 		if self.Active[id] == entry then

@@ -1,4 +1,5 @@
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
@@ -10,6 +11,7 @@ local MapConfig = require(Shared.Config.Map)
 local Names = require(Shared.Config.Names)
 local Formulas = require(Shared.Util.Formulas)
 local RateLimiter = require(Shared.Util.RateLimiter)
+local ProductsConfig = require(Shared.Config.Products)
 
 local GymService = {
 	BubbleSerial = 0,
@@ -113,6 +115,18 @@ function GymService:TickBubbles(player, training, now)
 			active += 1
 		end
 	end
+	local rainbow = B.Rainbow
+	local rainbowProduct = ProductsConfig.DevProducts[B.Kinds[rainbow.Kind].Product]
+	if training.NextRainbow and now >= training.NextRainbow then
+		training.NextRainbow = now + random:NextNumber(rainbow.Every[1], rainbow.Every[2])
+		if self:TrainBoost(player) == 1 and rainbowProduct and (rainbowProduct.Id ~= 0 or RunService:IsStudio()) then
+			self.BubbleSerial += 1
+			local id = self.BubbleSerial
+			training.Bubbles[id] = { Kind = rainbow.Kind, Spawned = now, Expires = now + B.Kinds[rainbow.Kind].Lifetime, Offer = true }
+			remotes[Names.Remotes.Bubble]:FireClient(player, "Spawn", id, rainbow.Kind)
+			return
+		end
+	end
 	if now < training.NextBubble or active >= B.MaxActive then
 		return
 	end
@@ -142,10 +156,10 @@ function GymService:PopBubble(player, id)
 	end
 	training.Bubbles[id] = nil
 	local now = os.clock()
-	if now > bubble.Expires + B.Grace or now - bubble.Spawned < B.MinReaction then
+	if bubble.Offer or now > bubble.Expires + B.Grace or now - bubble.Spawned < B.MinReaction then
 		return false
 	end
-	local amount = StatsConfig.BaseGainPerRep * training.Multiplier * B.Kinds[bubble.Kind].Reps
+	local amount = StatsConfig.BaseGainPerRep * training.Multiplier * B.Kinds[bubble.Kind].Reps * self:TrainBoost(player)
 	local gain
 	if training.Stat == "Both" then
 		gain = StateService:AwardStat(player, "Speed", amount)
@@ -155,6 +169,15 @@ function GymService:PopBubble(player, id)
 	end
 	remotes[Names.Remotes.Bubble]:FireClient(player, "Popped", id, training.Stat, gain)
 	return true
+end
+
+function GymService:TrainBoost(player)
+	local data = DataService:Get(player)
+	local product = ProductsConfig.DevProducts.TrainBoost20
+	if data and (data.TrainBoostUntil or 0) > os.time() then
+		return product.TrainMultiplier
+	end
+	return 1
 end
 
 function GymService:TierUnlocked(player, tier)
@@ -245,6 +268,7 @@ function GymService:Begin(player, runtime, pad)
 		Multiplier = multiplier,
 		Bubbles = {},
 		NextBubble = os.clock() + B.FirstDelay,
+		NextRainbow = os.clock() + B.Rainbow.FirstDelay,
 	}
 	local character = player.Character
 	local rootPart = character and character:FindFirstChild("HumanoidRootPart")
@@ -367,7 +391,7 @@ function GymService:Rep(player, training)
 		self:Stop(player, false)
 		return
 	end
-	local gain = StatsConfig.BaseGainPerRep * training.Multiplier
+	local gain = StatsConfig.BaseGainPerRep * training.Multiplier * self:TrainBoost(player)
 	if training.Stat == "Both" then
 		StateService:AwardStat(player, "Speed", gain)
 		StateService:AwardStat(player, "Strength", gain)

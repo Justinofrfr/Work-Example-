@@ -351,6 +351,22 @@ local friend = make("Frame", {
 }, { aspect(6) })
 label({ Name = "Icon", Text = "👥", Size = UDim2.fromScale(0.17, 1), Parent = friend })
 label({ Name = "Text", Text = "Friend Boost: +0%", Size = UDim2.fromScale(0.8, 0.8), Position = UDim2.fromScale(0.19, 0.1), TextXAlignment = Enum.TextXAlignment.Left, Parent = friend })
+local trainBoost = make("Frame", {
+	Name = "TrainBoost",
+	Size = UDim2.fromScale(0.2, 0.045),
+	Position = UDim2.fromScale(0.008, 0.935),
+	AnchorPoint = Vector2.new(0, 1),
+	BackgroundTransparency = 1,
+	Visible = false,
+	Parent = hud,
+}, { aspect(6.5) })
+label({ Name = "Text", Text = "🌈 20x TRAINING 10:00", Size = UDim2.fromScale(1, 0.9), Position = UDim2.fromScale(0, 0.05), TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.fromRGB(255, 225, 120), Parent = trainBoost })
+
+local _, socialBody = panel("Social", "ENJOYING THE GAME?", UDim2.fromScale(0.42, 0.42), Color3.fromRGB(90, 170, 255), 1.6)
+label({ Name = "Message", Text = "👍 LIKE the game & ⭐ FAVORITE it so you never miss an update!\nJoin the group for exclusive rewards!", Size = UDim2.fromScale(0.94, 0.42), Position = UDim2.fromScale(0.03, 0.02), Parent = socialBody })
+button({ Name = "Favorite", Text = "⭐ FAVORITE", Color = Color3.fromRGB(255, 190, 40), Size = UDim2.fromScale(0.44, 0.26), Position = UDim2.fromScale(0.04, 0.5), Parent = socialBody })
+button({ Name = "Group", Text = "👥 JOIN GROUP", Color = C.Good, Size = UDim2.fromScale(0.44, 0.26), Position = UDim2.fromScale(0.52, 0.5), Parent = socialBody })
+label({ Name = "Note", Text = "Tap 👍 on the game page to like it!", Size = UDim2.fromScale(0.94, 0.14), Position = UDim2.fromScale(0.03, 0.82), TextColor3 = Color3.fromRGB(255, 236, 190), StrokeThickness = 1.5, Parent = socialBody })
 
 local keys = make("Frame", {
 	Name = "KeyHints",
@@ -911,6 +927,18 @@ local bubble = make("TextButton", {
 		Rotation = 120,
 		Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.fromRGB(200, 200, 200)),
 		Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 0.35) }),
+	}),
+	make("UIGradient", {
+		Name = "Rainbow",
+		Enabled = false,
+		Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 70, 70)),
+			ColorSequenceKeypoint.new(0.2, Color3.fromRGB(255, 170, 40)),
+			ColorSequenceKeypoint.new(0.4, Color3.fromRGB(255, 240, 60)),
+			ColorSequenceKeypoint.new(0.6, Color3.fromRGB(70, 230, 100)),
+			ColorSequenceKeypoint.new(0.8, Color3.fromRGB(70, 150, 255)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(190, 90, 255)),
+		}),
 	}),
 })
 make("Frame", {

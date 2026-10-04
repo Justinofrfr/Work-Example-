@@ -14,7 +14,8 @@ return {
 		{ Key = "EquipPet", Stage = "Pets", Text = "EQUIP your new pet to boost your stats!", Target = "Gui", Gui = "EquipButton", NeedsPanel = "Pets", OpenGui = { "PetsButton" } },
 	},
 	Interlude = {
-		Steps = { Carry = true, Place = true },
+		Steps = { Quarry = true, Pickup = true, Carry = true, Place = true },
+		Train = "The egg just hatched! Train in the GYMS until the next egg starts",
 		Label = "EGG HATCHING!",
 		Outside = "The egg just hatched! Press GO INSIDE to train 2x until the next egg starts",
 		Inside = "Swim in the golden pool to train 2x! The next egg starts soon",

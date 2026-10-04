@@ -1061,6 +1061,8 @@ if flowBeam then
 			beam.CurveSize0 = 0
 			beam.CurveSize1 = 0
 			beam.Segments = 4
+			beam.TextureSpeed = water.FlowSpeed
+			beam.ZOffset = (#holder:GetChildren() % 2) * 0.2
 			beam.Parent = holder
 		end
 		previous = attachment

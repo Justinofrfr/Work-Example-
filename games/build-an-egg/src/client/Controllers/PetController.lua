@@ -43,6 +43,7 @@ function PetController:Init(modules, context)
 end
 
 function PetController:Start()
+	Ui.BindCanvas(PanelController:Get("Pets").Body.List)
 	hud.TopLeft.Pets.Activated:Connect(function()
 		PanelController:Toggle("Pets")
 	end)

@@ -76,6 +76,25 @@ function HudController:Start()
 	RunService.Heartbeat:Connect(function()
 		self:RenderTimer()
 	end)
+	local GuiService = game:GetService("GuiService")
+	local function placeTopLeft()
+		local inset = GuiService.TopbarInset
+		local top = inset.Height > 0 and inset.Max.Y or 0
+		hud.TopLeft.Position = UDim2.new(hud.TopLeft.Position.X.Scale, 0, 0, top + 8)
+	end
+	placeTopLeft()
+	GuiService:GetPropertyChangedSignal("TopbarInset"):Connect(placeTopLeft)
+	task.spawn(function()
+		while true do
+			local state = ClientState.State
+			local remaining = state and (state.TrainBoostUntil or 0) - Workspace:GetServerTimeNow() or 0
+			hud.TrainBoost.Visible = remaining > 0
+			if remaining > 0 then
+				hud.TrainBoost.Text.Text = ("🌈 %dx TRAINING %d:%02d"):format(ProductsConfig.DevProducts.TrainBoost20.TrainMultiplier, math.floor(remaining / 60), math.floor(remaining % 60))
+			end
+			task.wait(1)
+		end
+	end)
 	task.spawn(function()
 		local shine = progress.Bar.Shine
 		while true do

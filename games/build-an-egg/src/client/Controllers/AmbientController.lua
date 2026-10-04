@@ -1,3 +1,4 @@
+local UserInputService = game:GetService("UserInputService")
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -19,6 +20,7 @@ local AmbientController = {
 }
 
 local WIND = EffectsConfig.Wind
+local lowEnd = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 local windDirection = WIND.Direction.Unit
 local swayAxis = Vector3.new(windDirection.Z, 0, -windDirection.X)
 local templates
@@ -30,6 +32,19 @@ local camera = Workspace.CurrentCamera
 local random = Random.new()
 
 function AmbientController:Start()
+	if lowEnd then
+		local Lighting = game:GetService("Lighting")
+		for _, name in { "SceneryDepth" } do
+			local effect = Lighting:FindFirstChild(name)
+			if effect then
+				effect.Enabled = false
+			end
+		end
+		local rays = Lighting:FindFirstChildOfClass("SunRaysEffect")
+		if rays then
+			rays.Enabled = false
+		end
+	end
 	local function addWobble(model)
 		if model:IsA("Model") then
 			self.Wobblers[model] = { Base = model:GetPivot(), Phase = random:NextNumber(0, math.pi * 2) }
@@ -128,18 +143,26 @@ function AmbientController:Start()
 	end)
 end
 
+local swayAccumulator = 0
+
 function AmbientController:StepWind(dt, t, cameraPosition)
 	local enabled = Settings:EffectScale() > 0
+	swayAccumulator += dt
+	local swayNow = swayAccumulator >= (lowEnd and WIND.MobileSwayInterval or 0)
+	if swayNow then
+		swayAccumulator = 0
+	end
 	if leaves then
 		leaves.CFrame = CFrame.new(cameraPosition + Vector3.new(0, WIND.LeafHeight, 0))
 		leaves.Leaves.Enabled = enabled
 	end
-	for model, state in self.Swayers do
+	for model, state in swayNow and self.Swayers or {} do
 		if not model.Parent then
 			self.Swayers[model] = nil
 		else
 			local distance = (state.Base.Position - cameraPosition).Magnitude
-			if distance < (state.Small and WIND.SmallRadius or WIND.SwayRadius) then
+			local radius = state.Small and WIND.SmallRadius or WIND.SwayRadius
+			if distance < (lowEnd and radius * WIND.MobileRadiusScale or radius) then
 				local wave = math.sin(t * state.Speed + state.Phase) * 0.7 + math.sin(t * state.Speed * 2.3 + state.Phase * 1.7) * 0.3
 				if state.Leaves then
 					local pivot = state.Leaves.Pivot

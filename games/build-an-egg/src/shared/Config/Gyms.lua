@@ -64,6 +64,19 @@ return {
 				PopPitch = 1.1,
 				FloatColor = Color3.fromRGB(255, 220, 70),
 			},
+			Rainbow = {
+				Lifetime = 6,
+				Reps = 0,
+				Size = 0.1,
+				Product = "TrainBoost20",
+				Color = Color3.fromRGB(255, 255, 255),
+				Stroke = Color3.fromRGB(255, 255, 255),
+				Icon = "20x",
+				SpawnPitch = 1.2,
+				PopSound = "Prize",
+				PopPitch = 1,
+				FloatColor = Color3.fromRGB(255, 255, 255),
+			},
 			Red = {
 				Chance = 0.04,
 				Lifetime = 1.05,
@@ -79,5 +92,6 @@ return {
 			},
 		},
 		Special = { "Red", "Rare" },
+		Rainbow = { Kind = "Rainbow", FirstDelay = 20, Every = { 45, 80 }, GradientSpeed = 120 },
 	},
 }

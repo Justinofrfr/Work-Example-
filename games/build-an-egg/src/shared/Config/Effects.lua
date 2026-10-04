@@ -102,6 +102,8 @@ return {
 		StreakInterval = 0.9,
 		StreakMax = 4,
 		GustScale = { 0.8, 1.2 },
+		MobileSwayInterval = 1 / 20,
+		MobileRadiusScale = 0.45,
 		StreakSpeed = 14,
 		StreakLife = 2.2,
 		StreakRing = { 18, 70 },
