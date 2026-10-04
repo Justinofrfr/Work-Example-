@@ -248,6 +248,7 @@ terrain.WaterReflectance = water.Reflectance
 local rayParams = RaycastParams.new()
 rayParams.FilterType = Enum.RaycastFilterType.Include
 rayParams.FilterDescendantsInstances = hillParts
+task.wait(2)
 local function slopeHeight(x, z)
 	local hit = Workspace:Raycast(Vector3.new(x, 400, z), Vector3.new(0, -800, 0), rayParams)
 	if hit then
@@ -354,7 +355,8 @@ local function scatter(options)
 			local y, up = groundAt(spot)
 			if up >= (options.MinUp or 0.7) then
 				local scale = random:NextNumber(options.Scale[1], options.Scale[2])
-				local model = place(options.Prefix(), CFrame.new(spot.X, y + (options.Lift or 0), spot.Z) * yaw(), scale, folder(options.Folder))
+				local sink = (options.Lift or 0) - (1 - up) * (options.SlopeSink or 4) * scale
+				local model = place(options.Prefix(), CFrame.new(spot.X, y + sink, spot.Z) * yaw(), scale, folder(options.Folder))
 				if model then
 					if options.Spacing then
 						occupy(spot, options.Spacing * 0.7)
@@ -469,6 +471,7 @@ local _, slopeTrees = scatter({
 	Margin = 6,
 	Lift = -0.8,
 	MinUp = 0.6,
+	SlopeSink = 9,
 	Spot = function()
 		local spot = ring(SC.HillRadius[1] + 8, SC.HillRadius[2])
 		return math.noise(spot.X * S.Trees.Cluster, spot.Z * S.Trees.Cluster, 8.1) > -0.35 and spot or nil
