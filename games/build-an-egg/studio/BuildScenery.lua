@@ -398,16 +398,24 @@ local function scatter(options)
 end
 
 local pathFolder = folder("Paths")
+local slabIndex = 0
+local function slab(top, level)
+	local thickness = SC.SlabThickness[level]
+	return thickness, top - thickness / 2
+end
 for _, path in SC.Paths do
 	if not path.Hidden then
 		for i = 1, #path.Points - 1 do
 			local a, b = path.Points[i], path.Points[i + 1]
 			local length = (b - a).Magnitude
 			local mid = (a + b) / 2
+			local level = slabIndex % #SC.PathTops + 1
+			slabIndex += 1
+			local thickness, center = slab(SC.PathTops[level], level)
 			studded({
 				Name = "Path",
-				Size = Vector3.new(path.Width + 1, 0.4, length + path.Width * 0.5),
-				CFrame = CFrame.lookAt(mid, b) + Vector3.new(0, SC.PathLift - 0.2 + (i % 2) * 0.06, 0),
+				Size = Vector3.new(path.Width + 1, thickness, length + path.Width * 0.5),
+				CFrame = CFrame.lookAt(mid, b) + Vector3.new(0, center, 0),
 				Color = SC.PathColor,
 				Parent = pathFolder,
 			})
@@ -428,8 +436,8 @@ for _, plaza in SC.Plazas do
 	local size = plaza.Max - plaza.Min
 	studded({
 		Name = plaza.Name,
-		Size = Vector3.new(size.X, 0.4, size.Z),
-		CFrame = CFrame.new((plaza.Min + plaza.Max) / 2 + Vector3.new(0, SC.PathLift - 0.08, 0)),
+		Size = Vector3.new(size.X, SC.SlabThickness[#SC.SlabThickness], size.Z),
+		CFrame = CFrame.new((plaza.Min + plaza.Max) / 2 + Vector3.new(0, SC.PlazaTop - SC.SlabThickness[#SC.SlabThickness] / 2, 0)),
 		Color = plaza.Color,
 		Parent = pathFolder,
 	})
@@ -450,8 +458,8 @@ end
 for _, lookout in SC.Lookouts do
 	studded({
 		Name = "Lookout",
-		Size = Vector3.new(lookout.Radius * 1.6, 0.4, lookout.Radius * 1.6),
-		CFrame = CFrame.lookAt(lookout.Center, Vector3.new(lookout.Face.X, 0, lookout.Face.Z)) + Vector3.new(0, SC.PathLift - 0.12, 0),
+		Size = Vector3.new(lookout.Radius * 1.6, SC.SlabThickness[#SC.SlabThickness], lookout.Radius * 1.6),
+		CFrame = CFrame.lookAt(lookout.Center, Vector3.new(lookout.Face.X, 0, lookout.Face.Z)) + Vector3.new(0, SC.PlazaTop - SC.SlabThickness[#SC.SlabThickness] / 2, 0),
 		Color = SC.PathColor,
 		Parent = pathFolder,
 	})

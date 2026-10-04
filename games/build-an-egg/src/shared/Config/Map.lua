@@ -289,7 +289,9 @@ return {
 		},
 		LampSpacing = 38,
 		PathColor = Color3.fromRGB(176, 128, 84),
-		PathLift = 0.18,
+		PathTops = { 0.14, 0.2, 0.26 },
+		PlazaTop = 0.32,
+		SlabThickness = { 0.4, 0.6, 0.8, 1 },
 	},
 	TierColors = {
 		Gym1 = Color3.fromRGB(200, 200, 200),
