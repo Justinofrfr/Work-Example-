@@ -362,11 +362,6 @@ local trainBoost = make("Frame", {
 }, { aspect(6.5) })
 label({ Name = "Text", Text = "🌈 20x TRAINING 10:00", Size = UDim2.fromScale(1, 0.9), Position = UDim2.fromScale(0, 0.05), TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.fromRGB(255, 225, 120), Parent = trainBoost })
 
-local _, socialBody = panel("Social", "ENJOYING THE GAME?", UDim2.fromScale(0.42, 0.42), Color3.fromRGB(90, 170, 255), 1.6)
-label({ Name = "Message", Text = "👍 LIKE the game & ⭐ FAVORITE it so you never miss an update!\nJoin the group for exclusive rewards!", Size = UDim2.fromScale(0.94, 0.42), Position = UDim2.fromScale(0.03, 0.02), Parent = socialBody })
-button({ Name = "Favorite", Text = "⭐ FAVORITE", Color = Color3.fromRGB(255, 190, 40), Size = UDim2.fromScale(0.44, 0.26), Position = UDim2.fromScale(0.04, 0.5), Parent = socialBody })
-button({ Name = "Group", Text = "👥 JOIN GROUP", Color = C.Good, Size = UDim2.fromScale(0.44, 0.26), Position = UDim2.fromScale(0.52, 0.5), Parent = socialBody })
-label({ Name = "Note", Text = "Tap 👍 on the game page to like it!", Size = UDim2.fromScale(0.94, 0.14), Position = UDim2.fromScale(0.03, 0.82), TextColor3 = Color3.fromRGB(255, 236, 190), StrokeThickness = 1.5, Parent = socialBody })
 
 local keys = make("Frame", {
 	Name = "KeyHints",
@@ -530,6 +525,12 @@ for index = 1, 7 do
 end
 label({ Name = "Status", Text = "", Size = UDim2.fromScale(0.6, 0.12), Position = UDim2.fromScale(0.02, 0.76), TextXAlignment = Enum.TextXAlignment.Left, Parent = dailyBody })
 button({ Name = "Claim", Text = "CLAIM!", Color = C.Good, Size = UDim2.fromScale(0.3, 0.22), Position = UDim2.fromScale(0.98, 0.74), AnchorPoint = Vector2.new(1, 0), Parent = dailyBody })
+
+local _, socialBody = panel("Social", "ENJOYING THE GAME?", UDim2.fromScale(0.42, 0.42), Color3.fromRGB(90, 170, 255), 1.6)
+label({ Name = "Message", Text = "👍 LIKE the game & ⭐ FAVORITE it so you never miss an update!\nJoin the group for exclusive rewards!", Size = UDim2.fromScale(0.94, 0.42), Position = UDim2.fromScale(0.03, 0.02), Parent = socialBody })
+button({ Name = "Favorite", Text = "⭐ FAVORITE", Color = Color3.fromRGB(255, 190, 40), Size = UDim2.fromScale(0.44, 0.26), Position = UDim2.fromScale(0.04, 0.5), Parent = socialBody })
+button({ Name = "Group", Text = "👥 JOIN GROUP", Color = C.Good, Size = UDim2.fromScale(0.44, 0.26), Position = UDim2.fromScale(0.52, 0.5), Parent = socialBody })
+label({ Name = "Note", Text = "Tap 👍 on the game page to like it!", Size = UDim2.fromScale(0.94, 0.14), Position = UDim2.fromScale(0.03, 0.82), TextColor3 = Color3.fromRGB(255, 236, 190), StrokeThickness = 1.5, Parent = socialBody })
 
 local _, lockedBody = panel("Locked", "GYM LOCKED", UDim2.fromScale(0.36, 0.36), Color3.fromRGB(120, 120, 130), 1.6)
 label({ Name = "Lock", Text = "🔒", Size = UDim2.fromScale(0.25, 0.4), Position = UDim2.fromScale(0.375, 0), Parent = lockedBody })
