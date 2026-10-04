@@ -164,7 +164,7 @@ return {
 			World_TrailAvenue = { Stone = { Colors = { Color3.fromRGB(168, 156, 146) } } },
 		},
 		Stations = {
-			Incubator = { NPC = "Incubator", Shift = 1.1, Tilt = 11, HideRing = true },
+			Incubator = { NPC = "Incubator", Shift = 1.0, Forward = 2.8, Tilt = 12, HideRing = true },
 			Shop = { NPC = "Upgrades", HideRing = true, SignText = "UPGRADES", SignForward = 4.87, SignHeight = 12.1, SignSize = Vector3.new(8, 1.8, 0.05), TextColor = Color3.fromRGB(150, 70, 230) },
 		},
 		SkipWorld = { World_River = true, World_FallsWater = true, World_FallsFoam = true, World_FallsFroth = true },

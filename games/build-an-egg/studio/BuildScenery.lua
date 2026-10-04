@@ -913,7 +913,7 @@ for _, station in SC.Stations do
 		end
 		local base = npc:GetPivot()
 		if station.Tilt then
-			local feet = base * CFrame.new(-station.Shift, -3, 0)
+			local feet = base * CFrame.new(-station.Shift, -3, -(station.Forward or 0))
 			npc:PivotTo(feet * CFrame.Angles(0, 0, math.rad(station.Tilt)) * CFrame.new(0, 3, 0))
 			npc:SetAttribute("Posed", true)
 			local function pose(partName, motorName, rotation)
