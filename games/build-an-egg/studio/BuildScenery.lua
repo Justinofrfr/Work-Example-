@@ -258,7 +258,7 @@ for index = 1, SC.Cliffs.Count do
 end
 local fall = SC.River.Waterfall
 local fallDirection = flat(SC.River.Points[1] - fall).Unit
-place("CliffB", CFrame.lookAt(fall - fallDirection * 16 + Vector3.new(0, -2, 0), fall + fallDirection * 10 + Vector3.new(0, -2, 0)), 1.1, folder("Cliffs"))
+place("CliffB", CFrame.lookAt(fall - fallDirection * 26 + Vector3.new(0, -2, 0), fall + fallDirection * 10 + Vector3.new(0, -2, 0)), 1.05, folder("Cliffs"))
 for side = -1, 1, 2 do
 	local sideways = Vector3.new(-fallDirection.Z, 0, fallDirection.X) * side * 34
 	place(pick(cliffs), CFrame.lookAt(fall + sideways - fallDirection * 6 + Vector3.new(0, -2, 0), fall + sideways + fallDirection * 10 + Vector3.new(0, -2, 0)), 1.2, folder("Cliffs"))
