@@ -7,6 +7,7 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Names = require(Shared.Config.Names)
 local MapConfig = require(Shared.Config.Map)
+local EffectsConfig = require(Shared.Config.Effects)
 
 local SC = MapConfig.Scenery
 local W = Names.World
@@ -68,7 +69,7 @@ local function style(part, prefix, role)
 	part.Color = pick(def.Colors)
 	part.Material = def.Material or Enum.Material.SmoothPlastic
 	part.Transparency = def.Transparency or 0
-	part.Reflectance = 0
+	part.Reflectance = def.Reflectance or 0
 	part.CanCollide = solid
 	part.CanQuery = solid
 	part.CanTouch = false
@@ -187,9 +188,9 @@ end
 
 local hillParts = {}
 for prefix, group in groups do
-	if prefix:find("^World") then
+	if prefix:find("^World") and not SC.SkipWorld[prefix] then
 		for _, entry in group.Entries do
-			if not (prefix == "World_River" and entry.Role == "Water") then
+			do
 				local part = entry.Part:Clone()
 				style(part, prefix, entry.Role)
 				part.CFrame = part.CFrame + group.Offset
@@ -209,6 +210,7 @@ for prefix, group in groups do
 					part.Parent = folder("Waterfall")
 				else
 					part.CanQuery = true
+					part.CastShadow = entry.Role ~= "Surface"
 					part.Parent = folder("Water")
 				end
 			end
@@ -255,19 +257,6 @@ local river = smooth(SC.River.Points, 12)
 local terrain = Workspace.Terrain
 terrain:Clear()
 local water = SC.Water
-for i = 1, #river - 1 do
-	local a, b = river[i], river[i + 1]
-	local mid = (a + b) / 2
-	terrain:FillBlock(CFrame.lookAt(Vector3.new(mid.X, water.Center, mid.Z), Vector3.new(b.X, water.Center, b.Z)), Vector3.new(water.Width, water.Depth, (b - a).Magnitude + water.Width * 0.6), Enum.Material.Water)
-end
-for _, body in { { SC.River.Pond.Center, water.PondRadius }, { SC.River.Pool.Center, SC.River.Pool.Radius } } do
-	terrain:FillCylinder(CFrame.new(body[1].X, water.Center, body[1].Z), water.Depth, body[2], Enum.Material.Water)
-end
-terrain.WaterColor = water.Color
-terrain.WaterWaveSize = water.WaveSize
-terrain.WaterWaveSpeed = water.WaveSpeed
-terrain.WaterTransparency = water.Transparency
-terrain.WaterReflectance = water.Reflectance
 
 local rayParams = RaycastParams.new()
 rayParams.FilterType = Enum.RaycastFilterType.Include
@@ -467,7 +456,7 @@ for _, lookout in SC.Lookouts do
 	local right = Vector3.new(-toward.Z, 0, toward.X)
 	for k = -1, 1 do
 		local spot = lookout.Center + toward * 6 + right * k * 9
-		place("Bench", CFrame.lookAt(spot, spot + toward) * CFrame.Angles(0, math.pi, 0), 1, folder("Benches"))
+		place("ParkBench", CFrame.lookAt(spot, spot + toward) * CFrame.Angles(0, math.pi, 0), 1, folder("Benches"))
 	end
 	for k = -2, 2 do
 		local spot = lookout.Center + toward * (lookout.Radius * 0.8) + right * k * 11.5
@@ -684,9 +673,10 @@ settleParams.FilterType = Enum.RaycastFilterType.Include
 local settleTargets = table.clone(hillParts)
 table.insert(settleTargets, world:FindFirstChild("Ground"))
 settleParams.FilterDescendantsInstances = settleTargets
-local function settle(model, sink)
+local function settle(model, sink, ratio)
 	local pivot = model:GetPivot()
 	local _, size = model:GetBoundingBox()
+	sink += size.Y * (ratio or 0)
 	local reach = math.min(size.X, size.Z) * (model:GetAttribute("SwayLeaves") and 0.12 or 0.4)
 	local lowest = math.huge
 	for _, offset in { Vector3.zero, Vector3.new(reach, 0, 0), Vector3.new(-reach, 0, 0), Vector3.new(0, 0, reach), Vector3.new(0, 0, -reach) } do
@@ -703,7 +693,7 @@ end
 for folderName, sink in SC.Settle do
 	for _, model in folders[folderName] and folders[folderName]:GetChildren() or {} do
 		if model:IsA("Model") then
-			settle(model, sink)
+			settle(model, sink, SC.SettleRatio[folderName])
 		end
 	end
 end
@@ -811,10 +801,98 @@ local impact = flat(pool) + poolDirection * 32 + Vector3.new(0, 1.5, 0)
 local splash = emitterPart("Splash", impact, Vector3.new(18, 1, 6))
 puff(splash, { Rate = 30, Lifetime = NumberRange.new(0.7, 1.1), Speed = NumberRange.new(6, 12), SpreadAngle = Vector2.new(50, 50), EmissionDirection = Enum.NormalId.Top, Acceleration = Vector3.new(0, -10, 0), Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 3), NumberSequenceKeypoint.new(1, 6) }), Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.1), NumberSequenceKeypoint.new(1, 1) }) })
 puff(splash, { Name = "Mist", Rate = 10, Lifetime = NumberRange.new(2.5, 3.5), Speed = NumberRange.new(2, 4), SpreadAngle = Vector2.new(70, 70), EmissionDirection = Enum.NormalId.Top, Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 10), NumberSequenceKeypoint.new(1, 22) }), Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.55), NumberSequenceKeypoint.new(1, 1) }) })
-for _, def in { { falls.Lip, 14 }, { falls.Ledge, 20 } } do
-	local lip = emitterPart("Lip", def[1] - poolDirection * 2, Vector3.new(def[2], 1, 2))
-	lip.CFrame = CFrame.lookAt(lip.Position, lip.Position - poolDirection)
-	puff(lip, { Name = "Fall", Rate = 22, Lifetime = NumberRange.new(1.4, 1.8), Speed = NumberRange.new(2, 4), EmissionDirection = Enum.NormalId.Front, Acceleration = Vector3.new(0, -38, 0), Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 2.5), NumberSequenceKeypoint.new(1, 4) }), Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.2), NumberSequenceKeypoint.new(0.8, 0.4), NumberSequenceKeypoint.new(1, 1) }) })
+local waterFx = imported:FindFirstChild(falls.Fx)
+local fallTemplate = waterFx and waterFx:FindFirstChild(falls.Model)
+if fallTemplate then
+	local flowDirection = -poolDirection
+	local facing = CFrame.lookAt(Vector3.zero, flowDirection)
+	local templateDrop = fallTemplate.Source.Position.Y - fallTemplate.Plunge.Position.Y
+	local templateWidth = 1
+	for _, beam in fallTemplate:GetChildren() do
+		if beam:IsA("Beam") then
+			templateWidth = math.max(templateWidth, beam.Width0, beam.Width1)
+		end
+	end
+	local widthScale = falls.Width / templateWidth
+	for _, tier in { { falls.Lip, falls.LedgeTop }, { falls.Ledge, water.Surface } } do
+		local top = tier[1] + flowDirection * falls.Out
+		local drop = top.Y - tier[2]
+		local fall = fallTemplate:Clone()
+		fall.Source.CFrame = CFrame.new(top) * facing
+		fall.Plunge.CFrame = CFrame.new(Vector3.new(top.X, tier[2], top.Z) + flowDirection * falls.Reach) * facing
+		fall.Source.Size = Vector3.new(falls.Width, fall.Source.Size.Y, fall.Source.Size.Z)
+		fall.Plunge.Size = Vector3.new(fall.Plunge.Size.X * widthScale, fall.Plunge.Size.Y, fall.Plunge.Size.Z)
+		for _, beam in fall:GetChildren() do
+			if beam:IsA("Beam") then
+				beam.Width0 *= widthScale
+				beam.Width1 *= widthScale
+				beam.CurveSize0 *= drop / templateDrop
+				beam.CurveSize1 *= drop / templateDrop
+			end
+		end
+		fall.Parent = folder("Waterfall")
+	end
+end
+
+local flowTemplate = waterFx and waterFx:FindFirstChild(water.Flow)
+local flowBeam = flowTemplate and flowTemplate:FindFirstChildWhichIsA("Beam", true)
+if flowBeam then
+	local holder = make("Part", { Name = "FlowingWater", Anchored = true, CanCollide = false, CanQuery = false, CanTouch = false, Transparency = 1, Size = Vector3.one, CFrame = CFrame.new(), Parent = folder("Water") })
+	local height = water.Surface + water.FlowLift
+	local previous
+	for i = 1, #river, water.FlowStride do
+		local before = river[math.max(i - 1, 1)]
+		local after = river[math.min(i + 1, #river)]
+		local direction = flat(after - before).Unit
+		local across = Vector3.new(-direction.Z, 0, direction.X)
+		local position = Vector3.new(river[i].X, height, river[i].Z)
+		local attachment = make("Attachment", { CFrame = CFrame.fromMatrix(position, Vector3.yAxis, across), Parent = holder })
+		if previous then
+			local beam = flowBeam:Clone()
+			beam.Attachment0 = previous
+			beam.Attachment1 = attachment
+			beam.Width0 = water.Width + 2
+			beam.Width1 = water.Width + 2
+			beam.TextureMode = Enum.TextureMode.Wrap
+			beam.TextureLength = water.FlowTextureLength
+			beam.CurveSize0 = 0
+			beam.CurveSize1 = 0
+			beam.Segments = 4
+			beam.Parent = holder
+		end
+		previous = attachment
+	end
+end
+
+local windPack = imported:FindFirstChild("WindPack")
+local gustTemplates = {}
+for _, source in windPack and windPack:GetChildren() or {} do
+	if source:IsA("Model") and source.Name ~= "OriginalPack" then
+		table.insert(gustTemplates, source)
+	end
+end
+local windDirection = EffectsConfig.Wind.Direction.Unit
+if #gustTemplates > 0 then
+	local spots = SC.WindSpots
+	for _ = 1, spots.Count do
+		local spot = ring(spots.Radius[1], spots.Radius[2])
+		local y = groundAt(spot)
+		local gust = pick(gustTemplates):Clone()
+		for _, descendant in gust:GetDescendants() do
+			if descendant:IsA("BasePart") then
+				descendant.Transparency = 1
+				descendant.Anchored = true
+				descendant.CanCollide = false
+				descendant.CanQuery = false
+				descendant.CanTouch = false
+				descendant.CastShadow = false
+			end
+		end
+		gust:ScaleTo(random:NextNumber(spots.Scale[1], spots.Scale[2]))
+		local position = Vector3.new(spot.X, y + random:NextNumber(spots.Height[1], spots.Height[2]), spot.Z)
+		gust:PivotTo(CFrame.lookAt(position, position + windDirection) * CFrame.Angles(0, 0, random:NextNumber(-0.5, 0.5)))
+		gust.Parent = folder("Wind")
+	end
 end
 
 local L = SC.Lighting
