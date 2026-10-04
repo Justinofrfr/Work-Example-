@@ -5,12 +5,25 @@ local Workspace = game:GetService("Workspace")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local PropsConfig = require(Shared.Config.Props)
+local EffectsConfig = require(Shared.Config.Effects)
+local Names = require(Shared.Config.Names)
+
+local Settings = require(script.Parent.Parent.Util.Settings)
 
 local AmbientController = {
 	Wobblers = {},
 	Wanderers = {},
 	Clouds = {},
+	Swayers = {},
+	Streaks = {},
 }
+
+local WIND = EffectsConfig.Wind
+local windDirection = WIND.Direction.Unit
+local swayAxis = Vector3.new(windDirection.Z, 0, -windDirection.X)
+local templates
+local leaves
+local lastStreak = 0
 
 local CULL = 260
 local camera = Workspace.CurrentCamera
@@ -73,14 +86,86 @@ function AmbientController:Start()
 		addCloud(model)
 	end
 	CollectionService:GetInstanceAddedSignal("Cloud"):Connect(addCloud)
+	local function addSway(model)
+		if model:IsA("Model") then
+			local base = model:GetPivot()
+			local _, size = model:GetBoundingBox()
+			self.Swayers[model] = {
+				Base = base,
+				Amp = math.rad(model:GetAttribute("Sway") or 2),
+				Phase = (base.Position.X + base.Position.Z) * 0.025 + random:NextNumber(0, 0.6),
+				Speed = WIND.SwaySpeed * random:NextNumber(0.85, 1.15),
+				Small = size.Y < WIND.SmallSize,
+			}
+		end
+	end
+	for _, model in CollectionService:GetTagged("Sway") do
+		addSway(model)
+	end
+	CollectionService:GetInstanceAddedSignal("Sway"):Connect(addSway)
+	templates = ReplicatedStorage:WaitForChild(Names.Templates.Folder)
+	local leafTemplate = templates:FindFirstChild("WindLeaves")
+	if leafTemplate then
+		leaves = leafTemplate:Clone()
+		leaves.Parent = Workspace.CurrentCamera
+	end
 	RunService.Heartbeat:Connect(function(dt)
 		self:Step(dt)
 	end)
 end
 
+function AmbientController:StepWind(dt, t, cameraPosition)
+	local enabled = Settings:EffectScale() > 0
+	if leaves then
+		leaves.CFrame = CFrame.new(cameraPosition + Vector3.new(0, WIND.LeafHeight, 0))
+		leaves.Leaves.Enabled = enabled
+	end
+	for model, state in self.Swayers do
+		if not model.Parent then
+			self.Swayers[model] = nil
+		else
+			local distance = (state.Base.Position - cameraPosition).Magnitude
+			if distance < (state.Small and WIND.SmallRadius or WIND.SwayRadius) then
+				local wave = math.sin(t * state.Speed + state.Phase) * 0.7 + math.sin(t * state.Speed * 2.3 + state.Phase * 1.7) * 0.3
+				model:PivotTo(state.Base * CFrame.fromAxisAngle(state.Base.Rotation:VectorToObjectSpace(swayAxis), state.Amp * (0.35 + wave)))
+			end
+		end
+	end
+	for streak, state in self.Streaks do
+		local age = t - state.Born
+		if age > WIND.StreakLife then
+			streak:Destroy()
+			self.Streaks[streak] = nil
+		else
+			local along = state.Origin + windDirection * WIND.StreakSpeed * age
+			local lift = math.sin(age * 4 + state.Phase) * WIND.StreakWave
+			local curl = math.cos(age * 3 + state.Phase) * WIND.StreakWave * 0.6
+			streak.CFrame = CFrame.new(along + Vector3.new(0, lift, 0) + swayAxis * curl)
+		end
+	end
+	if enabled and templates and t - lastStreak > WIND.StreakInterval then
+		lastStreak = t
+		local count = 0
+		for _ in self.Streaks do
+			count += 1
+		end
+		local template = templates:FindFirstChild("WindStreak")
+		if template and count < WIND.StreakMax then
+			local angle = random:NextNumber(0, math.pi * 2)
+			local radius = random:NextNumber(WIND.StreakRing[1], WIND.StreakRing[2])
+			local origin = cameraPosition * Vector3.new(1, 0, 1) + Vector3.new(math.cos(angle) * radius, random:NextNumber(WIND.StreakHeight[1], WIND.StreakHeight[2]), math.sin(angle) * radius) - windDirection * WIND.StreakSpeed * WIND.StreakLife * 0.5
+			local streak = template:Clone()
+			streak.CFrame = CFrame.new(origin)
+			streak.Parent = Workspace.CurrentCamera
+			self.Streaks[streak] = { Born = t, Origin = origin, Phase = random:NextNumber(0, math.pi * 2) }
+		end
+	end
+end
+
 function AmbientController:Step(dt)
 	local t = os.clock()
 	local cameraPosition = camera.CFrame.Position
+	self:StepWind(dt, t, cameraPosition)
 	local display = PropsConfig.Displays
 	for model, state in self.Wobblers do
 		if not model.Parent then

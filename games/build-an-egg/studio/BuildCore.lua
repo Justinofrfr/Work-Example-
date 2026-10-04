@@ -566,4 +566,60 @@ for presetName, list in VfxConfig.Presets do
 	end
 end
 
+local windStreak = make("Part", {
+	Name = "WindStreak",
+	Anchored = true,
+	CanCollide = false,
+	CanQuery = false,
+	CanTouch = false,
+	Transparency = 1,
+	Size = Vector3.new(0.2, 0.2, 0.2),
+	Parent = templates,
+})
+local streakTop = make("Attachment", { Name = "Top", Position = Vector3.new(0, 0.18, 0), Parent = windStreak })
+local streakBottom = make("Attachment", { Name = "Bottom", Position = Vector3.new(0, -0.18, 0), Parent = windStreak })
+make("Trail", {
+	Name = "Trail",
+	Attachment0 = streakTop,
+	Attachment1 = streakBottom,
+	Lifetime = 0.8,
+	FaceCamera = true,
+	LightEmission = 0.6,
+	Color = ColorSequence.new(Color3.new(1, 1, 1)),
+	Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.35), NumberSequenceKeypoint.new(1, 1) }),
+	WidthScale = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(1, 0) }),
+	Parent = windStreak,
+})
+local leaves = make("Part", {
+	Name = "WindLeaves",
+	Anchored = true,
+	CanCollide = false,
+	CanQuery = false,
+	CanTouch = false,
+	Transparency = 1,
+	Size = Vector3.new(140, 1, 140),
+	Parent = templates,
+})
+make("ParticleEmitter", {
+	Name = "Leaves",
+	Texture = "rbxasset://textures/particles/sparkles_main.dds",
+	Rate = 6,
+	Lifetime = NumberRange.new(6, 9),
+	Speed = NumberRange.new(1, 3),
+	Acceleration = Vector3.new(4, -2.2, 1.4),
+	Drag = 0.6,
+	SpreadAngle = Vector2.new(40, 40),
+	EmissionDirection = Enum.NormalId.Bottom,
+	Size = NumberSequence.new(0.55),
+	Squash = NumberSequence.new(0.55),
+	Rotation = NumberRange.new(0, 360),
+	RotSpeed = NumberRange.new(-120, 120),
+	Color = ColorSequence.new(Color3.fromRGB(150, 215, 90), Color3.fromRGB(110, 180, 70)),
+	Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.1, 0), NumberSequenceKeypoint.new(0.85, 0), NumberSequenceKeypoint.new(1, 1) }),
+	LightInfluence = 1,
+	Shape = Enum.ParticleEmitterShape.Box,
+	ShapeStyle = Enum.ParticleEmitterShapeStyle.Volume,
+	Parent = leaves,
+})
+
 print("Core built: remotes, templates, effects")
