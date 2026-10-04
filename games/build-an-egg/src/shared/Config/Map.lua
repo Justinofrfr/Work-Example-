@@ -95,6 +95,7 @@ return {
 	Scenery = {
 		Sources = { "MapKit", "MapKit2", "MapKit3", "MapKit4", "MapKit5", "MapKit6", "MapKit7", "MapKit8" },
 		OrganicTrails = true,
+		TrailLift = { World_TrailSpawn = 0, World_TrailGallery = 0.03, World_TrailAvenue = 0.06, World_Trail = 0.09 },
 		LampOffset = 5,
 		KitFolders = { World_Quarry = "QuarryKit", World_Incubator = "Incubator", World_Shop = "Shop", World_Nest = "Nest", World_Goose = "Goose" },
 		KitRoles = {

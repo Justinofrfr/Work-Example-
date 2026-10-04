@@ -220,6 +220,7 @@ for prefix, group in groups do
 					part.CastShadow = false
 					part.Parent = folder("PathStones")
 				elseif prefix:find("^World_Trail") then
+					part.CFrame = part.CFrame + Vector3.new(0, SC.TrailLift[prefix] or 0, 0)
 					part.CastShadow = false
 					part.CanCollide = false
 					part.CanQuery = false
