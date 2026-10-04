@@ -848,6 +848,11 @@ for _, gym in gymsFolder and gymsFolder:GetChildren() or {} do
 				end
 			end
 			local floor = pad.CFrame * CFrame.new(0, -pad.Size.Y / 2, 0)
+			local kitPlatform = gym:FindFirstChild("KitPlatform")
+			local floorPart = kitPlatform and kitPlatform:FindFirstChild("Floor")
+			if floorPart then
+				floor = floor + Vector3.new(0, floorPart.Position.Y + floorPart.Size.Y / 2 - floor.Position.Y, 0)
+			end
 			local kit = fitTo(machine.Name == "Treadmill" and "Treadmill" or "Bench", floor, Vector3.one, machine)
 			if kit then
 				kit.Name = "KitMachine"
@@ -910,6 +915,17 @@ for _, station in SC.Stations do
 		local ring = npc:FindFirstChild("Ring")
 		if ring and station.HideRing then
 			ring.Transparency = 1
+		end
+		local tag = root:FindFirstChild("Tag")
+		if tag and station.TagHeight then
+			tag.StudsOffset = Vector3.new(0, station.TagHeight, 0)
+		end
+		if station.HideBody then
+			for _, descendant in npc:GetDescendants() do
+				if descendant:IsA("BasePart") or descendant:IsA("Decal") then
+					descendant.Transparency = 1
+				end
+			end
 		end
 		local base = npc:GetPivot()
 		if station.Tilt then

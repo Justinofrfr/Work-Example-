@@ -36,5 +36,7 @@ return {
 	FingerBob = 0.015,
 	FingerSpeed = 5,
 	MarkerHeight = 12,
+	PromptSpotSize = Vector2.new(150, 74),
+	PromptNames = { Pickup = { "PickupPrompt", "PilePrompt" }, Place = { "PlacePrompt" } },
 	GuideNewPlayerPieces = 50,
 }

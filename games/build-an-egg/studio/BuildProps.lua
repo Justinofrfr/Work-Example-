@@ -691,6 +691,17 @@ for _, def in PropsConfig.NPCs do
 	description.TorsoColor = def.Body.Torso
 	description.LeftLegColor = def.Body.Legs
 	description.RightLegColor = def.Body.Legs
+	if def.Avatar then
+		local found, avatar = pcall(function()
+			local Players = game:GetService("Players")
+			return Players:GetHumanoidDescriptionFromUserId(Players:GetUserIdFromNameAsync(def.Avatar))
+		end)
+		if found and avatar then
+			description = avatar
+		else
+			warn("NPC avatar failed: " .. def.Avatar)
+		end
+	end
 	local ok, npc = pcall(function()
 		return game:GetService("Players"):CreateHumanoidModelFromDescription(description, Enum.HumanoidRigType.R15)
 	end)

@@ -1,4 +1,5 @@
 local Lighting = game:GetService("Lighting")
+local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -57,6 +58,13 @@ function TutorialController:Start()
 	end)
 	PanelController.Opened:Connect(function(name)
 		self.LastPanel = name
+	end)
+	self.ShownPrompts = {}
+	ProximityPromptService.PromptShown:Connect(function(prompt)
+		self.ShownPrompts[prompt] = true
+	end)
+	ProximityPromptService.PromptHidden:Connect(function(prompt)
+		self.ShownPrompts[prompt] = nil
 	end)
 	local function begin(state)
 		if self.Step or not state then
@@ -184,6 +192,30 @@ function TutorialController:GuiTarget(name)
 	elseif name == "EquipButton" then
 		local panel = PanelController:Get("Pets")
 		return panel and panel.Visible and self:FirstCard(panel.Body:FindFirstChild("List"), nil, "Equip") or nil
+	end
+	return nil
+end
+
+function TutorialController:PromptTarget(mode)
+	local camera = Workspace.CurrentCamera
+	local names = TutorialConfig.PromptNames[mode] or {}
+	for prompt in self.ShownPrompts do
+		if prompt.Parent and table.find(names, prompt.Name) then
+			local holder = prompt.Parent
+			local position = holder:IsA("Attachment") and holder.WorldPosition or holder:IsA("BasePart") and holder.Position or nil
+			if position then
+				local screen, visible = camera:WorldToScreenPoint(position)
+				if visible then
+					local size = TutorialConfig.PromptSpotSize
+					local center = Vector2.new(screen.X, screen.Y) + prompt.UIOffset
+					return { AbsolutePosition = center - size / 2, AbsoluteSize = size }
+				end
+			end
+		else
+			if not prompt.Parent then
+				self.ShownPrompts[prompt] = nil
+			end
+		end
 	end
 	return nil
 end
@@ -432,7 +464,10 @@ function TutorialController:Update()
 		self:ShowInterlude(server)
 		return
 	end
-	local action = def.ActionMode and InteractController.Mode == def.ActionMode and self:GuiTarget("Action") or nil
+	local action
+	if def.ActionMode and InteractController.Mode == def.ActionMode then
+		action = UserInputService.TouchEnabled and self:GuiTarget("Action") or self:PromptTarget(def.ActionMode) or self:GuiTarget("Action")
+	end
 	local text = action and ((UserInputService.TouchEnabled and def.MobileActionText) or def.ActionText) or (UserInputService.TouchEnabled and def.MobileText) or def.Text
 	if not frame.Visible or self.InInterlude or frame.Card.Text.Text ~= text then
 		self.InInterlude = false

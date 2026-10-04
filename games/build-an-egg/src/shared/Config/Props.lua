@@ -164,6 +164,7 @@ return {
 	NPCs = {
 		{
 			Name = "Upgrades",
+			Avatar = "kh4liks",
 			Title = "UPGRADES",
 			Subtitle = "Bulk Pickup · Bulk Place · Range",
 			TitleColor = Color3.fromRGB(190, 110, 255),
@@ -175,6 +176,7 @@ return {
 		},
 		{
 			Name = "Incubator",
+			Avatar = "JuustasV",
 			Title = "PET INCUBATOR",
 			Subtitle = "Fragments → Pets · Trade Up",
 			TitleColor = Color3.fromRGB(255, 150, 60),
