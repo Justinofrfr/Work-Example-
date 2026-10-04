@@ -250,6 +250,8 @@ return {
 		Water = {
 			Width = 22,
 			Surface = 0.55,
+			PondRadius = 46,
+			GrassGap = 3,
 			Flow = "Flowing Water",
 			FlowStride = 3,
 			FlowLift = 0.07,

@@ -103,6 +103,16 @@ for _, sourceName in SC.Sources do
 				end
 			end
 		end
+		for prefix in found do
+			if prefix:find("^World_") then
+				local family = (prefix:gsub("%d+$", ""))
+				for existing in groups do
+					if (existing:gsub("%d+$", "")) == family and not found[existing] then
+						groups[existing] = nil
+					end
+				end
+			end
+		end
 		for prefix, group in found do
 			groups[prefix] = group
 		end
@@ -570,7 +580,16 @@ end })
 local grassVariants = variants("Grass")
 local flowerVariants = variants("Flower")
 local grassFolder = folder("Grass")
+local function inWater(spot)
+	if polylineDistance(spot, river) < water.Width / 2 + water.GrassGap then
+		return true
+	end
+	return (flat(spot) - flat(SC.River.Pond.Center)).Magnitude < water.PondRadius + water.GrassGap or (flat(spot) - flat(SC.River.Pool.Center)).Magnitude < SC.River.Pool.Radius + water.GrassGap
+end
 local function grassAt(spot, scaleRange)
+	if inWater(spot) then
+		return nil
+	end
 	local y = groundAt(spot)
 	return place(pick(grassVariants), CFrame.new(spot.X, y, spot.Z) * yaw(), random:NextNumber(scaleRange[1], scaleRange[2]), grassFolder)
 end
