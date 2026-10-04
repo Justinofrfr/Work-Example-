@@ -92,12 +92,12 @@ function AmbientController:Start()
 			local _, size = model:GetBoundingBox()
 			local leaves
 			if model:GetAttribute("SwayLeaves") then
-				leaves = {}
+				leaves = { Parts = {} }
 				local lowest = math.huge
 				for _, part in model:GetChildren() do
 					local role = part:GetAttribute("Role")
 					if part:IsA("BasePart") and role and role:find("^Leaf") then
-						table.insert(leaves, { Part = part, Base = part.CFrame, Light = role == "LeafLight" })
+						table.insert(leaves.Parts, { Part = part, Base = part.CFrame, Light = role == "LeafLight" })
 						lowest = math.min(lowest, part.Position.Y - part.Size.Y / 2)
 					end
 				end
@@ -143,7 +143,7 @@ function AmbientController:StepWind(dt, t, cameraPosition)
 				local wave = math.sin(t * state.Speed + state.Phase) * 0.7 + math.sin(t * state.Speed * 2.3 + state.Phase * 1.7) * 0.3
 				if state.Leaves then
 					local pivot = state.Leaves.Pivot
-					for _, leaf in state.Leaves do
+					for _, leaf in state.Leaves.Parts do
 						local flutter = leaf.Light and math.sin(t * state.Speed * 3.1 + state.Phase * 2.3) * 0.35 or 0
 						local rotation = CFrame.fromAxisAngle(swayAxis, state.Amp * (0.35 + wave + flutter))
 						leaf.Part.CFrame = pivot * rotation * pivot:Inverse() * leaf.Base
