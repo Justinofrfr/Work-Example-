@@ -566,6 +566,25 @@ for presetName, list in VfxConfig.Presets do
 	end
 end
 
+local gustFolder = make("Folder", { Name = "WindGusts", Parent = templates })
+local windPack = imported and imported:FindFirstChild("WindPack")
+for _, source in windPack and windPack:GetChildren() or {} do
+	if source:IsA("Model") and source.Name ~= "OriginalPack" then
+		local gust = source:Clone()
+		for _, descendant in gust:GetDescendants() do
+			if descendant:IsA("BasePart") then
+				descendant.Transparency = 1
+				descendant.Anchored = true
+				descendant.CanCollide = false
+				descendant.CanQuery = false
+				descendant.CanTouch = false
+				descendant.CastShadow = false
+			end
+		end
+		gust.WorldPivot = gust:GetBoundingBox()
+		gust.Parent = gustFolder
+	end
+end
 local windStreak = make("Part", {
 	Name = "WindStreak",
 	Anchored = true,

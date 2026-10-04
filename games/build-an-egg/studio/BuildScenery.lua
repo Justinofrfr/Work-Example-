@@ -139,7 +139,7 @@ local offset = anchor and -anchor.Position or Vector3.zero
 for prefix, entries in groups do
 	if prefix:find("^World") and not prefix:find("^World_Anchor") then
 		for _, entry in entries do
-			if entry.Role == "Water" and prefix == "World_River" then
+			if (entry.Role == "Water" and prefix == "World_River") or prefix == "World_Waterfall" then
 				continue
 			end
 			local part = entry.Part:Clone()
@@ -212,60 +212,44 @@ terrain.WaterTransparency = water.Transparency
 terrain.WaterReflectance = water.Reflectance
 
 local falls = SC.Waterfall
+local waterFx = imported:FindFirstChild(falls.Source)
 local fallTop = SC.River.Waterfall
 local fallBottom = SC.River.Points[1]
-local fallAcross = flat(fallBottom - fallTop).Unit
-fallAcross = Vector3.new(-fallAcross.Z, 0, fallAcross.X)
-local fallAnchor = make("Part", { Name = "WaterfallFx", Anchored = true, CanCollide = false, CanQuery = false, CanTouch = false, Transparency = 1, Size = Vector3.one, CFrame = CFrame.new(fallBottom + Vector3.new(0, 1, 0)), Parent = folder("Water") })
-for index = 1, falls.Beams do
-	local offset = fallAcross * ((index - 0.5) / falls.Beams - 0.5) * falls.Spread
-	local top = make("Attachment", { Name = "Top" .. index, WorldPosition = fallTop + offset + Vector3.new(0, falls.Top, 0), Parent = fallAnchor })
-	local bottom = make("Attachment", { Name = "Bottom" .. index, WorldPosition = fallBottom + offset + Vector3.new(0, 1, 0), Parent = fallAnchor })
-	make("Beam", {
-		Name = "Fall" .. index,
-		Attachment0 = top,
-		Attachment1 = bottom,
-		Texture = falls.Texture,
-		TextureMode = Enum.TextureMode.Wrap,
-		TextureLength = 8,
-		TextureSpeed = 2.2 + index * 0.15,
-		Width0 = 6,
-		Width1 = 7.5,
-		FaceCamera = true,
-		LightEmission = 0.35,
-		LightInfluence = 0.6,
-		Color = ColorSequence.new(falls.Colors[1], falls.Colors[2]),
-		Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.35), NumberSequenceKeypoint.new(1, 0.15) }),
-		Segments = 12,
-		CurveSize0 = 0,
-		Parent = fallAnchor,
-	})
+local fallDirection = flat(fallBottom - fallTop).Unit
+local fallTemplate = waterFx and waterFx:FindFirstChild(falls.Model)
+if fallTemplate then
+	local fall = fallTemplate:Clone()
+	local topPosition = fallTop + Vector3.new(0, falls.Top, 0)
+	local base = CFrame.lookAt(topPosition, topPosition + fallDirection)
+	local drop = falls.Top - falls.Bottom
+	fall.Source.CFrame = base
+	fall.Plunge.CFrame = base * CFrame.new(0, -drop, -flat(fallBottom - fallTop).Magnitude)
+	fall.Parent = folder("Water")
 end
-local function splash(name, rate, size, lifetime, speed, transparency)
-	make("ParticleEmitter", {
-		Name = name,
-		Texture = falls.Splash,
-		FlipbookLayout = Enum.ParticleFlipbookLayout.Grid4x4,
-		FlipbookMode = Enum.ParticleFlipbookMode.OneShot,
-		Rate = rate,
-		Lifetime = NumberRange.new(lifetime * 0.8, lifetime * 1.2),
-		Speed = NumberRange.new(speed * 0.5, speed),
-		SpreadAngle = Vector2.new(60, 60),
-		EmissionDirection = Enum.NormalId.Top,
-		Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, size * 0.6), NumberSequenceKeypoint.new(1, size) }),
-		Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, transparency), NumberSequenceKeypoint.new(1, 1) }),
-		Color = ColorSequence.new(Color3.fromRGB(240, 252, 255)),
-		LightEmission = 0.2,
-		Rotation = NumberRange.new(0, 360),
-		RotSpeed = NumberRange.new(-40, 40),
-		Shape = Enum.ParticleEmitterShape.Box,
-		Parent = fallAnchor,
-	})
+local flowTemplate = waterFx and waterFx:FindFirstChild(falls.Flow)
+local flowBeam = flowTemplate and flowTemplate:FindFirstChildWhichIsA("Beam", true)
+if flowBeam then
+	local holder = make("Part", { Name = "FlowingWater", Anchored = true, CanCollide = false, CanQuery = false, CanTouch = false, Transparency = 1, Size = Vector3.one, CFrame = CFrame.new(), Parent = folder("Water") })
+	local function flowAttachment(position, across)
+		return make("Attachment", { CFrame = CFrame.fromMatrix(position, Vector3.yAxis, across), Parent = holder })
+	end
+	local stride = falls.FlowStride
+	for i = 1, #river - 1, stride do
+		local a = river[i]
+		local b = river[math.min(i + stride, #river)]
+		local direction = flat(b - a).Unit
+		local across = Vector3.new(-direction.Z, 0, direction.X)
+		local beam = flowBeam:Clone()
+		beam.Attachment0 = flowAttachment(Vector3.new(a.X, falls.FlowHeight, a.Z) - direction * 2, across)
+		beam.Attachment1 = flowAttachment(Vector3.new(b.X, falls.FlowHeight, b.Z) + direction * 2, across)
+		beam.Width0 = water.Width + 2
+		beam.Width1 = water.Width + 2
+		beam.TextureMode = Enum.TextureMode.Wrap
+		beam.TextureLength = falls.FlowTextureLength
+		beam.Segments = 2
+		beam.Parent = holder
+	end
 end
-fallAnchor.Size = Vector3.new(falls.Spread, 1, 6)
-fallAnchor.CFrame = CFrame.lookAt(fallBottom + Vector3.new(0, 1, 0), fallBottom + Vector3.new(0, 1, 0) + flat(fallBottom - fallTop).Unit)
-splash("Splash", 26, 5, 0.9, 9, 0.1)
-splash("Mist", 8, 14, 2.2, 3, 0.55)
 local occupied = {}
 local function occupiedNear(p, radius)
 	for _, entry in occupied do

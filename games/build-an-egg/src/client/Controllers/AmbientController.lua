@@ -140,7 +140,12 @@ function AmbientController:StepWind(dt, t, cameraPosition)
 			local along = state.Origin + windDirection * WIND.StreakSpeed * age
 			local lift = math.sin(age * 4 + state.Phase) * WIND.StreakWave
 			local curl = math.cos(age * 3 + state.Phase) * WIND.StreakWave * 0.6
-			streak.CFrame = CFrame.new(along + Vector3.new(0, lift, 0) + swayAxis * curl)
+			local position = along + Vector3.new(0, lift, 0) + swayAxis * curl
+			if streak:IsA("Model") then
+				streak:PivotTo(CFrame.lookAt(position, position + windDirection) * state.Roll)
+			else
+				streak.CFrame = CFrame.new(position)
+			end
 		end
 	end
 	if enabled and templates and t - lastStreak > WIND.StreakInterval then
@@ -149,15 +154,22 @@ function AmbientController:StepWind(dt, t, cameraPosition)
 		for _ in self.Streaks do
 			count += 1
 		end
-		local template = templates:FindFirstChild("WindStreak")
+		local gusts = templates:FindFirstChild("WindGusts")
+		local options = gusts and gusts:GetChildren() or {}
+		local template = #options > 0 and options[random:NextInteger(1, #options)] or templates:FindFirstChild("WindStreak")
 		if template and count < WIND.StreakMax then
 			local angle = random:NextNumber(0, math.pi * 2)
 			local radius = random:NextNumber(WIND.StreakRing[1], WIND.StreakRing[2])
 			local origin = cameraPosition * Vector3.new(1, 0, 1) + Vector3.new(math.cos(angle) * radius, random:NextNumber(WIND.StreakHeight[1], WIND.StreakHeight[2]), math.sin(angle) * radius) - windDirection * WIND.StreakSpeed * WIND.StreakLife * 0.5
 			local streak = template:Clone()
-			streak.CFrame = CFrame.new(origin)
+			local roll = CFrame.Angles(0, 0, random:NextNumber(-0.6, 0.6))
+			if streak:IsA("Model") then
+				streak:PivotTo(CFrame.lookAt(origin, origin + windDirection) * roll)
+			else
+				streak.CFrame = CFrame.new(origin)
+			end
 			streak.Parent = Workspace.CurrentCamera
-			self.Streaks[streak] = { Born = t, Origin = origin, Phase = random:NextNumber(0, math.pi * 2) }
+			self.Streaks[streak] = { Born = t, Origin = origin, Phase = random:NextNumber(0, math.pi * 2), Roll = roll }
 		end
 	end
 end
