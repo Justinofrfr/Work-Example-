@@ -102,10 +102,8 @@ function CarryService:ScatterSpot()
 		for _, stand in MapConfig.Stands do
 			clear = clear and (spot - stand).Magnitude > S.SpawnClearance
 		end
-		for index = 1, #GymsConfig.Tiers do
-			local gymAngle = math.rad(gym.StartAngle + (index - 1) * gym.AngleStep)
-			local gymSpot = center + Vector3.new(math.sin(gymAngle) * gym.Radius, 0, -math.cos(gymAngle) * gym.Radius)
-			clear = clear and (spot - gymSpot).Magnitude > S.GymClearance + gym.PlatformSize.Magnitude / 2
+		for _, slot in gym.Slots do
+			clear = clear and (spot - slot.Position).Magnitude > S.GymClearance + gym.PlatformSize.Magnitude / 2
 		end
 		if clear then
 			local hit = Workspace:Raycast(spot + Vector3.new(0, S.DropHeight, 0), Vector3.new(0, -S.DropHeight * 2, 0), params)

@@ -281,7 +281,7 @@ local LeaderboardsConfig = require(Shared.Config.Leaderboards)
 local boardsFolder = make("Folder", { Name = "Leaderboards", Parent = spawnFolder })
 for index, def in LeaderboardsConfig.Boards do
 	local size = LeaderboardsConfig.BoardSize
-	local position = LeaderboardsConfig.Origin + Vector3.new((index - 1) * LeaderboardsConfig.Spacing, size.Y / 2 + 2, 0)
+	local position = LeaderboardsConfig.Positions[index] + Vector3.new(0, size.Y / 2 + 2, 0)
 	local board = part({
 		Name = def.Key,
 		Size = size,
@@ -639,13 +639,13 @@ local function bench(parent, cframe, stat, tier)
 	return model
 end
 for index, tier in GymsConfig.Tiers do
-	local angle = math.rad(gymConfig.StartAngle + (index - 1) * gymConfig.AngleStep)
+	local slot = gymConfig.Slots[tier.Key]
 	local isAdmin = tier.Key == "GymAdmin"
 	local height = isAdmin and gymConfig.AdminHeight or 0
-	local position = center + Vector3.new(math.sin(angle) * gymConfig.Radius, height, -math.cos(angle) * gymConfig.Radius)
+	local position = slot.Position + Vector3.new(0, center.Y + height, 0)
 	local gym = make("Model", { Name = tier.Key, Parent = gyms })
 	gym:SetAttribute(A.Tier, tier.Key)
-	local base = CFrame.lookAt(position, Vector3.new(center.X, position.Y, center.Z))
+	local base = CFrame.lookAt(position, Vector3.new(slot.Face.X, position.Y, slot.Face.Z))
 	local size = gymConfig.PlatformSize
 	part({
 		Name = "Platform",

@@ -328,7 +328,12 @@ end
 for index, key in ProjectsConfig.Order do
 	local project = ProjectsConfig.List[key]
 	local look = displayConfig.Looks[key]
-	local position = displayConfig.Origin + Vector3.new((index - (#ProjectsConfig.Order + 1) / 2) * displayConfig.Spacing, 0, 0)
+	local gallery = displayConfig.Gallery
+	local perArc = math.ceil(#ProjectsConfig.Order / #gallery.Arcs)
+	local arc = gallery.Arcs[math.ceil(index / perArc)]
+	local slotIndex = (index - 1) % perArc
+	local angle = math.rad(arc[1] + (arc[2] - arc[1]) * slotIndex / math.max(perArc - 1, 1))
+	local position = gallery.Center + Vector3.new(math.cos(angle) * gallery.Radius, 0, math.sin(angle) * gallery.Radius)
 	local stand = make("Model", { Name = key, Parent = displays })
 	make("Part", {
 		Name = "Pedestal",

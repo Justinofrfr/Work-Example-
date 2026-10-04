@@ -48,7 +48,8 @@ return {
 	NestSink = -8,
 	NestBed = { Radius = 46, Height = 4, Top = 12, Color = Color3.fromRGB(196, 150, 78) },
 	Displays = {
-		Origin = Vector3.new(0, 0, -365),
+		Origin = Vector3.new(-140, 0, -300),
+		Gallery = { Center = Vector3.new(-140, 0, -300), Radius = 50, Arcs = { { 70, 165 }, { 195, 290 } } },
 		Spacing = 13,
 		CustomSource = "CustomEggs",
 		Bands = {
@@ -66,7 +67,7 @@ return {
 			Metal = Enum.Material.Metal,
 			Band = Enum.Material.SmoothPlastic,
 		},
-		PedestalHeight = 3,
+		PedestalHeight = 5,
 		EggHeight = 9,
 		Spots = 7,
 		Looks = {
@@ -116,9 +117,9 @@ return {
 	GiftHeight = 6,
 	Scenery = {
 		MaxSourceHeight = 120,
-		Trees = 70,
-		Rocks = 40,
-		Bushes = 60,
+		Trees = 0,
+		Rocks = 0,
+		Bushes = 0,
 		TreeHeight = { 22, 40 },
 		RockHeight = { 3, 9 },
 		BushHeight = { 3, 6 },
@@ -133,16 +134,13 @@ return {
 		},
 	},
 	Decor = {
-		Flowers = { Count = 170, Ring = { 95, 620 }, Height = { 1.4, 2.4 }, Colors = { Color3.fromRGB(255, 110, 150), Color3.fromRGB(255, 220, 80), Color3.fromRGB(150, 120, 255), Color3.fromRGB(255, 255, 255), Color3.fromRGB(255, 150, 60) }, Stem = Color3.fromRGB(70, 170, 70), Center = Color3.fromRGB(255, 230, 120) },
-		Tufts = { Count = 240, Ring = { 90, 640 }, Height = { 0.8, 1.6 }, Colors = { Color3.fromRGB(90, 185, 75), Color3.fromRGB(120, 210, 90), Color3.fromRGB(75, 160, 65) } },
+		Flowers = { Count = 0, Ring = { 95, 620 }, Height = { 1.4, 2.4 }, Colors = { Color3.fromRGB(255, 110, 150), Color3.fromRGB(255, 220, 80), Color3.fromRGB(150, 120, 255), Color3.fromRGB(255, 255, 255), Color3.fromRGB(255, 150, 60) }, Stem = Color3.fromRGB(70, 170, 70), Center = Color3.fromRGB(255, 230, 120) },
+		Tufts = { Count = 0, Ring = { 90, 640 }, Height = { 0.8, 1.6 }, Colors = { Color3.fromRGB(90, 185, 75), Color3.fromRGB(120, 210, 90), Color3.fromRGB(75, 160, 65) } },
 		Clouds = { Count = 14, Ring = { 260, 660 }, Height = { 150, 230 }, Blocks = { 4, 7 }, BlockSize = { 14, 34 }, Color = Color3.fromRGB(255, 255, 255), Transparency = 0.08 },
 		Lanterns = {
 			Spacing = 20,
 			Offset = 13,
-			Segments = {
-				{ From = Vector3.new(0, 0, -270), To = Vector3.new(0, 0, -237) },
-				{ From = Vector3.new(0, 0, -143), To = Vector3.new(0, 0, -92) },
-			},
+			Segments = {},
 			PostHeight = 7,
 			Post = Color3.fromRGB(102, 64, 38),
 			Lamp = Color3.fromRGB(255, 214, 140),
@@ -157,11 +155,11 @@ return {
 		Keepout = 6,
 	},
 	Ambient = {
-		{ Species = "duck_pet", Count = 3, Height = 3, Area = Vector3.new(-95, 0, -285), Spread = 22, Speed = 5 },
-		{ Species = "bunny_pet", Count = 3, Height = 2.8, Area = Vector3.new(-95, 0, -285), Spread = 22, Speed = 6 },
-		{ Species = "sheep_pet", Count = 2, Height = 3.4, Area = Vector3.new(95, 0, -255), Spread = 20, Speed = 4 },
-		{ Species = "pig_pet", Count = 2, Height = 3, Area = Vector3.new(95, 0, -255), Spread = 20, Speed = 5 },
-		{ Species = "cow_pet", Count = 2, Height = 4, Area = Vector3.new(150, 0, -175), Spread = 26, Speed = 3 },
+		{ Species = "duck_pet", Count = 3, Height = 3, Area = Vector3.new(-175, 0, -400), Spread = 20, Speed = 5 },
+		{ Species = "bunny_pet", Count = 3, Height = 2.8, Area = Vector3.new(-110, 0, -210), Spread = 22, Speed = 6 },
+		{ Species = "sheep_pet", Count = 2, Height = 3.4, Area = Vector3.new(160, 0, -190), Spread = 24, Speed = 4 },
+		{ Species = "pig_pet", Count = 2, Height = 3, Area = Vector3.new(200, 0, -160), Spread = 20, Speed = 5 },
+		{ Species = "cow_pet", Count = 2, Height = 4, Area = Vector3.new(250, 0, -110), Spread = 26, Speed = 3 },
 	},
 	NPCs = {
 		{
