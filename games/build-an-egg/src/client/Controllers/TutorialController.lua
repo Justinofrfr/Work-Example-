@@ -9,6 +9,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Names = require(Shared.Config.Names)
 local TutorialConfig = require(Shared.Config.Tutorial)
 local UpgradesConfig = require(Shared.Config.Upgrades)
+local MapConfig = require(Shared.Config.Map)
 local PetsConfig = require(Shared.Config.Pets)
 
 local Ui = require(script.Parent.Parent.Util.Ui)
@@ -20,6 +21,7 @@ local TutorialController = {
 }
 
 local W = Names.World
+local InteriorTop = MapConfig.Interior.Center.Y + MapConfig.Interior.Height + 20
 local ClientState
 local PanelController
 local CutsceneController
@@ -399,6 +401,19 @@ function TutorialController:SetGuide(position, markerHeight)
 	guideBeam.Enabled = true
 end
 
+function TutorialController:ShowInterlude()
+	local interlude = TutorialConfig.Interlude
+	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+	local inside = root ~= nil and root.Position.Y < InteriorTop
+	self.InInterlude = true
+	frame.Visible = true
+	frame.Card.Step.Text = interlude.Label
+	frame.Card.Text.Text = inside and interlude.Inside or interlude.Outside
+	local hatch = gui:FindFirstChild("Hatch")
+	self:SetSpot(not inside and hatch and hatch.Visible and hatch.Button or nil)
+	self:SetGuide(nil)
+end
+
 function TutorialController:Update()
 	local def = self:CurrentDef()
 	if not def then
@@ -411,7 +426,14 @@ function TutorialController:Update()
 		self:SetGuide(nil)
 		return
 	end
-	if not frame.Visible then
+	local server = ClientState.Server
+	local interlude = TutorialConfig.Interlude
+	if server and server.Phase ~= "Building" and interlude.Steps[def.Key] then
+		self:ShowInterlude(server)
+		return
+	end
+	if not frame.Visible or self.InInterlude then
+		self.InInterlude = false
 		frame.Visible = true
 		frame.Card.Step.Text = ("STEP %d/%d"):format(self:StageCounts(def))
 		frame.Card.Text.Text = (UserInputService.TouchEnabled and def.MobileText) or def.Text

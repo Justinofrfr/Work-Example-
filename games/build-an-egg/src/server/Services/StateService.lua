@@ -78,12 +78,7 @@ function StateService:BoostMultiplier(player, stat)
 		return 1
 	end
 	local key = stat .. "Boost"
-	local product = ProductsConfig.DevProducts[key]
-	local level = data.BoostLevels[key] or 0
-	if not product then
-		return 1
-	end
-	return 1 + (product.Multiplier - 1) * level
+	return Formulas.BoostValue(key, data.BoostLevels[key] or 0)
 end
 
 function StateService:AwardStat(player, stat, amount)

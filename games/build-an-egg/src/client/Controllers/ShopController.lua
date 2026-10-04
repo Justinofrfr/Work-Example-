@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local ProductsConfig = require(Shared.Config.Products)
+local Formulas = require(Shared.Util.Formulas)
 local ShopConfig = require(Shared.Config.Shop)
 local UIConfig = require(Shared.Config.UI)
 local Names = require(Shared.Config.Names)
@@ -89,7 +90,8 @@ function ShopController:Refresh()
 		if entry.Item.Kind == "Product" and ProductsConfig.DevProducts[key].Tiers then
 			local state = ClientState.State
 			local level = state and state.BoostLevels and state.BoostLevels[key] or 0
-			entry.Card.Title.Text = entry.Item.Name .. (level > 0 and (" (x" .. level .. ")") or "")
+			entry.Card.Title.Text = Formulas.BoostLabel(key, level)
+			entry.Card.Desc.Text = level > 0 and ("Now x%d gains · stacks every buy"):format(Formulas.BoostValue(key, level)) or entry.Item.Desc
 		end
 	end
 end

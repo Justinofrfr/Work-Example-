@@ -1,6 +1,7 @@
 local Shared = script.Parent.Parent
 local StatsConfig = require(Shared.Config.Stats)
 local UpgradesConfig = require(Shared.Config.Upgrades)
+local ProductsConfig = require(Shared.Config.Products)
 local GymsConfig = require(Shared.Config.Gyms)
 local RanksConfig = require(Shared.Config.Ranks)
 local GameConfig = require(Shared.Config.Game)
@@ -41,6 +42,25 @@ end
 
 function Formulas.PromptDistance(rangeLevel: number): number
 	return GameConfig.BasePromptDistance * (1 + Formulas.UpgradeValue("Range", rangeLevel))
+end
+
+function Formulas.BoostValue(key: string, level: number): number
+	local product = ProductsConfig.DevProducts[key]
+	if not product or not product.Multiplier then
+		return 1
+	end
+	return product.Multiplier ^ level
+end
+
+function Formulas.BoostLabel(key: string, level: number): string
+	local product = ProductsConfig.DevProducts[key]
+	if not product or not product.Tiers then
+		return ""
+	end
+	if level >= #product.Tiers then
+		return ("MAX %dx %s"):format(Formulas.BoostValue(key, level), product.Stat)
+	end
+	return ("%dx %s"):format(Formulas.BoostValue(key, level + 1), product.Stat)
 end
 
 function Formulas.GymTier(key: string)

@@ -123,9 +123,14 @@ function HudController:RenderState(state, previous)
 	for _, key in ProductsConfig.QuickBoosts do
 		local quickButton = hud.Right:FindFirstChild(key)
 		local badge = quickButton and quickButton:FindFirstChild("Badge")
+		local level = state.BoostLevels and state.BoostLevels[key] or 0
+		local maxed = level >= #ProductsConfig.DevProducts[key].Tiers
 		if badge then
 			local _, price = ShopController:ProductInfo({ Key = key, Kind = "Product" })
-			badge.Text.Text = "R$" .. tostring(price)
+			badge.Text.Text = maxed and "MAX" or ("R$" .. tostring(price))
+		end
+		if quickButton then
+			Ui.SetText(quickButton, Formulas.BoostLabel(key, level))
 		end
 	end
 end

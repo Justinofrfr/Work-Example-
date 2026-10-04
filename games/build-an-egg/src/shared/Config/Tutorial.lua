@@ -13,6 +13,12 @@ return {
 		{ Key = "HatchPet", Stage = "Pets", WaitFor = "Fragments", Text = "Press HATCH to merge them into a pet!", Target = "Gui", Gui = "IncubatorHatch", NeedsPanel = "Incubator", OpenGui = { "IncubatorButton", "PetsButton" } },
 		{ Key = "EquipPet", Stage = "Pets", Text = "EQUIP your new pet to boost your stats!", Target = "Gui", Gui = "EquipButton", NeedsPanel = "Pets", OpenGui = { "PetsButton" } },
 	},
+	Interlude = {
+		Steps = { Carry = true, Place = true },
+		Label = "EGG HATCHING!",
+		Outside = "The egg just hatched! Press GO INSIDE to train 2x until the next egg starts",
+		Inside = "Swim in the golden pool to train 2x! The next egg starts soon",
+	},
 	BeamTexture = "rbxassetid://72139726825517",
 	BeamColor = Color3.new(1, 1, 1),
 	BeamWidth = 1.6,
