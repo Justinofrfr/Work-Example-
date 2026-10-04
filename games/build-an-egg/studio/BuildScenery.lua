@@ -1,4 +1,5 @@
 local CollectionService = game:GetService("CollectionService")
+local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 local Workspace = game:GetService("Workspace")
@@ -11,11 +12,6 @@ local SC = MapConfig.Scenery
 local W = Names.World
 local world = Workspace:WaitForChild(W.Root)
 local imported = ServerStorage:WaitForChild("Imported")
-local source = imported:FindFirstChild(SC.Source)
-if not source then
-	print("Scenery skipped: kit missing")
-	return
-end
 local random = Random.new(SC.Seed)
 
 local function make(className, props, children)
@@ -48,79 +44,84 @@ local function pick(list)
 end
 
 local function baseName(prefix)
-	return (prefix:gsub("%u$", ""))
+	return (prefix:gsub("%d+$", ""):gsub("%u$", ""))
 end
 
-local function style(part, role, solid)
-	local def = SC.Roles[role] or SC.Roles.Grass
+local function roleDef(prefix, role)
+	return SC.Roles[baseName(prefix) .. role] or SC.Roles[role] or SC.Roles.Grass
+end
+
+local function solidFor(prefix, role)
+	local rule = SC.Collide[baseName(prefix)]
+	return rule ~= nil and rule[role] == true
+end
+
+local function style(part, prefix, role)
+	local def = roleDef(prefix, role)
 	for _, child in part:GetChildren() do
 		child:Destroy()
 	end
+	local solid = solidFor(prefix, role)
 	part.Anchored = true
 	part.TextureID = ""
 	part.PivotOffset = CFrame.identity
 	part.Color = pick(def.Colors)
 	part.Material = def.Material or Enum.Material.SmoothPlastic
 	part.Transparency = def.Transparency or 0
-	part.Reflectance = def.Reflectance or 0
+	part.Reflectance = 0
 	part.CanCollide = solid
-	part.CanQuery = solid or def.Transparency ~= nil
+	part.CanQuery = solid
 	part.CanTouch = false
-	part.CastShadow = part.Size.Magnitude > 6
+	part.CastShadow = part.Size.Magnitude > 5
+	part:SetAttribute("Role", role)
+end
+
+local function keepLegacy(prefix)
+	for _, pattern in SC.Keep do
+		if prefix:find(pattern) then
+			return true
+		end
+	end
+	return false
 end
 
 local groups = {}
-for _, part in source:GetDescendants() do
-	if part:IsA("MeshPart") then
-		local prefix, role = part.Name:match("^(.-)_(%a+)$")
-		if prefix then
-			groups[prefix] = groups[prefix] or {}
-			table.insert(groups[prefix], { Part = part, Role = role })
+for _, sourceName in SC.Sources do
+	local source = imported:FindFirstChild(sourceName)
+	if source then
+		local anchor = source:FindFirstChild("World_Anchor_Marker", true)
+		local offset = anchor and -anchor.Position or Vector3.zero
+		local found = {}
+		for _, part in source:GetDescendants() do
+			if part:IsA("MeshPart") then
+				local prefix, role = part.Name:match("^(.-)_(%a+)$")
+				local legacy = sourceName == SC.Sources[1]
+				if prefix and not prefix:find("^World_Anchor") and (not legacy or keepLegacy(prefix)) then
+					found[prefix] = found[prefix] or { Entries = {}, Offset = offset }
+					table.insert(found[prefix].Entries, { Part = part, Role = role })
+				end
+			end
+		end
+		for prefix, group in found do
+			groups[prefix] = group
 		end
 	end
 end
 
 local templates = {}
-for prefix, entries in groups do
+for prefix, group in groups do
 	if not prefix:find("^World") then
 		local model = Instance.new("Model")
 		model.Name = prefix
-		local collideRole = SC.Collide[baseName(prefix)]
-		for _, entry in entries do
+		for _, entry in group.Entries do
 			local part = entry.Part:Clone()
-			style(part, entry.Role, collideRole == entry.Role)
-			part:SetAttribute("Role", entry.Role)
+			style(part, prefix, entry.Role)
 			part.Parent = model
 		end
 		local box, size = model:GetBoundingBox()
 		model.WorldPivot = CFrame.new(box.Position.X, box.Position.Y - size.Y / 2, box.Position.Z)
 		templates[prefix] = model
 	end
-end
-
-local function place(prefix, cframe, scale, parent)
-	local template = templates[prefix]
-	if not template then
-		return nil
-	end
-	local model = template:Clone()
-	local sway = SC.Sway[baseName(prefix)]
-	if sway then
-		model:SetAttribute("Sway", sway)
-		CollectionService:AddTag(model, "Sway")
-	end
-	for _, part in model:GetChildren() do
-		local def = SC.Roles[part:GetAttribute("Role")]
-		if def then
-			part.Color = pick(def.Colors)
-		end
-	end
-	if scale and scale ~= 1 then
-		model:ScaleTo(scale)
-	end
-	model:PivotTo(cframe)
-	model.Parent = parent
-	return model
 end
 
 local function variants(base)
@@ -134,27 +135,59 @@ local function variants(base)
 	return list
 end
 
-local anchor = groups.World_Anchor and groups.World_Anchor[1].Part
-local offset = anchor and -anchor.Position or Vector3.zero
-for prefix, entries in groups do
-	if prefix:find("^World") and not prefix:find("^World_Anchor") then
-		for _, entry in entries do
-			if (entry.Role == "Water" and prefix == "World_River") or prefix == "World_Waterfall" then
-				continue
+local function place(prefix, cframe, scale, parent)
+	local template = templates[prefix]
+	if not template then
+		return nil
+	end
+	local model = template:Clone()
+	for _, part in model:GetChildren() do
+		part.Color = pick(roleDef(prefix, part:GetAttribute("Role")).Colors)
+	end
+	if scale and scale ~= 1 then
+		model:ScaleTo(scale)
+	end
+	model:PivotTo(cframe)
+	local base = baseName(prefix)
+	local sway = SC.Sway[base]
+	if sway then
+		model:SetAttribute("Sway", sway)
+		if base == "Oak" or base == "Pine" then
+			model:SetAttribute("SwayLeaves", true)
+		end
+		CollectionService:AddTag(model, "Sway")
+	end
+	model.Parent = parent
+	return model
+end
+
+local hillParts = {}
+for prefix, group in groups do
+	if prefix:find("^World") then
+		for _, entry in group.Entries do
+			if not (prefix == "World_River" and entry.Role == "Water") then
+				local part = entry.Part:Clone()
+				style(part, prefix, entry.Role)
+				part.CFrame = part.CFrame + group.Offset
+				if prefix:find("^World_Hills") then
+					part.Color = SC.Hills.Color
+					part.CastShadow = true
+					pcall(function()
+						part.CollisionFidelity = Enum.CollisionFidelity.PreciseConvexDecomposition
+					end)
+					make("SurfaceAppearance", { ColorMap = SC.Hills.Studs, AlphaMode = Enum.AlphaMode.Overlay, Parent = part })
+					part.Parent = folder("Hills")
+					table.insert(hillParts, part)
+				elseif prefix:find("^World_Path") then
+					part.CastShadow = false
+					part.Parent = folder("PathStones")
+				elseif prefix:find("^World_Falls") then
+					part.Parent = folder("Waterfall")
+				else
+					part.CanQuery = true
+					part.Parent = folder("Water")
+				end
 			end
-			local part = entry.Part:Clone()
-			local solid = entry.Role == "Rock"
-			style(part, entry.Role, solid)
-			if prefix == "World_Foam" then
-				part.Color = Color3.fromRGB(235, 248, 255)
-				part.Material = Enum.Material.SmoothPlastic
-			elseif prefix == "World_Waterfall" then
-				part.Color = Color3.fromRGB(150, 210, 245)
-				part.Transparency = 0.2
-			end
-			part.CanQuery = true
-			part.CFrame = part.CFrame + offset
-			part.Parent = folder("Water")
 		end
 	end
 end
@@ -203,57 +236,53 @@ for i = 1, #river - 1 do
 	local mid = (a + b) / 2
 	terrain:FillBlock(CFrame.lookAt(Vector3.new(mid.X, water.Center, mid.Z), Vector3.new(b.X, water.Center, b.Z)), Vector3.new(water.Width, water.Depth, (b - a).Magnitude + water.Width * 0.6), Enum.Material.Water)
 end
-local pond = SC.River.Pond.Center
-terrain:FillCylinder(CFrame.new(pond.X, water.Center, pond.Z), water.Depth, water.PondRadius, Enum.Material.Water)
+for _, body in { { SC.River.Pond.Center, water.PondRadius }, { SC.River.Pool.Center, SC.River.Pool.Radius } } do
+	terrain:FillCylinder(CFrame.new(body[1].X, water.Center, body[1].Z), water.Depth, body[2], Enum.Material.Water)
+end
 terrain.WaterColor = water.Color
 terrain.WaterWaveSize = water.WaveSize
 terrain.WaterWaveSpeed = water.WaveSpeed
 terrain.WaterTransparency = water.Transparency
 terrain.WaterReflectance = water.Reflectance
 
-local falls = SC.Waterfall
-local waterFx = imported:FindFirstChild(falls.Source)
-local fallTop = SC.River.Waterfall
-local fallBottom = SC.River.Points[1]
-local fallDirection = flat(fallBottom - fallTop).Unit
-local fallTemplate = waterFx and waterFx:FindFirstChild(falls.Model)
-if fallTemplate then
-	local fall = fallTemplate:Clone()
-	local topPosition = fallTop + Vector3.new(0, falls.Top, 0)
-	local base = CFrame.lookAt(topPosition, topPosition + fallDirection)
-	local drop = falls.Top - falls.Bottom
-	fall.Source.CFrame = base
-	fall.Plunge.CFrame = base * CFrame.new(0, -drop, -flat(fallBottom - fallTop).Magnitude)
-	fall.Parent = folder("Water")
-end
-local flowTemplate = waterFx and waterFx:FindFirstChild(falls.Flow)
-local flowBeam = flowTemplate and flowTemplate:FindFirstChildWhichIsA("Beam", true)
-if flowBeam then
-	local holder = make("Part", { Name = "FlowingWater", Anchored = true, CanCollide = false, CanQuery = false, CanTouch = false, Transparency = 1, Size = Vector3.one, CFrame = CFrame.new(), Parent = folder("Water") })
-	local function flowAttachment(position, across)
-		return make("Attachment", { CFrame = CFrame.fromMatrix(position, Vector3.yAxis, across), Parent = holder })
+local rayParams = RaycastParams.new()
+rayParams.FilterType = Enum.RaycastFilterType.Include
+rayParams.FilterDescendantsInstances = hillParts
+local function slopeHeight(x, z)
+	local hit = Workspace:Raycast(Vector3.new(x, 400, z), Vector3.new(0, -800, 0), rayParams)
+	if hit then
+		return hit.Position.Y, hit.Normal.Y
 	end
-	local stride = falls.FlowStride
-	for i = 1, #river - 1, stride do
-		local a = river[i]
-		local b = river[math.min(i + stride, #river)]
-		local direction = flat(b - a).Unit
-		local across = Vector3.new(-direction.Z, 0, direction.X)
-		local beam = flowBeam:Clone()
-		beam.Attachment0 = flowAttachment(Vector3.new(a.X, falls.FlowHeight, a.Z) - direction * 2, across)
-		beam.Attachment1 = flowAttachment(Vector3.new(b.X, falls.FlowHeight, b.Z) + direction * 2, across)
-		beam.Width0 = water.Width + 2
-		beam.Width1 = water.Width + 2
-		beam.TextureMode = Enum.TextureMode.Wrap
-		beam.TextureLength = falls.FlowTextureLength
-		beam.Segments = 2
-		beam.Parent = holder
-	end
+	return 0, 1
 end
+
 local occupied = {}
+local cell = 16
 local function occupiedNear(p, radius)
-	for _, entry in occupied do
-		if (flat(entry.P) - flat(p)).Magnitude < radius + entry.R then
+	local cx, cz = math.floor(p.X / cell), math.floor(p.Z / cell)
+	for dx = -1, 1 do
+		for dz = -1, 1 do
+			for _, entry in occupied[(cx + dx) .. ":" .. (cz + dz)] or {} do
+				if (flat(entry.P) - flat(p)).Magnitude < radius + entry.R then
+					return true
+				end
+			end
+		end
+	end
+	return false
+end
+local function occupy(p, radius)
+	local k = math.floor(p.X / cell) .. ":" .. math.floor(p.Z / cell)
+	occupied[k] = occupied[k] or {}
+	table.insert(occupied[k], { P = p, R = radius })
+end
+
+local function nearWater(p, margin)
+	if polylineDistance(p, river) < SC.River.Clearance + margin then
+		return true
+	end
+	for _, body in { SC.River.Pond, SC.River.Pool } do
+		if (flat(p) - flat(body.Center)).Magnitude < body.Radius + margin then
 			return true
 		end
 	end
@@ -262,9 +291,6 @@ end
 
 local function blocked(p, margin)
 	local flatP = flat(p)
-	if flatP.Magnitude > SC.Radius + margin then
-		return true
-	end
 	for _, zone in SC.Exclusions do
 		if zone.Radius then
 			if (flatP - flat(zone.Center)).Magnitude < zone.Radius + margin then
@@ -279,10 +305,7 @@ local function blocked(p, margin)
 			return true
 		end
 	end
-	if polylineDistance(p, river) < SC.River.Clearance + margin then
-		return true
-	end
-	if (flatP - flat(SC.River.Pond.Center)).Magnitude < SC.River.Pond.Radius + margin then
+	if nearWater(p, margin) then
 		return true
 	end
 	for _, lookout in SC.Lookouts do
@@ -293,7 +316,7 @@ local function blocked(p, margin)
 	return false
 end
 
-local function randomSpot(minRadius, maxRadius)
+local function ring(minRadius, maxRadius)
 	local angle = random:NextNumber(0, math.pi * 2)
 	local radius = math.sqrt(random:NextNumber(minRadius * minRadius, maxRadius * maxRadius))
 	return Vector3.new(math.cos(angle) * radius, 0, math.sin(angle) * radius)
@@ -312,38 +335,43 @@ local function studded(props)
 	return make("Part", props)
 end
 
-local cliffs = variants("Cliff")
-local center = Vector3.zero
-for index = 1, SC.Cliffs.Count do
-	local angle = index / SC.Cliffs.Count * math.pi * 2 + random:NextNumber(-0.02, 0.02)
-	local radius = SC.Cliffs.Radius + random:NextNumber(-SC.Cliffs.Jitter, SC.Cliffs.Jitter)
-	local position = Vector3.new(math.cos(angle) * radius, -2, math.sin(angle) * radius)
-	local scale = random:NextNumber(SC.Cliffs.Scale[1], SC.Cliffs.Scale[2])
-	place(pick(cliffs), CFrame.lookAt(position, Vector3.new(center.X, position.Y, center.Z)) * CFrame.Angles(0, random:NextNumber(-0.15, 0.15), 0), scale, folder("Cliffs"))
-end
-local fall = SC.River.Waterfall
-local fallDirection = flat(SC.River.Points[1] - fall).Unit
-place("CliffB", CFrame.lookAt(fall - fallDirection * 26 + Vector3.new(0, -2, 0), fall + fallDirection * 10 + Vector3.new(0, -2, 0)), 1.05, folder("Cliffs"))
-for side = -1, 1, 2 do
-	local sideways = Vector3.new(-fallDirection.Z, 0, fallDirection.X) * side * 34
-	place(pick(cliffs), CFrame.lookAt(fall + sideways - fallDirection * 6 + Vector3.new(0, -2, 0), fall + sideways + fallDirection * 10 + Vector3.new(0, -2, 0)), 1.2, folder("Cliffs"))
+local function groundAt(p)
+	if flat(p).Magnitude <= SC.FlatRadius then
+		return 0, 1
+	end
+	return slopeHeight(p.X, p.Z)
 end
 
-local hills = variants("Hill")
-for index = 1, SC.Hills.Count do
-	local angle = index / SC.Hills.Count * math.pi * 2 + random:NextNumber(-0.1, 0.1)
-	local radius = random:NextNumber(SC.Hills.Radius[1], SC.Hills.Radius[2])
-	local position = Vector3.new(math.cos(angle) * radius, -3, math.sin(angle) * radius)
-	local choice = pick(hills)
-	local scale = random:NextNumber(SC.Hills.Scale[1], SC.Hills.Scale[2])
-	local _, size = templates[choice]:GetBoundingBox()
-	if not blocked(position, size.X / 2 * scale) then
-		place(choice, CFrame.new(position) * yaw(), scale, folder("Hills"))
+local function scatter(options)
+	local placed = 0
+	local spots = {}
+	for _ = 1, options.Count * 10 do
+		if placed >= options.Count then
+			break
+		end
+		local spot = options.Spot()
+		if spot and not blocked(spot, options.Margin or 2) and (not options.Spacing or not occupiedNear(spot, options.Spacing)) then
+			local y, up = groundAt(spot)
+			if up >= (options.MinUp or 0.7) then
+				local scale = random:NextNumber(options.Scale[1], options.Scale[2])
+				local model = place(options.Prefix(), CFrame.new(spot.X, y + (options.Lift or 0), spot.Z) * yaw(), scale, folder(options.Folder))
+				if model then
+					if options.Spacing then
+						occupy(spot, options.Spacing * 0.7)
+					end
+					if options.After then
+						options.After(model)
+					end
+					table.insert(spots, spot)
+					placed += 1
+				end
+			end
+		end
 	end
+	return placed, spots
 end
 
 local pathFolder = folder("Paths")
-local flags = variants("Flag")
 for _, path in SC.Paths do
 	if not path.Hidden then
 		for i = 1, #path.Points - 1 do
@@ -352,17 +380,13 @@ for _, path in SC.Paths do
 			local mid = (a + b) / 2
 			studded({
 				Name = "Path",
-				Size = Vector3.new(path.Width, 0.4, length + path.Width * 0.5),
+				Size = Vector3.new(path.Width + 1, 0.4, length + path.Width * 0.5),
 				CFrame = CFrame.lookAt(mid, b) + Vector3.new(0, SC.PathLift - 0.2 + (i % 2) * 0.02, 0),
 				Color = SC.PathColor,
 				Parent = pathFolder,
 			})
 			local direction = (b - a).Unit
 			local right = Vector3.new(-direction.Z, 0, direction.X)
-			for step = 0, math.floor(length / SC.FlagSpacing) do
-				local along = a + direction * step * SC.FlagSpacing + right * random:NextNumber(-path.Width / 2 + 2, path.Width / 2 - 2)
-				place(pick(flags), CFrame.new(along + Vector3.new(0, SC.PathLift - 0.05, 0)) * yaw(), random:NextNumber(0.8, 1.25), pathFolder)
-			end
 			for step = 0, math.floor(length / SC.LampSpacing) do
 				local side = (step % 2 == 0) and 1 or -1
 				local spot = a + direction * (step + 0.5) * SC.LampSpacing + right * side * (path.Width / 2 + 2.5)
@@ -387,10 +411,9 @@ end
 
 for _, bridge in SC.Bridges do
 	local along = flat(bridge.Along).Unit
-	local frame = CFrame.fromMatrix(bridge.Position, along, Vector3.yAxis)
-	place("Bridge", frame, 1, folder("Bridges"))
+	place("Bridge", CFrame.fromMatrix(bridge.Position, along, Vector3.yAxis), 1, folder("Bridges"))
+	local riverDir = Vector3.new(-along.Z, 0, along.X)
 	for side = -1, 1, 2 do
-		local riverDir = Vector3.new(-along.Z, 0, along.X)
 		for bank = -1, 1, 2 do
 			local spot = bridge.Position + along * bank * 20 + riverDir * side * 13
 			place("Fence", CFrame.fromMatrix(spot, riverDir, Vector3.yAxis), 1, folder("Fences"))
@@ -418,93 +441,174 @@ for _, lookout in SC.Lookouts do
 	end
 end
 
-local trees = {}
-local roundTrees = variants("Tree")
+local F = SC.Flat
+local S = SC.Slopes
+local oaks = variants("Oak")
 local pines = variants("Pine")
-local placedTrees = 0
-for _ = 1, SC.Trees.Count * 8 do
-	if placedTrees >= SC.Trees.Count then
-		break
+local flatRadius = SC.FlatRadius - 8
+local _, flatTrees = scatter({
+	Count = F.Trees.Count,
+	Folder = "Trees",
+	Scale = F.Trees.Scale,
+	Spacing = F.Trees.Spacing,
+	Margin = 7,
+	Lift = -0.4,
+	Spot = function()
+		local spot = ring(150, flatRadius)
+		return math.noise(spot.X * F.Trees.Cluster, spot.Z * F.Trees.Cluster, 3.7) > -0.1 and spot or nil
+	end,
+	Prefix = function()
+		return pick(random:NextNumber() < F.Trees.Pines and pines or oaks)
+	end,
+})
+local _, slopeTrees = scatter({
+	Count = S.Trees.Count,
+	Folder = "Trees",
+	Scale = S.Trees.Scale,
+	Spacing = S.Trees.Spacing,
+	Margin = 6,
+	Lift = -0.8,
+	MinUp = 0.6,
+	Spot = function()
+		local spot = ring(SC.HillRadius[1] + 8, SC.HillRadius[2])
+		return math.noise(spot.X * S.Trees.Cluster, spot.Z * S.Trees.Cluster, 8.1) > -0.35 and spot or nil
+	end,
+	Prefix = function()
+		return pick(random:NextNumber() < S.Trees.Pines and pines or oaks)
+	end,
+})
+
+local outcrops = variants("Outcrop")
+for index = 1, S.Outcrops.Count do
+	local angle = index / S.Outcrops.Count * math.pi * 2 + random:NextNumber(-0.08, 0.08)
+	local radius = random:NextNumber(S.Outcrops.Radius[1], S.Outcrops.Radius[2])
+	local spot = Vector3.new(math.cos(angle) * radius, 0, math.sin(angle) * radius)
+	if not nearWater(spot, 50) and not blocked(spot, 10) then
+		local y = slopeHeight(spot.X, spot.Z)
+		place(pick(outcrops), CFrame.lookAt(Vector3.new(spot.X, y - S.Outcrops.Sink, spot.Z), Vector3.new(0, y - S.Outcrops.Sink, 0)), random:NextNumber(S.Outcrops.Scale[1], S.Outcrops.Scale[2]), folder("Rocks"))
+		occupy(spot, 22)
 	end
-	local spot = randomSpot(150, SC.Radius - 15)
-	local cluster = math.noise(spot.X * SC.Trees.Cluster, spot.Z * SC.Trees.Cluster, 3.7)
-	if cluster > -0.15 and not blocked(spot, 6) and not occupiedNear(spot, 9) then
-		local isPine = random:NextNumber() < SC.Trees.Pines + (spot.Magnitude > 430 and 0.3 or 0)
-		local model = place(pick(isPine and pines or roundTrees), CFrame.new(spot + Vector3.new(0, -0.3, 0)) * yaw(), random:NextNumber(SC.Trees.Scale[1], SC.Trees.Scale[2]), folder("Trees"))
-		if model then
-			table.insert(occupied, { P = spot, R = 7 })
-			table.insert(trees, spot)
-			placedTrees += 1
+end
+
+local boulders = variants("Boulder")
+scatter({ Count = F.Boulders.Count, Folder = "Rocks", Scale = F.Boulders.Scale, Spacing = 5, Margin = 3, Lift = -0.5, Spot = function()
+	return ring(150, flatRadius)
+end, Prefix = function()
+	return pick(boulders)
+end })
+scatter({ Count = S.Boulders.Count, Folder = "Rocks", Scale = S.Boulders.Scale, Spacing = 6, Margin = 3, Lift = -1.2, MinUp = 0.5, Spot = function()
+	return ring(SC.HillRadius[1], SC.HillRadius[2] - 40)
+end, Prefix = function()
+	return pick(boulders)
+end })
+
+local function nearTree(minDistance, maxDistance)
+	return function()
+		if #flatTrees == 0 then
+			return ring(150, flatRadius)
+		end
+		local angle = random:NextNumber(0, math.pi * 2)
+		return pick(flatTrees) + Vector3.new(math.cos(angle), 0, math.sin(angle)) * random:NextNumber(minDistance, maxDistance)
+	end
+end
+local logs = variants("Log")
+scatter({ Count = F.Logs.Count, Folder = "Logs", Scale = { 0.8, 1.3 }, Spacing = 6, Margin = 3, Lift = -0.2, Spot = nearTree(10, 18), Prefix = function()
+	return pick(logs)
+end })
+scatter({ Count = F.Stumps.Count, Folder = "Logs", Scale = { 0.7, 1.2 }, Spacing = 4, Margin = 3, Lift = -0.1, Spot = nearTree(9, 20), Prefix = function()
+	return "Stump"
+end })
+local bushes = variants("Bush")
+scatter({ Count = F.Bushes.Count, Folder = "Bushes", Scale = F.Bushes.Scale, Spacing = 3, Margin = 2, Lift = -0.4, Spot = function()
+	return random:NextNumber() < 0.65 and nearTree(7, 13)() or ring(150, flatRadius)
+end, Prefix = function()
+	return pick(bushes)
+end })
+scatter({ Count = S.Bushes.Count, Folder = "Bushes", Scale = S.Bushes.Scale, Spacing = 3, Margin = 2, Lift = -0.6, MinUp = 0.6, Spot = function()
+	return ring(SC.HillRadius[1], SC.HillRadius[2] - 30)
+end, Prefix = function()
+	return pick(bushes)
+end })
+scatter({ Count = F.Ferns.Count, Folder = "Ferns", Scale = F.Ferns.Scale, Margin = 1, Spot = function()
+	return random:NextNumber() < 0.6 and nearTree(4, 10)() or ring(150, flatRadius)
+end, Prefix = function()
+	return "Fern"
+end })
+scatter({ Count = F.Mushrooms.Count, Folder = "Ferns", Scale = F.Mushrooms.Scale, Margin = 1, Spot = nearTree(3, 7), Prefix = function()
+	return "Mushroom"
+end })
+scatter({ Count = F.Pebbles.Count, Folder = "Rocks", Scale = F.Pebbles.Scale, Margin = 0.5, Spot = function()
+	return ring(95, flatRadius)
+end, Prefix = function()
+	return "Pebbles"
+end })
+
+local grassVariants = variants("Grass")
+local flowerVariants = variants("Flower")
+local grassFolder = folder("Grass")
+local function grassAt(spot, scaleRange)
+	local y = groundAt(spot)
+	return place(pick(grassVariants), CFrame.new(spot.X, y, spot.Z) * yaw(), random:NextNumber(scaleRange[1], scaleRange[2]), grassFolder)
+end
+local function inPlaza(spot)
+	for _, plaza in SC.Plazas do
+		if spot.X > plaza.Min.X and spot.X < plaza.Max.X and spot.Z > plaza.Min.Z and spot.Z < plaza.Max.Z then
+			return true
 		end
 	end
+	return false
 end
-
-local rocks = variants("Rock")
-local placedRocks = 0
-for _ = 1, SC.Rocks.Count * 8 do
-	if placedRocks >= SC.Rocks.Count then
-		break
-	end
-	local spot = randomSpot(150, SC.Radius - 10)
-	if not blocked(spot, 4) and not occupiedNear(spot, 5) then
-		place(pick(rocks), CFrame.new(spot + Vector3.new(0, -0.6, 0)) * yaw(), random:NextNumber(SC.Rocks.Scale[1], SC.Rocks.Scale[2]), folder("Rocks"))
-		table.insert(occupied, { P = spot, R = 4 })
-		placedRocks += 1
-	end
-end
-
-local bushes = variants("Bush")
-local placedBushes = 0
-for _ = 1, SC.Bushes.Count * 8 do
-	if placedBushes >= SC.Bushes.Count then
-		break
-	end
-	local spot
-	if #trees > 0 and random:NextNumber() < 0.6 then
-		local angle = random:NextNumber(0, math.pi * 2)
-		spot = pick(trees) + Vector3.new(math.cos(angle), 0, math.sin(angle)) * random:NextNumber(8, 14)
-	else
-		spot = randomSpot(150, SC.Radius - 10)
-	end
-	if not blocked(spot, 3) and not occupiedNear(spot, 3) then
-		place(pick(bushes), CFrame.new(spot + Vector3.new(0, -0.4, 0)) * yaw(), random:NextNumber(SC.Bushes.Scale[1], SC.Bushes.Scale[2]), folder("Bushes"))
-		table.insert(occupied, { P = spot, R = 3 })
-		placedBushes += 1
-	end
-end
-
-local flowers = variants("Flower")
-local small = folder("Grass")
-local placedTufts, placedFlowers = 0, 0
-for _ = 1, (SC.Tufts.Count + SC.Flowers.Count) * 6 do
-	if placedTufts >= SC.Tufts.Count and placedFlowers >= SC.Flowers.Count then
-		break
-	end
-	local spot = randomSpot(95, SC.Radius - 10)
-	if not blocked(spot, 1) then
-		if placedFlowers < SC.Flowers.Count and random:NextNumber() < 0.35 then
-			local model = place(pick(flowers), CFrame.new(spot) * yaw(), random:NextNumber(SC.Flowers.Scale[1], SC.Flowers.Scale[2]), small)
-			if model then
-				local petal = pick(SC.Roles.Petal.Colors)
-				for _, part in model:GetChildren() do
-					part.CastShadow = false
-					if part:GetAttribute("Role") == "Petal" then
-						part.Color = petal
+for _, path in SC.Paths do
+	if not path.Hidden then
+		for i = 1, #path.Points - 1 do
+			local a, b = path.Points[i], path.Points[i + 1]
+			local length = (b - a).Magnitude
+			local direction = (b - a).Unit
+			local right = Vector3.new(-direction.Z, 0, direction.X)
+			for along = 0, length, F.EdgeGrass.Spacing do
+				for side = -1, 1, 2 do
+					local spot = a + direction * (along + random:NextNumber(-1, 1)) + right * side * (path.Width / 2 + random:NextNumber(0.5, 2.5))
+					if not inPlaza(spot) and not nearWater(spot, -4) then
+						grassAt(spot, F.EdgeGrass.Scale)
 					end
 				end
-				placedFlowers += 1
-			end
-		elseif placedTufts < SC.Tufts.Count then
-			local model = place("Tuft", CFrame.new(spot) * yaw(), random:NextNumber(SC.Tufts.Scale[1], SC.Tufts.Scale[2]), small)
-			if model then
-				for _, part in model:GetChildren() do
-					part.CastShadow = false
-				end
-				placedTufts += 1
 			end
 		end
 	end
 end
+for i = 1, #river - 1, 2 do
+	local a, b = river[i], river[i + 1]
+	local direction = flat(b - a).Unit
+	local right = Vector3.new(-direction.Z, 0, direction.X)
+	for side = -1, 1, 2 do
+		grassAt(a + right * side * random:NextNumber(water.Width / 2 + 3, water.Width / 2 + 9), F.EdgeGrass.Scale)
+	end
+end
+for _, spot in flatTrees do
+	for _ = 1, 3 do
+		local angle = random:NextNumber(0, math.pi * 2)
+		grassAt(spot + Vector3.new(math.cos(angle), 0, math.sin(angle)) * random:NextNumber(3, 6), F.Grass.Scale)
+	end
+end
+scatter({ Count = F.Grass.Count, Folder = "Grass", Scale = F.Grass.Scale, Margin = 0.5, Spot = function()
+	return ring(95, SC.HillRadius[2] - 20)
+end, Prefix = function()
+	return pick(grassVariants)
+end })
+scatter({ Count = math.floor(F.Flowers.Count / 4), Folder = "Grass", Scale = F.Flowers.Scale, Margin = 1, Spot = function()
+	return ring(95, flatRadius)
+end, Prefix = function()
+	return pick(flowerVariants)
+end, After = function(model)
+	local origin = model:GetPivot().Position
+	local kind = model.Name
+	for _ = 1, 3 do
+		local spot = origin + Vector3.new(random:NextNumber(-4, 4), 0, random:NextNumber(-4, 4))
+		if not blocked(spot, 0) then
+			place(kind, CFrame.new(spot) * yaw(), random:NextNumber(F.Flowers.Scale[1], F.Flowers.Scale[2]), grassFolder)
+		end
+	end
+end })
 
 local spawn = world:FindFirstChild(W.Spawn)
 local boards = spawn and spawn:FindFirstChild("Leaderboards")
@@ -540,4 +644,88 @@ if sign then
 	make("UIStroke", { Thickness = 2, Color = Color3.fromRGB(255, 240, 200), Parent = label })
 end
 
-print(("Scenery built: trees=%d rocks=%d bushes=%d tufts=%d flowers=%d"):format(placedTrees, placedRocks, placedBushes, placedTufts, placedFlowers))
+local falls = SC.Falls
+local fallFx = make("Folder", { Name = "FallFx", Parent = folder("Waterfall") })
+local function emitterPart(name, position, size)
+	return make("Part", { Name = name, Anchored = true, CanCollide = false, CanQuery = false, CanTouch = false, Transparency = 1, Size = size, CFrame = CFrame.new(position), Parent = fallFx })
+end
+local function puff(parent, props)
+	local base = {
+		Texture = falls.Splash,
+		FlipbookLayout = Enum.ParticleFlipbookLayout.Grid4x4,
+		FlipbookMode = Enum.ParticleFlipbookMode.OneShot,
+		Color = ColorSequence.new(Color3.fromRGB(240, 252, 255)),
+		LightEmission = 0.25,
+		Rotation = NumberRange.new(0, 360),
+		RotSpeed = NumberRange.new(-40, 40),
+		Shape = Enum.ParticleEmitterShape.Box,
+		Parent = parent,
+	}
+	for key, value in props do
+		base[key] = value
+	end
+	return make("ParticleEmitter", base)
+end
+local pool = SC.River.Pool.Center
+local poolDirection = flat(falls.Lip - pool).Unit
+local impact = flat(pool) + poolDirection * 32 + Vector3.new(0, 1.5, 0)
+local splash = emitterPart("Splash", impact, Vector3.new(18, 1, 6))
+puff(splash, { Rate = 30, Lifetime = NumberRange.new(0.7, 1.1), Speed = NumberRange.new(6, 12), SpreadAngle = Vector2.new(50, 50), EmissionDirection = Enum.NormalId.Top, Acceleration = Vector3.new(0, -10, 0), Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 3), NumberSequenceKeypoint.new(1, 6) }), Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.1), NumberSequenceKeypoint.new(1, 1) }) })
+puff(splash, { Name = "Mist", Rate = 10, Lifetime = NumberRange.new(2.5, 3.5), Speed = NumberRange.new(2, 4), SpreadAngle = Vector2.new(70, 70), EmissionDirection = Enum.NormalId.Top, Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 10), NumberSequenceKeypoint.new(1, 22) }), Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.55), NumberSequenceKeypoint.new(1, 1) }) })
+for _, def in { { falls.Lip, 14 }, { falls.Ledge, 20 } } do
+	local lip = emitterPart("Lip", def[1] - poolDirection * 2, Vector3.new(def[2], 1, 2))
+	lip.CFrame = CFrame.lookAt(lip.Position, lip.Position - poolDirection)
+	puff(lip, { Name = "Fall", Rate = 22, Lifetime = NumberRange.new(1.4, 1.8), Speed = NumberRange.new(2, 4), EmissionDirection = Enum.NormalId.Front, Acceleration = Vector3.new(0, -38, 0), Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 2.5), NumberSequenceKeypoint.new(1, 4) }), Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.2), NumberSequenceKeypoint.new(0.8, 0.4), NumberSequenceKeypoint.new(1, 1) }) })
+end
+
+local L = SC.Lighting
+Lighting.ClockTime = L.ClockTime
+Lighting.GeographicLatitude = L.GeographicLatitude
+Lighting.Brightness = L.Brightness
+Lighting.ExposureCompensation = L.ExposureCompensation
+Lighting.Ambient = L.Ambient
+Lighting.OutdoorAmbient = L.OutdoorAmbient
+Lighting.ColorShift_Top = L.ColorShiftTop
+Lighting.ColorShift_Bottom = L.ColorShiftBottom
+Lighting.EnvironmentDiffuseScale = 1
+Lighting.EnvironmentSpecularScale = 1
+Lighting.ShadowSoftness = L.ShadowSoftness
+pcall(function()
+	Lighting.Technology = Enum.Technology.Future
+end)
+local atmosphere = Lighting:FindFirstChildOfClass("Atmosphere") or make("Atmosphere", { Parent = Lighting })
+atmosphere.Density = L.AtmosphereDensity
+atmosphere.Offset = L.AtmosphereOffset
+atmosphere.Color = L.AtmosphereColor
+atmosphere.Decay = L.AtmosphereDecay
+atmosphere.Glare = L.AtmosphereGlare
+atmosphere.Haze = L.AtmosphereHaze
+local grading = Lighting:FindFirstChild("Grading") or make("ColorCorrectionEffect", { Name = "Grading", Parent = Lighting })
+grading.Saturation = L.Saturation
+grading.Contrast = L.Contrast
+grading.Brightness = L.ColorBrightness
+grading.TintColor = L.Tint
+local bloom = Lighting:FindFirstChildOfClass("BloomEffect") or make("BloomEffect", { Parent = Lighting })
+bloom.Intensity = L.BloomIntensity
+bloom.Size = L.BloomSize
+bloom.Threshold = L.BloomThreshold
+local rays = Lighting:FindFirstChildOfClass("SunRaysEffect") or make("SunRaysEffect", { Parent = Lighting })
+rays.Intensity = L.SunRaysIntensity
+local depth = Lighting:FindFirstChild("SceneryDepth") or make("DepthOfFieldEffect", { Name = "SceneryDepth", Parent = Lighting })
+depth.Enabled = true
+depth.FarIntensity = L.DepthFar
+depth.NearIntensity = 0
+depth.FocusDistance = L.DepthFocus
+depth.InFocusRadius = L.DepthRadius
+local clouds = terrain:FindFirstChildOfClass("Clouds") or make("Clouds", { Parent = terrain })
+clouds.Cover = L.CloudCover
+clouds.Density = L.CloudDensity
+clouds.Color = Color3.new(1, 1, 1)
+
+local count = 0
+for _, descendant in scenery:GetDescendants() do
+	if descendant:IsA("BasePart") then
+		count += 1
+	end
+end
+print(("Scenery built: parts=%d flatTrees=%d slopeTrees=%d"):format(count, #flatTrees, #slopeTrees))

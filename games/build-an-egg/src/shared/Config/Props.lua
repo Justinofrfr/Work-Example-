@@ -136,7 +136,7 @@ return {
 	Decor = {
 		Flowers = { Count = 0, Ring = { 95, 620 }, Height = { 1.4, 2.4 }, Colors = { Color3.fromRGB(255, 110, 150), Color3.fromRGB(255, 220, 80), Color3.fromRGB(150, 120, 255), Color3.fromRGB(255, 255, 255), Color3.fromRGB(255, 150, 60) }, Stem = Color3.fromRGB(70, 170, 70), Center = Color3.fromRGB(255, 230, 120) },
 		Tufts = { Count = 0, Ring = { 90, 640 }, Height = { 0.8, 1.6 }, Colors = { Color3.fromRGB(90, 185, 75), Color3.fromRGB(120, 210, 90), Color3.fromRGB(75, 160, 65) } },
-		Clouds = { Count = 14, Ring = { 260, 660 }, Height = { 150, 230 }, Blocks = { 4, 7 }, BlockSize = { 14, 34 }, Color = Color3.fromRGB(255, 255, 255), Transparency = 0.08 },
+		Clouds = { Count = 0, Ring = { 260, 660 }, Height = { 150, 230 }, Blocks = { 4, 7 }, BlockSize = { 14, 34 }, Color = Color3.fromRGB(255, 255, 255), Transparency = 0.08 },
 		Lanterns = {
 			Spacing = 20,
 			Offset = 13,

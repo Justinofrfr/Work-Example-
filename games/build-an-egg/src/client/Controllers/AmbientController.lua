@@ -90,12 +90,26 @@ function AmbientController:Start()
 		if model:IsA("Model") then
 			local base = model:GetPivot()
 			local _, size = model:GetBoundingBox()
+			local leaves
+			if model:GetAttribute("SwayLeaves") then
+				leaves = {}
+				local lowest = math.huge
+				for _, part in model:GetChildren() do
+					local role = part:GetAttribute("Role")
+					if part:IsA("BasePart") and role and role:find("^Leaf") then
+						table.insert(leaves, { Part = part, Base = part.CFrame, Light = role == "LeafLight" })
+						lowest = math.min(lowest, part.Position.Y - part.Size.Y / 2)
+					end
+				end
+				leaves.Pivot = CFrame.new(base.Position.X, lowest, base.Position.Z)
+			end
 			self.Swayers[model] = {
 				Base = base,
 				Amp = math.rad(model:GetAttribute("Sway") or 2),
 				Phase = (base.Position.X + base.Position.Z) * 0.025 + random:NextNumber(0, 0.6),
 				Speed = WIND.SwaySpeed * random:NextNumber(0.85, 1.15),
 				Small = size.Y < WIND.SmallSize,
+				Leaves = leaves,
 			}
 		end
 	end
@@ -127,7 +141,16 @@ function AmbientController:StepWind(dt, t, cameraPosition)
 			local distance = (state.Base.Position - cameraPosition).Magnitude
 			if distance < (state.Small and WIND.SmallRadius or WIND.SwayRadius) then
 				local wave = math.sin(t * state.Speed + state.Phase) * 0.7 + math.sin(t * state.Speed * 2.3 + state.Phase * 1.7) * 0.3
-				model:PivotTo(state.Base * CFrame.fromAxisAngle(state.Base.Rotation:VectorToObjectSpace(swayAxis), state.Amp * (0.35 + wave)))
+				if state.Leaves then
+					local pivot = state.Leaves.Pivot
+					for _, leaf in state.Leaves do
+						local flutter = leaf.Light and math.sin(t * state.Speed * 3.1 + state.Phase * 2.3) * 0.35 or 0
+						local rotation = CFrame.fromAxisAngle(swayAxis, state.Amp * (0.35 + wave + flutter))
+						leaf.Part.CFrame = pivot * rotation * pivot:Inverse() * leaf.Base
+					end
+				else
+					model:PivotTo(state.Base * CFrame.fromAxisAngle(state.Base.Rotation:VectorToObjectSpace(swayAxis), state.Amp * (0.35 + wave)))
+				end
 			end
 		end
 	end
