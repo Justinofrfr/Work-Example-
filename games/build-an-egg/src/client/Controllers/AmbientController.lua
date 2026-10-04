@@ -60,7 +60,7 @@ function AmbientController:Start()
 	local function addNPC(npc)
 		local humanoid = npc:FindFirstChildOfClass("Humanoid")
 		local animator = humanoid and (humanoid:FindFirstChildOfClass("Animator") or humanoid:WaitForChild("Animator", 5))
-		if not animator or PropsConfig.NPCIdleAnimation == "" then
+		if not animator or PropsConfig.NPCIdleAnimation == "" or npc:GetAttribute("Posed") then
 			return
 		end
 		local animation = Instance.new("Animation")

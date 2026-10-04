@@ -915,11 +915,14 @@ for _, station in SC.Stations do
 		if station.Tilt then
 			local feet = base * CFrame.new(-station.Shift, -3, 0)
 			npc:PivotTo(feet * CFrame.Angles(0, 0, math.rad(station.Tilt)) * CFrame.new(0, 3, 0))
+			npc:SetAttribute("Posed", true)
 			local function pose(partName, motorName, rotation)
 				local part = npc:FindFirstChild(partName)
-				local motor = part and part:FindFirstChild(motorName)
-				if motor then
-					motor.C0 = motor.C0 * rotation
+				local joint = part and part:FindFirstChild(motorName)
+				if joint and joint:IsA("AnimationConstraint") then
+					joint.Transform = rotation
+				elseif joint and joint:IsA("Motor6D") then
+					joint.C0 = joint.C0 * rotation
 				end
 			end
 			pose("LeftUpperArm", "LeftShoulder", CFrame.Angles(math.rad(-38), 0, math.rad(-28)))
