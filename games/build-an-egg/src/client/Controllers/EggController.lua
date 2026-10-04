@@ -126,6 +126,28 @@ function EggController:Start()
 	end)
 end
 
+function EggController:RingColor(server, ringIndex)
+	local project = server and ProjectsConfig.List[server.Project]
+	if project and project.Rainbow then
+		local def = EffectsConfig.Cutscene
+		return Color3.fromHSV((ringIndex / GameConfig.RingCount + os.clock() * def.RainbowSpeed) % 1, def.RainbowSaturation, 1)
+	end
+	return self:ProjectColor(server):Lerp(Color3.new(1, 1, 1), (ringIndex % 2) * EggConfig.RingShade)
+end
+
+function EggController:CycleRainbow()
+	local server = ClientState.Server
+	local project = server and ProjectsConfig.List[server.Project]
+	if not project or not project.Rainbow then
+		return
+	end
+	for _, segment in segments do
+		if segment.Transparency == 0 and segment.Material == Enum.Material.SmoothPlastic then
+			segment.Color = self:RingColor(server, segment.Parent:GetAttribute(A.Ring))
+		end
+	end
+end
+
 function EggController:ProjectColor(server)
 	local project = server and ProjectsConfig.List[server.Project]
 	return project and project.Color or MapConfig.Palette.Shell
@@ -157,7 +179,7 @@ function EggController:Render(server, previous)
 			local ghost = not built and segment.Parent:GetAttribute(A.Ring) == ring and server.Phase == "Building"
 			if built then
 				segment.Transparency = 0
-				segment.Color = color:Lerp(Color3.new(1, 1, 1), (segment.Parent:GetAttribute(A.Ring) % 2) * EggConfig.RingShade)
+				segment.Color = self:RingColor(server, segment.Parent:GetAttribute(A.Ring))
 				segment.Material = Enum.Material.SmoothPlastic
 				if before >= 0 and index > before and visible - before <= 12 then
 					local size = segment.Size
@@ -274,6 +296,10 @@ end
 function EggController:Animate()
 	self:AnimateHatchling()
 	local t = os.clock()
+	if t - (self.LastRainbow or 0) > EffectsConfig.Cutscene.RainbowInterval then
+		self.LastRainbow = t
+		self:CycleRainbow()
+	end
 	if t - (self.LastHatchRender or 0) > 0.5 then
 		self.LastHatchRender = t
 		self:RenderHatch()

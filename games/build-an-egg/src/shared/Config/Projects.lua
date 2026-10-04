@@ -8,7 +8,7 @@ return {
 		Gem = { DisplayName = "Gem Egg", Target = 180000, Color = Color3.fromRGB(80, 230, 200) },
 		Lava = { DisplayName = "Lava Egg", Target = 260000, Color = Color3.fromRGB(255, 100, 40) },
 		Frost = { DisplayName = "Frost Egg", Target = 360000, Color = Color3.fromRGB(170, 225, 255) },
-		Rainbow = { DisplayName = "Rainbow Egg", Target = 500000, Color = Color3.fromRGB(255, 120, 200) },
+		Rainbow = { DisplayName = "Rainbow Egg", Target = 500000, Color = Color3.fromRGB(255, 120, 200), Rainbow = true },
 		Candy = { DisplayName = "Candy Egg", Target = 100000, Color = Color3.fromRGB(255, 190, 215) },
 		Ocean = { DisplayName = "Ocean Egg", Target = 150000, Color = Color3.fromRGB(40, 140, 230) },
 		Toxic = { DisplayName = "Toxic Egg", Target = 310000, Color = Color3.fromRGB(90, 155, 40) },

@@ -24,7 +24,7 @@ return {
 	ScaffoldSegmentLength = 3,
 	ScaffoldSegmentTurn = 2.5,
 	ScaffoldMaxSubsteps = 30,
-	ScaffoldParityLift = 0.03,
+	ScaffoldParityLift = 0.02,
 	ScaffoldBraceSize = 1.2,
 	ScaffoldBraceEmbed = 1,
 	ScaffoldProfileStep = 0.5,

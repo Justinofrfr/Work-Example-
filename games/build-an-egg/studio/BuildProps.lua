@@ -287,7 +287,8 @@ local function customEgg(key, project, look)
 	local egg = make("Model", { Name = "Egg" })
 	for _, source in customEggs:GetDescendants() do
 		local prefix, role = source.Name:match("^(%a+)_(%a+%d*)$")
-		if source:IsA("MeshPart") and prefix == key then
+		local skip = look.SkipRoles and look.SkipRoles[(role or ""):match("^(%a+)")]
+		if source:IsA("MeshPart") and prefix == key and not skip then
 			local part = source:Clone()
 			for _, child in part:GetChildren() do
 				child:Destroy()
@@ -302,7 +303,10 @@ local function customEgg(key, project, look)
 			part:SetAttribute("Role", roleName)
 			part.Material = roleName == "Body" and look.Material or displayConfig.RoleMaterials[roleName] or Enum.Material.SmoothPlastic
 			if roleName == "Body" then
-				part.Color = project.Color
+				part.Color = look.BodyColor or project.Color
+				if look.ColorMap then
+					make("SurfaceAppearance", { ColorMap = look.ColorMap, AlphaMode = Enum.AlphaMode.Overlay, Parent = part })
+				end
 			elseif roleName == "Band" then
 				part.Color = displayConfig.Bands[tonumber(band)] or project.Color
 			elseif roleName == "Glow" then

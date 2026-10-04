@@ -77,7 +77,7 @@ return {
 			Gem = { Material = Enum.Material.Glass, Accent = Color3.fromRGB(200, 255, 250), Sparkle = Color3.fromRGB(120, 255, 240) },
 			Lava = { Material = Enum.Material.SmoothPlastic, Accent = Color3.fromRGB(255, 220, 80), Glow = Color3.fromRGB(255, 120, 30), Sparkle = Color3.fromRGB(255, 160, 60) },
 			Frost = { Material = Enum.Material.Ice, Accent = Color3.fromRGB(255, 255, 255), Sparkle = Color3.fromRGB(220, 245, 255) },
-			Rainbow = { Material = Enum.Material.SmoothPlastic, Accent = Color3.fromRGB(120, 220, 255), Sparkle = Color3.fromRGB(255, 255, 255) },
+			Rainbow = { Material = Enum.Material.SmoothPlastic, Accent = Color3.fromRGB(120, 220, 255), Sparkle = Color3.fromRGB(255, 255, 255), BodyColor = Color3.fromRGB(255, 255, 255), ColorMap = "rbxassetid://92792955163894", SkipRoles = { Band = true } },
 			Candy = { Material = Enum.Material.SmoothPlastic, Accent = Color3.fromRGB(255, 70, 120), Glow = Color3.fromRGB(255, 150, 190), Sparkle = Color3.fromRGB(255, 120, 170) },
 			Ocean = { Material = Enum.Material.SmoothPlastic, Accent = Color3.fromRGB(230, 250, 255), Glow = Color3.fromRGB(180, 235, 255), Sparkle = Color3.fromRGB(200, 240, 255) },
 			Toxic = { Material = Enum.Material.SmoothPlastic, Accent = Color3.fromRGB(150, 255, 60), Glow = Color3.fromRGB(150, 255, 60), Sparkle = Color3.fromRGB(160, 255, 60) },
