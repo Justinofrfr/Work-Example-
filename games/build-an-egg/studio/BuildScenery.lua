@@ -444,20 +444,23 @@ end
 local spawn = world:FindFirstChild(W.Spawn)
 local boards = spawn and spawn:FindFirstChild("Leaderboards")
 for _, board in boards and boards:GetChildren() or {} do
-	if board.Name == "Post" then
+	if board.Name == "Post" or board.Name == "Frame" then
 		board:Destroy()
 	end
 end
 for _, board in boards and boards:GetChildren() or {} do
 	if board:IsA("BasePart") then
-		place("Board", CFrame.new(board.Position.X, 0, board.Position.Z) * board.CFrame.Rotation, 1, boards)
+		local frame = place("Board", CFrame.new(board.Position.X, 0, board.Position.Z) * board.CFrame.Rotation, 1, boards)
+		if frame then
+			frame.Name = "Frame"
+		end
 	end
 end
 
 local displays = world:FindFirstChild("EggDisplays")
 for _, stand in displays and displays:GetChildren() or {} do
 	local pedestal = stand:FindFirstChild("Pedestal")
-	if pedestal then
+	if pedestal and pedestal:IsA("BasePart") then
 		local position = pedestal.Position
 		pedestal:Destroy()
 		place("Pedestal", CFrame.new(position.X, 0, position.Z) * yaw(), 1, stand)
