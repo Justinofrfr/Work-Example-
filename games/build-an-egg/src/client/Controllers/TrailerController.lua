@@ -347,6 +347,7 @@ function TrailerController:Run()
 	self:Warm()
 	task.wait(TrailerConfig.StartDelay)
 	self.Clock = os.clock()
+	print(("[Trailer] clock %.4f"):format(self.Clock))
 	self:Log("flash", 0, nil)
 	self:Flash()
 	for index, shot in TrailerConfig.Shots do

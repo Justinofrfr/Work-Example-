@@ -6,6 +6,7 @@ local Debris = game:GetService("Debris")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Names = require(Shared.Config.Names)
 local EffectsConfig = require(Shared.Config.Effects)
+local TrailerConfig = require(Shared.Config.Trailer)
 local Settings = require(script.Parent.Settings)
 
 local Audio = {}
@@ -22,6 +23,12 @@ local function template(name)
 		return nil
 	end
 	return sound
+end
+
+local function trace(name, pitch, volumeScale)
+	if Workspace:GetAttribute(TrailerConfig.Attribute) == true then
+		print(("[Sfx] %s %.3f %.3f %.4f"):format(name, pitch or 1, volumeScale or 1, os.clock()))
+	end
 end
 
 local function allowed(name)
@@ -58,6 +65,7 @@ function Audio.Play(name, pitch, volumeScale)
 	if not Settings:Get("Sfx") or not allowed(name) then
 		return nil
 	end
+	trace(name, pitch, volumeScale)
 	local source = template(name)
 	if not source then
 		return nil
@@ -75,6 +83,7 @@ function Audio.PlayAt(name, position, pitch)
 	if not Settings:Get("Sfx") or not allowed(name) then
 		return nil
 	end
+	trace(name, pitch, 1)
 	local source = template(name)
 	if not source then
 		return nil
