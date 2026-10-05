@@ -53,7 +53,8 @@ local function onStage(name)
 	if name == "Idle" then
 		local inset = GuiService.TopbarInset
 		task.wait(1.2)
-		log(("insets topbarMaxY=%d topLeftY=%d topLeftBottom=%d offerVisible=%s offerY=%d"):format(inset.Max.Y, hud.TopLeft.AbsolutePosition.Y, hud.TopLeft.AbsolutePosition.Y + hud.TopLeft.AbsoluteSize.Y, tostring(hud.Offer.Visible), hud.Offer.AbsolutePosition.Y))
+		local screenTop = hud.TopLeft.AbsolutePosition.Y - gui.AbsolutePosition.Y
+		log(("insets topbarBottom=%d topLeftScreenY=%d belowTopbar=%s offerVisible=%s"):format(inset.Max.Y, screenTop, tostring(screenTop >= inset.Max.Y), tostring(hud.Offer.Visible)))
 		local rigs = CollectionService:GetTagged("GooseRig")
 		local bird = rigs[1]
 		if bird then
