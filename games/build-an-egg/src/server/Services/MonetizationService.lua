@@ -21,6 +21,7 @@ local StateService
 local BuildService
 local OfferService
 local FunnelService
+local GymService
 local remotes
 
 local productLookup = {}
@@ -45,6 +46,7 @@ function MonetizationService:Init(modules, context)
 	BuildService = modules.BuildService
 	OfferService = modules.OfferService
 	FunnelService = modules.FunnelService
+	GymService = modules.GymService
 	remotes = context.Remotes
 	buildLookup()
 end
@@ -139,8 +141,13 @@ function MonetizationService:ProcessReceipt(receipt)
 	local previousLevel = data.BoostLevels[entry.Key]
 	local previousBoost = data.TrainBoostUntil or 0
 	local previousUpgrade = product.Upgrade and data.Upgrades[product.Upgrade]
+	local previousStats = { Speed = data.Speed, Strength = data.Strength }
 	local coinsGranted = 0
-	if product.Tiers then
+	local rainbow
+	if product.BubbleReward then
+		local stat, gain, bubbleId = GymService:RainbowReward(player, product.TrainMultiplier)
+		rainbow = { Stat = stat, Gain = gain, Id = bubbleId }
+	elseif product.Tiers then
 		data.BoostLevels[entry.Key] = (previousLevel or 0) + 1
 	elseif product.Upgrade then
 		local level = previousUpgrade or 0
@@ -167,7 +174,10 @@ function MonetizationService:ProcessReceipt(receipt)
 		if index then
 			table.remove(data.Purchases, index)
 		end
-		if product.Tiers then
+		if product.BubbleReward then
+			data.Speed = previousStats.Speed
+			data.Strength = previousStats.Strength
+		elseif product.Tiers then
 			data.BoostLevels[entry.Key] = previousLevel
 		elseif product.Upgrade then
 			data.Upgrades[product.Upgrade] = previousUpgrade
@@ -186,6 +196,9 @@ function MonetizationService:ProcessReceipt(receipt)
 	if product.Pieces then
 		BuildService:AddPieces(player, product.Pieces, true)
 		remotes[Names.Remotes.Notify]:FireAllClients("ServerPack", player.DisplayName, product.Pieces)
+	end
+	if rainbow then
+		remotes[Names.Remotes.Bubble]:FireClient(player, "Rainbow", rainbow.Id, rainbow.Stat, rainbow.Gain)
 	end
 	if FunnelService then
 		FunnelService:Purchased(player, entry.Key)

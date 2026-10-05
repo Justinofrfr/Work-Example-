@@ -68,6 +68,7 @@ return {
 			Rainbow = {
 				Lifetime = 6,
 				Reps = 0,
+				RewardReps = 3,
 				Size = 0.1,
 				Product = "TrainBoost20",
 				Color = Color3.fromRGB(255, 255, 255),
@@ -93,6 +94,6 @@ return {
 			},
 		},
 		Special = { "Red", "Rare" },
-		Rainbow = { Kind = "Rainbow", FirstDelay = 20, Every = { 45, 80 }, GradientSpeed = 120 },
+		Rainbow = { Kind = "Rainbow", FirstDelay = 20, Every = { 45, 80 }, GradientSpeed = 120, DefaultStat = "Strength", RewardPosition = Vector2.new(0.5, 0.45) },
 	},
 }

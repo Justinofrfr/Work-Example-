@@ -123,6 +123,10 @@ function GymService:TickBubbles(player, training, now)
 			self.BubbleSerial += 1
 			local id = self.BubbleSerial
 			training.Bubbles[id] = { Kind = rainbow.Kind, Spawned = now, Expires = now + B.Kinds[rainbow.Kind].Lifetime, Offer = true }
+			local runtime = StateService:Get(player)
+			if runtime then
+				runtime.RainbowOffer = { Id = id, Stat = training.Stat, Multiplier = training.Multiplier }
+			end
 			remotes[Names.Remotes.Bubble]:FireClient(player, "Spawn", id, rainbow.Kind)
 			return
 		end
@@ -169,6 +173,24 @@ function GymService:PopBubble(player, id)
 	end
 	remotes[Names.Remotes.Bubble]:FireClient(player, "Popped", id, training.Stat, gain)
 	return true
+end
+
+function GymService:RainbowReward(player, multiplier)
+	local runtime = StateService:Get(player)
+	local offer = runtime and (runtime.RainbowOffer or runtime.Training)
+	local stat = offer and offer.Stat or B.Rainbow.DefaultStat
+	local amount = StatsConfig.BaseGainPerRep * (offer and offer.Multiplier or 1) * B.Kinds[B.Rainbow.Kind].RewardReps * multiplier
+	if runtime then
+		runtime.RainbowOffer = nil
+	end
+	local gain
+	if stat == "Both" then
+		gain = StateService:AwardStat(player, "Speed", amount)
+		StateService:AwardStat(player, "Strength", amount)
+	else
+		gain = StateService:AwardStat(player, stat, amount)
+	end
+	return stat, gain, offer and offer.Id
 end
 
 function GymService:TrainBoost(player)

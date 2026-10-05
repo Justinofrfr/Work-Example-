@@ -15,6 +15,7 @@ local Audio = require(script.Parent.Parent.Util.Audio)
 local BubbleController = {
 	Active = {},
 	Popped = {},
+	Pending = {},
 }
 
 local B = GymsConfig.Bubbles
@@ -41,6 +42,8 @@ function BubbleController:Start()
 			self:Spawn(id, a)
 		elseif action == "Popped" then
 			self:ShowGain(id, a, b)
+		elseif action == "Rainbow" then
+			self:ShowRainbow(id, a, b)
 		elseif action == "Clear" then
 			self:Clear()
 		end
@@ -113,6 +116,7 @@ function BubbleController:Spawn(id, kind)
 	bubble.Activated:Connect(function()
 		if def.Product then
 			local product = ProductsConfig.DevProducts[def.Product]
+			self.Pending[id] = { Position = position, Kind = kind }
 			Purchase.Product(product and product.Id)
 			self:Miss(id)
 		else
@@ -156,12 +160,26 @@ function BubbleController:Pop(id)
 	end)
 end
 
+function BubbleController:ShowRainbow(id, stat, gain)
+	local entry = self.Pending[id] or { Position = B.Rainbow.RewardPosition, Kind = B.Rainbow.Kind }
+	self.Pending[id] = nil
+	if type(gain) ~= "number" then
+		return
+	end
+	Audio.Play(B.Kinds[B.Rainbow.Kind].PopSound, B.Kinds[B.Rainbow.Kind].PopPitch)
+	self:Float(entry, stat, gain)
+end
+
 function BubbleController:ShowGain(id, stat, gain)
 	local entry = self.Popped[id]
 	if not entry or type(gain) ~= "number" then
 		return
 	end
 	self.Popped[id] = nil
+	self:Float(entry, stat, gain)
+end
+
+function BubbleController:Float(entry, stat, gain)
 	local def = B.Kinds[entry.Kind]
 	local float = floatTemplate:Clone()
 	float.Text = "+" .. Format.Short(gain) .. " " .. (B.StatText[stat] or "")
