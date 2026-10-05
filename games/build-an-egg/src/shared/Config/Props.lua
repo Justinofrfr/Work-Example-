@@ -201,13 +201,35 @@ return {
 		},
 	},
 	NPCIdleAnimation = "rbxassetid://507766951",
-	PosedMotion = {
-		Neck = { Yaw = 18, Pitch = 6, Speed = 0.55 },
-		Waist = { Pitch = 3, Speed = 1.3 },
-		RightElbow = { Pitch = 14, Speed = 2.6 },
-		LeftElbow = { Pitch = 12, Speed = 2.2, Phase = 1.6 },
-		RightShoulder = { Roll = 5, Speed = 1.1 },
-		LeftShoulder = { Roll = 4, Speed = 1, Phase = 0.8 },
+	PosedRig = {
+		Pose = {
+			RightShoulder = { -90, 40, 50 },
+			RightElbow = { 100, 0, 0 },
+			LeftShoulder = { -90, -40, -50 },
+			LeftElbow = { 100, 0, 0 },
+			RightHip = { 0, 0, -9 },
+			LeftHip = { 0, 0, 4 },
+		},
+		Motion = {
+			Neck = { Yaw = 12, Pitch = 5, Speed = 0.55 },
+			Waist = { Pitch = 4, Roll = 2, Speed = 1.4 },
+			RightShoulder = { Pitch = 3, Speed = 1.4 },
+			LeftShoulder = { Pitch = 3, Speed = 1.4, Phase = 0.3 },
+			RightElbow = { Pitch = 4, Speed = 1.4 },
+			LeftElbow = { Pitch = 4, Speed = 1.4, Phase = 0.3 },
+			RightHip = { Roll = 3, Speed = 0.45 },
+			LeftHip = { Roll = 3, Speed = 0.45, Phase = 3.14 },
+			RightAnkle = { Tap = 16, Speed = 7, Burst = 0.35 },
+		},
+		Gestures = {
+			Every = { 4, 8 },
+			Blend = 0.35,
+			List = {
+				{ Time = 2.6, Pose = { RightShoulder = { 0, 0, 150 }, RightElbow = { 20, 0, 0 } }, Wiggle = { Joint = "RightShoulder", Axis = "Z", Angle = 18, Speed = 9 } },
+				{ Time = 2.2, Pose = { LeftShoulder = { 60, -60, -100 }, LeftElbow = { 70, 0, 0 } }, Wiggle = { Joint = "LeftElbow", Axis = "X", Angle = 10, Speed = 14 } },
+				{ Time = 2.4, Pose = { RightShoulder = { 0, 0, 155 }, RightElbow = { 30, 0, 0 }, LeftShoulder = { 0, 0, -155 }, LeftElbow = { 30, 0, 0 }, Waist = { -8, 0, 0 } } },
+			},
+		},
 	},
 	NPCEmotes = {
 		Upgrades = { Every = { 6, 11 }, Emotes = { "rbxassetid://507770239", "rbxassetid://507770453", "rbxassetid://507770677" } },

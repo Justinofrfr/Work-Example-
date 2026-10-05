@@ -13,45 +13,60 @@ local Purchase = require(script.Parent.Parent.Util.Purchase)
 
 local ShopController = {
 	Cards = {},
+	Tabs = {},
+	Pages = {},
 }
 
 local ClientState
 local PanelController
 local NotifyController
-local list
+local body
 local templates
 
 function ShopController:Init(modules, context)
 	ClientState = modules.ClientState
 	PanelController = modules.PanelController
 	NotifyController = modules.NotifyController
-	list = PanelController:Get("Shop").Body.List
+	body = PanelController:Get("Shop").Body
 	templates = context.Gui:WaitForChild("Templates")
 end
 
 function ShopController:Start()
 	for sectionIndex, section in ShopConfig.Sections do
-		local block = templates.ShopSection:Clone()
-		block.Visible = true
-		block.Name = section.Title
-		block.LayoutOrder = sectionIndex
-		block.Title.Text = section.Title
-		block.Parent = list
+		local tab = templates.ShopTab:Clone()
+		tab.Name = section.Key
+		tab.LayoutOrder = sectionIndex
+		tab.Visible = true
+		tab.Icon.Text = section.Icon
+		Ui.SetText(tab, section.Tab)
+		tab.Parent = body.Tabs
+		Ui.Feel(tab, function()
+			self:Select(sectionIndex)
+		end)
+		local page = templates.ShopPage:Clone()
+		page.Name = section.Key
+		page.Note.Text = section.Note
+		page.Parent = body.Pages
+		self.Tabs[sectionIndex] = tab
+		self.Pages[sectionIndex] = page
 		for itemIndex, item in section.Items do
-			local card = templates.ShopItem:Clone()
+			local card = templates[item.Featured and "ShopFeature" or "ShopItem"]:Clone()
 			card.Visible = true
 			card.Name = item.Key
 			card.LayoutOrder = itemIndex
 			card.Icon.Text = item.Icon
 			card.Title.Text = item.Name
 			card.Desc.Text = item.Desc
-			card.Parent = block.Grid
+			card.Badge.Text = item.Badge or ""
+			card.Badge.Visible = item.Badge ~= nil
+			card.Parent = item.Featured and page.Featured or page.Grid
 			Ui.Feel(card.Buy, function()
 				self:Buy(item)
 			end)
 			self.Cards[item.Key] = { Card = card, Item = item }
 		end
 	end
+	self:Select(1)
 	self:Refresh()
 	ClientState.StateChanged:Connect(function()
 		self:Refresh()
@@ -64,6 +79,18 @@ function ShopController:Start()
 			end
 		end
 	end)
+end
+
+function ShopController:Select(index)
+	for pageIndex, page in self.Pages do
+		local selected = pageIndex == index
+		page.Visible = selected
+		if selected then
+			page.CanvasPosition = Vector2.zero
+		end
+		Ui.SetColor(self.Tabs[pageIndex], selected and ShopConfig.Sections[pageIndex].Color or UIConfig.Colors.Locked)
+	end
+	self.Selected = index
 end
 
 function ShopController:ProductInfo(item)

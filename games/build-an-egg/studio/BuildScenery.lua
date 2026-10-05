@@ -842,7 +842,13 @@ if bucket then
 	local ropeBottom = quarryRope.Position - Vector3.new(0, quarryRope.Size.Y / 2, 0)
 	bucket.CFrame = CFrame.new(ropeBottom - Vector3.new(0, bucket.Size.Y / 2, 0)) * CFrame.Angles(0, random:NextNumber(0, math.pi * 2), 0)
 	quarryRope.CanCollide = false
-	swayModel("SwingBucket", { quarryRope, bucket }, CFrame.new(ropeTop), decor.Bucket.Sway, folder("QuarryKit"))
+	swayModel("SwingBucket", { quarryRope, bucket }, CFrame.new(ropeTop), decor.Bucket.Sway, folder("QuarryKit")):SetAttribute("Gust", decor.Bucket.Gust)
+	local ropeAxis = Vector3.new(ropeTop.X, 0, ropeTop.Z)
+	for _, part in folder("QuarryKit"):GetChildren() do
+		if part:IsA("BasePart") and (Vector3.new(part.Position.X, 0, part.Position.Z) - ropeAxis).Magnitude < decor.Bucket.Clear and math.max(part.Size.X, part.Size.Z) < decor.Bucket.Clear * 2 then
+			part:Destroy()
+		end
+	end
 end
 
 for _, gym in world:FindFirstChild(W.Gyms) and world[W.Gyms]:GetChildren() or {} do
@@ -1022,21 +1028,15 @@ for _, station in SC.Stations do
 			local feet = base * CFrame.new(-station.Shift, -3, -(station.Forward or 0))
 			npc:PivotTo(feet * CFrame.Angles(0, 0, math.rad(station.Tilt)) * CFrame.new(0, 3, 0))
 			npc:SetAttribute("Posed", true)
-			local function pose(partName, motorName, rotation)
-				local part = npc:FindFirstChild(partName)
-				local joint = part and part:FindFirstChild(motorName)
+			for jointName, degrees in PropsConfig.PosedRig.Pose do
+				local joint = npc:FindFirstChild(jointName, true)
+				local rotation = CFrame.Angles(math.rad(degrees[1]), math.rad(degrees[2]), math.rad(degrees[3]))
 				if joint and joint:IsA("AnimationConstraint") then
 					joint.Transform = rotation
 				elseif joint and joint:IsA("Motor6D") then
 					joint.C0 = joint.C0 * rotation
 				end
 			end
-			pose("LeftUpperArm", "LeftShoulder", CFrame.Angles(math.rad(-38), 0, math.rad(-28)))
-			pose("LeftLowerArm", "LeftElbow", CFrame.Angles(math.rad(95), 0, 0))
-			pose("RightUpperArm", "RightShoulder", CFrame.Angles(math.rad(-34), 0, math.rad(30)))
-			pose("RightLowerArm", "RightElbow", CFrame.Angles(math.rad(95), 0, 0))
-			pose("RightUpperLeg", "RightHip", CFrame.Angles(0, 0, math.rad(-9)))
-			pose("LeftUpperLeg", "LeftHip", CFrame.Angles(0, 0, math.rad(4)))
 		end
 		if station.SignText then
 			local def

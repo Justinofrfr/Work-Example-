@@ -24,6 +24,7 @@ local AmbientController = {
 	Bottles = {},
 	Posed = {},
 	Lookers = {},
+	Rattles = {},
 }
 
 local WIND = EffectsConfig.Wind
@@ -32,6 +33,8 @@ local RIG = EffectsConfig.GooseRig
 local CART = EffectsConfig.QuarryCart
 local POTION = EffectsConfig.Potions
 local LOOK = EffectsConfig.NPCLook
+local POSED = PropsConfig.PosedRig
+local RATTLE = EffectsConfig.Rattle
 local EffectController
 local lowEnd = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 local windDirection = WIND.Direction.Unit
@@ -43,6 +46,10 @@ local lastStreak = 0
 local CULL = 260
 local camera = Workspace.CurrentCamera
 local random = Random.new()
+
+local function angles(list)
+	return list and CFrame.Angles(math.rad(list[1]), math.rad(list[2]), math.rad(list[3])) or CFrame.identity
+end
 
 function AmbientController:Init(modules)
 	EffectController = modules.EffectController
@@ -90,16 +97,30 @@ function AmbientController:Start()
 		addWander(model)
 	end
 	local function addPosed(npc)
-		local joints = {}
-		for name, motion in PropsConfig.PosedMotion or {} do
-			local joint = npc:FindFirstChild(name, true)
-			if joint and joint:IsA("AnimationConstraint") then
-				table.insert(joints, { Joint = joint, Name = name, Base = joint.Transform, Motion = motion })
-			elseif joint and joint:IsA("Motor6D") then
-				table.insert(joints, { Joint = joint, Name = name, Base = joint.C0, Motion = motion, Motor = true })
+		local names = {}
+		for name in POSED.Pose do
+			names[name] = true
+		end
+		for name in POSED.Motion do
+			names[name] = true
+		end
+		for _, gesture in POSED.Gestures.List do
+			for name in gesture.Pose do
+				names[name] = true
 			end
 		end
-		self.Posed[npc] = { Joints = joints, Phase = random:NextNumber(0, math.pi * 2) }
+		local joints = {}
+		for name in names do
+			local joint = npc:FindFirstChild(name, true)
+			local pose = angles(POSED.Pose[name])
+			if joint and joint:IsA("AnimationConstraint") then
+				joints[name] = { Joint = joint, Rest = CFrame.identity, Base = pose }
+			elseif joint and joint:IsA("Motor6D") then
+				joints[name] = { Joint = joint, Rest = joint.C0 * pose:Inverse(), Base = joint.C0, Motor = true }
+			end
+		end
+		local every = POSED.Gestures.Every
+		self.Posed[npc] = { Joints = joints, Phase = random:NextNumber(0, math.pi * 2), NextGesture = os.clock() + random:NextNumber(every[1], every[2]) }
 	end
 	local function addLook(npc)
 		local root = npc:FindFirstChild("HumanoidRootPart")
@@ -203,6 +224,7 @@ function AmbientController:Start()
 				Speed = WIND.SwaySpeed * random:NextNumber(0.85, 1.15),
 				Small = size.Y < WIND.SmallSize,
 				Leaves = leaves,
+				Gust = model:GetAttribute("Gust") and { At = -math.huge, Next = os.clock() + random:NextNumber(WIND.Gust.Every[1], WIND.Gust.Every[2]) } or nil,
 			}
 		end
 	end
@@ -268,9 +290,58 @@ function AmbientController:Start()
 		leaves = leafTemplate:Clone()
 		leaves.Parent = Workspace.CurrentCamera
 	end
+	local function addRattle(part)
+		if not part:IsA("BasePart") then
+			return
+		end
+		local group
+		for _, existing in self.Rattles do
+			if (existing.Center - part.Position).Magnitude < RATTLE.Group then
+				group = existing
+				break
+			end
+		end
+		if not group then
+			group = { Center = part.Position, Pivot = CFrame.new(part.Position - Vector3.new(0, part.Size.Y / 2, 0)), Parts = {}, At = -math.huge, Next = os.clock() + random:NextNumber(RATTLE.Every[1], RATTLE.Every[2]) }
+			table.insert(self.Rattles, group)
+		end
+		group.Parts[part] = part.CFrame
+	end
+	for _, part in CollectionService:GetTagged(RATTLE.Tag) do
+		addRattle(part)
+	end
+	CollectionService:GetInstanceAddedSignal(RATTLE.Tag):Connect(addRattle)
 	RunService.Heartbeat:Connect(function(dt)
 		self:Step(dt)
 	end)
+end
+
+function AmbientController:StepRattles(t, cameraPosition)
+	for _, group in self.Rattles do
+		if (group.Center - cameraPosition).Magnitude < RATTLE.Radius then
+			if t >= group.Next then
+				group.At = t
+				group.Next = t + RATTLE.Time + random:NextNumber(RATTLE.Every[1], RATTLE.Every[2])
+				group.Puffed = false
+			end
+			local elapsed = t - group.At
+			if elapsed <= RATTLE.Time + 0.1 then
+				local envelope = math.sin(math.clamp(elapsed / RATTLE.Time, 0, 1) * math.pi)
+				local hop = math.abs(math.sin(elapsed * RATTLE.HopSpeed)) * RATTLE.Hop * envelope
+				local tilt = math.sin(elapsed * RATTLE.ShakeSpeed) * math.rad(RATTLE.Shake) * envelope
+				local move = group.Pivot * CFrame.new(0, hop, 0) * CFrame.Angles(tilt * 0.6, 0, tilt) * group.Pivot:Inverse()
+				for part, base in group.Parts do
+					if part.Parent then
+						part.CFrame = move * base
+					end
+				end
+				if not group.Puffed and elapsed > RATTLE.Time * 0.5 then
+					group.Puffed = true
+					EffectController:Vfx("Rattle", group.Pivot.Position)
+				end
+			end
+		end
+	end
 end
 
 local swayAccumulator = 0
@@ -362,6 +433,62 @@ local function ease(alpha)
 	return 0.5 - math.cos(math.clamp(alpha, 0, 1) * math.pi) / 2
 end
 
+local WIGGLE_AXES = { X = Vector3.xAxis, Y = Vector3.yAxis, Z = Vector3.zAxis }
+
+function AmbientController:StepPosed(t, cameraPosition)
+	local gestures = POSED.Gestures
+	for npc, state in self.Posed do
+		if not npc.Parent then
+			self.Posed[npc] = nil
+		elseif (npc:GetPivot().Position - cameraPosition).Magnitude < CULL then
+			if not state.Gesture and t >= state.NextGesture then
+				state.Gesture = gestures.List[random:NextInteger(1, #gestures.List)]
+				state.GestureAt = t
+			end
+			local gesture, weight = state.Gesture, 0
+			if gesture then
+				local elapsed = t - state.GestureAt
+				if elapsed >= gesture.Time then
+					state.Gesture = nil
+					state.NextGesture = t + random:NextNumber(gestures.Every[1], gestures.Every[2])
+					gesture = nil
+				else
+					weight = ease(math.min(elapsed, gesture.Time - elapsed) / gestures.Blend)
+				end
+			end
+			local looker = self.Lookers[npc]
+			for name, entry in state.Joints do
+				local m = POSED.Motion[name]
+				local offset = CFrame.identity
+				if m then
+					local phase = state.Phase + (m.Phase or 0)
+					local wave = math.sin(t * m.Speed + phase)
+					local pitch = (m.Pitch or 0) * wave
+					if m.Tap then
+						pitch -= m.Tap * math.max(0, wave) ^ 2 * math.clamp(math.sin(t * m.Burst + phase) * 3, 0, 1)
+					end
+					offset = CFrame.Angles(math.rad(pitch), math.rad(m.Yaw or 0) * math.sin(t * m.Speed * 0.7 + phase), math.rad(m.Roll or 0) * wave)
+				end
+				local base = entry.Base
+				local target = gesture and gesture.Pose[name]
+				if target then
+					local pose = entry.Rest * angles(target)
+					local wiggle = gesture.Wiggle
+					if wiggle and wiggle.Joint == name then
+						pose *= CFrame.fromAxisAngle(WIGGLE_AXES[wiggle.Axis], math.rad(wiggle.Angle) * math.sin(t * wiggle.Speed))
+					end
+					base = base:Lerp(pose, weight)
+				end
+				if entry.Motor then
+					entry.Joint.C0 = base * offset * (looker and looker.Offsets[name] or CFrame.identity)
+				else
+					entry.Joint.Transform = base * offset
+				end
+			end
+		end
+	end
+end
+
 function AmbientController:StepCart(t, cameraPosition)
 	local cart = self.Cart
 	local anchor = next(self.CartParts)
@@ -370,18 +497,29 @@ function AmbientController:StepCart(t, cameraPosition)
 	end
 	if t >= cart.Next then
 		cart.From = cart.Offset
-		cart.To = random:NextNumber(CART.Range[1], CART.Range[2])
+		local to = random:NextNumber(CART.Range[1], CART.Range[2])
+		if math.abs(to - cart.From) < CART.MinTravel then
+			to = cart.From + (cart.From > (CART.Range[1] + CART.Range[2]) / 2 and -CART.MinTravel or CART.MinTravel)
+		end
+		cart.To = math.clamp(to, CART.Range[1], CART.Range[2])
 		cart.Start = t
 		cart.Next = t + CART.Time + random:NextNumber(CART.Every[1], CART.Every[2])
+		cart.Rolling = true
+		EffectController:Vfx("CartDust", anchor.Position - Vector3.new(0, CART.DustDrop, 0))
 	end
 	local alpha = (t - cart.Start) / CART.Time
 	if alpha > 1 and cart.Offset == cart.To then
 		return
 	end
+	if alpha >= 1 and cart.Rolling then
+		cart.Rolling = false
+		EffectController:Vfx("CartDust", anchor.Position - Vector3.new(0, CART.DustDrop, 0))
+	end
 	cart.Offset = cart.From + (cart.To - cart.From) * ease(alpha)
+	local rumble = Vector3.new(0, math.abs(math.sin(t * CART.RumbleSpeed)) * CART.Rumble * math.sin(math.clamp(alpha, 0, 1) * math.pi), 0)
 	for part, base in self.CartParts do
 		if part.Parent then
-			part.CFrame = base + CART.Axis * cart.Offset
+			part.CFrame = base + CART.Axis * cart.Offset + rumble
 		else
 			self.CartParts[part] = nil
 		end
@@ -511,6 +649,17 @@ function AmbientController:StepWind(dt, t, cameraPosition)
 			local radius = state.Small and WIND.SmallRadius or WIND.SwayRadius
 			if distance < (lowEnd and radius * WIND.MobileRadiusScale or radius) then
 				local wave = math.sin(t * state.Speed + state.Phase) * 0.7 + math.sin(t * state.Speed * 2.3 + state.Phase * 1.7) * 0.3
+				local gust = state.Gust
+				if gust then
+					local g = WIND.Gust
+					if t >= gust.Next then
+						gust.At = t
+						gust.Next = t + g.Rise + g.Hold + g.Fall + random:NextNumber(g.Every[1], g.Every[2])
+					end
+					local elapsed = t - gust.At
+					local level = elapsed < g.Rise and ease(elapsed / g.Rise) or elapsed < g.Rise + g.Hold and 1 or 1 - ease((elapsed - g.Rise - g.Hold) / g.Fall)
+					wave = (0.35 + wave) * (g.Calm + (1 - g.Calm) * level) - 0.35
+				end
 				if state.Leaves then
 					local pivot = state.Leaves.Pivot
 					for _, leaf in state.Leaves.Parts do
@@ -632,23 +781,8 @@ function AmbientController:Step(dt)
 	self:StepCart(t, cameraPosition)
 	self:StepPotions(t, cameraPosition)
 	self:StepLook(dt, cameraPosition)
-	for npc, state in self.Posed do
-		if not npc.Parent then
-			self.Posed[npc] = nil
-		elseif (npc:GetPivot().Position - cameraPosition).Magnitude < CULL then
-			local looker = self.Lookers[npc]
-			for _, entry in state.Joints do
-				local m = entry.Motion
-				local wave = math.sin(t * m.Speed + state.Phase + (m.Phase or 0))
-				local offset = CFrame.Angles(math.rad(m.Pitch or 0) * wave, math.rad(m.Yaw or 0) * math.sin(t * m.Speed * 0.7 + state.Phase), math.rad(m.Roll or 0) * wave)
-				if entry.Motor then
-					entry.Joint.C0 = entry.Base * offset * (looker and looker.Offsets[entry.Name] or CFrame.identity)
-				else
-					entry.Joint.Transform = entry.Base * offset
-				end
-			end
-		end
-	end
+	self:StepPosed(t, cameraPosition)
+	self:StepRattles(t, cameraPosition)
 	self:StepWind(dt, t, cameraPosition)
 	local display = PropsConfig.Displays
 	for model, state in self.Wobblers do

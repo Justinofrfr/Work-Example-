@@ -452,9 +452,9 @@ local function panel(name, titleText, size, color, ratio)
 		Name = "Close",
 		Text = "X",
 		Color = C.Bad,
-		Size = UDim2.fromScale(0.12, 1.1),
-		Position = UDim2.fromScale(1.02, -0.2),
-		AnchorPoint = Vector2.new(1, 0),
+		Size = UDim2.fromScale(0.12, 0.76),
+		Position = UDim2.fromScale(0.985, 0.5),
+		AnchorPoint = Vector2.new(1, 0.5),
 		Radius = 0.3,
 		Parent = header,
 	})
@@ -469,19 +469,14 @@ local function panel(name, titleText, size, color, ratio)
 	return frame, body
 end
 
-local _, shopBody = panel("Shop", "SHOP", UDim2.fromScale(0.64, 0.74), Color3.fromRGB(90, 210, 90), 1.45)
-make("ScrollingFrame", {
-	Name = "List",
-	Size = UDim2.fromScale(1, 1),
-	BackgroundTransparency = 1,
-	BorderSizePixel = 0,
-	ScrollBarThickness = 8,
-	AutomaticCanvasSize = Enum.AutomaticSize.Y,
-	CanvasSize = UDim2.new(),
-	Parent = shopBody,
-}, {
-	make("UIListLayout", { Padding = UDim.new(0.015, 0), SortOrder = Enum.SortOrder.LayoutOrder }),
-	make("UIPadding", { PaddingTop = UDim.new(0.01, 0), PaddingLeft = UDim.new(0.01, 0), PaddingRight = UDim.new(0.03, 0), PaddingBottom = UDim.new(0.02, 0) }),
+local _, shopBody = panel("Shop", "SHOP", UDim2.fromScale(0.7, 0.8), Color3.fromRGB(90, 210, 90), 1.6)
+make("Frame", { Name = "Tabs", Size = UDim2.fromScale(0.19, 1), BackgroundTransparency = 1, Parent = shopBody }, {
+	make("UIListLayout", { Padding = UDim.new(0.025, 0), SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Center }),
+})
+make("Frame", { Name = "Pages", Size = UDim2.fromScale(0.79, 1), Position = UDim2.fromScale(0.21, 0), BackgroundColor3 = Color3.fromRGB(240, 222, 190), Parent = shopBody }, {
+	corner(0.05),
+	stroke(3),
+	studs(0.05, UIConfig.Studs.PanelTransparency, UIConfig.Studs.PanelColor),
 })
 
 local _, upgradeBody = panel("Upgrades", "UPGRADES", UDim2.fromScale(0.52, 0.58), Color3.fromRGB(255, 165, 50), 1.5)
@@ -652,24 +647,68 @@ end
 
 local templates = make("Folder", { Name = "Templates", Parent = gui })
 
-local item = panelFrame({ Name = "ShopItem", Size = UDim2.fromScale(0.31, 0.4), BackgroundColor3 = Color3.fromRGB(255, 252, 240), Parent = templates })
-make("Frame", { Name = "Glow", Size = UDim2.fromScale(0.62, 0.42), Position = UDim2.fromScale(0.5, 0.22), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundColor3 = Color3.fromRGB(255, 226, 140), BackgroundTransparency = 0.45, Parent = item }, {
-	corner(1),
-	make("UIGradient", { Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 0.9) }), Rotation = 90 }),
-})
-label({ Name = "Icon", Text = "⚡", Size = UDim2.fromScale(0.46, 0.34), Position = UDim2.fromScale(0.27, 0.05), ZIndex = 2, Parent = item })
-label({ Name = "Title", Text = "Item", Size = UDim2.fromScale(0.92, 0.14), Position = UDim2.fromScale(0.04, 0.4), TextColor3 = Color3.fromRGB(255, 255, 255), Parent = item })
-local itemDesc = label({ Name = "Desc", Text = "Description", Size = UDim2.fromScale(0.9, 0.18), Position = UDim2.fromScale(0.05, 0.55), TextColor3 = Color3.fromRGB(255, 236, 190), StrokeThickness = 1.5, Parent = item })
-itemDesc.TextWrapped = true
-make("UITextSizeConstraint", { MaxTextSize = 22, MinTextSize = 9, Parent = itemDesc })
-button({ Name = "Buy", Text = "R$0", Color = C.Robux, Size = UDim2.fromScale(0.86, 0.19), Position = UDim2.fromScale(0.5, 0.77), AnchorPoint = Vector2.new(0.5, 0), Radius = 0.4, Parent = item })
+local function wideAspect(ratio)
+	return make("UIAspectRatioConstraint", { AspectRatio = ratio, AspectType = Enum.AspectType.ScaleWithParentSize, DominantAxis = Enum.DominantAxis.Width })
+end
 
-local section = make("Frame", { Name = "ShopSection", Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, Parent = templates }, {
-	make("UIListLayout", { Padding = UDim.new(0.012, 0), SortOrder = Enum.SortOrder.LayoutOrder }),
+local function shopCard(name, ratio, left, buyWidth)
+	local card = panelFrame({ Name = name, Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.fromRGB(255, 252, 240), Parent = templates })
+	if ratio then
+		wideAspect(ratio).Parent = card
+	end
+	local iconSize = left - 0.06
+	make("Frame", { Name = "Glow", Size = UDim2.fromScale(iconSize * 1.25, 0.98), Position = UDim2.fromScale(0.03 + iconSize / 2, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundColor3 = Color3.fromRGB(255, 226, 140), BackgroundTransparency = 0.35, Parent = card }, {
+		corner(1),
+		aspect(1),
+		make("UIGradient", { Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 0.85) }), Rotation = 90 }),
+	})
+	make("Frame", { Name = "IconBack", Size = UDim2.fromScale(iconSize, 0.78), Position = UDim2.fromScale(0.03 + iconSize / 2, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundColor3 = Color3.fromRGB(255, 214, 140), Parent = card }, {
+		corner(1),
+		stroke(3),
+		aspect(1),
+		studs(1, 0.6),
+	})
+	label({ Name = "Icon", Text = "⚡", Size = UDim2.fromScale(iconSize * 0.72, 0.56), Position = UDim2.fromScale(0.03 + iconSize / 2, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), ZIndex = 2, Parent = card })
+	label({ Name = "Title", Text = "Item", Size = UDim2.fromScale(0.97 - left, 0.3), Position = UDim2.fromScale(left, 0.07), TextXAlignment = Enum.TextXAlignment.Left, StrokeThickness = 3, Parent = card })
+	local desc = label({ Name = "Desc", Text = "Description", Size = UDim2.fromScale(0.97 - left, 0.24), Position = UDim2.fromScale(left, 0.38), TextXAlignment = Enum.TextXAlignment.Left, TextYAlignment = Enum.TextYAlignment.Top, TextColor3 = Color3.fromRGB(255, 236, 190), StrokeThickness = 2, Parent = card })
+	desc.TextWrapped = true
+	make("UITextSizeConstraint", { MaxTextSize = 30, MinTextSize = 10, Parent = desc })
+	button({ Name = "Buy", Text = "R$0", Color = C.Robux, Size = UDim2.fromScale(buyWidth, 0.29), Position = UDim2.fromScale(left, 0.65), Radius = 0.4, Parent = card })
+	local badge = label({ Name = "Badge", Text = "BEST", Size = UDim2.fromScale(0.97 - left - buyWidth - 0.03, 0.22), Position = UDim2.fromScale(0.97, 0.685), AnchorPoint = Vector2.new(1, 0), BackgroundTransparency = 0, BackgroundColor3 = Color3.fromRGB(255, 90, 90), StrokeThickness = 2, Visible = false, Parent = card })
+	corner(0.5).Parent = badge
+	stroke(2.5).Parent = badge
+	make("UIPadding", { PaddingLeft = UDim.new(0.08, 0), PaddingRight = UDim.new(0.08, 0), PaddingTop = UDim.new(0.14, 0), PaddingBottom = UDim.new(0.14, 0), Parent = badge })
+	return card
+end
+
+shopCard("ShopItem", nil, 0.33, 0.36)
+shopCard("ShopFeature", 4.4, 0.21, 0.3)
+
+local shopTab = button({ Name = "ShopTab", Icon = "⚡", Text = "BOOSTS", Color = C.Locked, Size = UDim2.fromScale(0.96, 0.3), Radius = 0.2, Parent = templates })
+aspect(1.05).Parent = shopTab
+
+local shopPage = make("ScrollingFrame", {
+	Name = "ShopPage",
+	Size = UDim2.fromScale(0.97, 0.95),
+	Position = UDim2.fromScale(0.015, 0.025),
+	BackgroundTransparency = 1,
+	BorderSizePixel = 0,
+	ScrollBarThickness = 8,
+	ScrollBarImageColor3 = OUTLINE,
+	AutomaticCanvasSize = Enum.AutomaticSize.Y,
+	CanvasSize = UDim2.new(),
+	Visible = false,
+	Parent = templates,
+}, {
+	make("UIListLayout", { Padding = UDim.new(0, 10), SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Center }),
+	make("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 14), PaddingLeft = UDim.new(0, 6), PaddingRight = UDim.new(0, 16) }),
 })
-aspect(12).Parent = label({ Name = "Title", Text = "SECTION", Size = UDim2.fromScale(1, 1), TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.fromRGB(255, 220, 120), StrokeThickness = 3, LayoutOrder = 1, Parent = section })
-make("Frame", { Name = "Grid", Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = 2, Parent = section }, {
-	make("UIGridLayout", { CellSize = UDim2.fromScale(0.31, 1), CellPadding = UDim2.fromScale(0.025, 0.025), SortOrder = Enum.SortOrder.LayoutOrder }, { make("UIAspectRatioConstraint", { AspectRatio = 0.82, DominantAxis = Enum.DominantAxis.Width }) }),
+wideAspect(14).Parent = label({ Name = "Note", Text = "Note", Size = UDim2.fromScale(1, 1), TextColor3 = Color3.fromRGB(255, 220, 120), StrokeThickness = 3, LayoutOrder = 1, Parent = shopPage })
+make("Frame", { Name = "Featured", Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = 2, Parent = shopPage }, {
+	make("UIListLayout", { Padding = UDim.new(0, 10), SortOrder = Enum.SortOrder.LayoutOrder }),
+})
+make("Frame", { Name = "Grid", Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = 3, Parent = shopPage }, {
+	make("UIGridLayout", { CellSize = UDim2.fromScale(0.485, 1), CellPadding = UDim2.new(0.03, 0, 0, 10), SortOrder = Enum.SortOrder.LayoutOrder }, { make("UIAspectRatioConstraint", { AspectRatio = 2.45, DominantAxis = Enum.DominantAxis.Width }) }),
 })
 
 local card = panelFrame({ Name = "UpgradeCard", Size = UDim2.fromScale(1, 0.3), BackgroundColor3 = Color3.fromRGB(255, 252, 240), Parent = templates })

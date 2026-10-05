@@ -164,6 +164,25 @@ if root and probe and workspace:GetAttribute("LookProbe") then
 	clientLog:FireServer("probe " .. on .. " | " .. off .. " | idle series " .. table.concat(series, ",") .. " | tracks " .. table.concat(tracks, " ") .. " | anchored " .. tostring(probe.Head.Anchored) .. " " .. tostring(probeRoot.Anchored) .. " | assembly " .. tostring(probe.Head.AssemblyRootPart) .. " ballsockets " .. tostring(probe.Head:FindFirstChildWhichIsA("BallSocketConstraint", true) and probe.Head:FindFirstChildWhichIsA("BallSocketConstraint", true).Enabled))
 end
 
+local posedNpc = workspace.Game.NPCs:FindFirstChild("Incubator")
+if root and posedNpc then
+	local posedRoot = posedNpc.HumanoidRootPart
+	root.CFrame = posedRoot.CFrame * CFrame.new(0, 0, -30)
+	local first = posedRoot.CFrame:PointToObjectSpace(posedNpc.RightHand.Position)
+	local lowY, highY, ankleSpan = math.huge, -math.huge, 0
+	local ankleFirst = posedNpc.RightFoot.CFrame.LookVector
+	for _ = 1, 40 do
+		task.wait(0.25)
+		local hands = { posedRoot.CFrame:PointToObjectSpace(posedNpc.RightHand.Position), posedRoot.CFrame:PointToObjectSpace(posedNpc.LeftHand.Position) }
+		for _, hand in hands do
+			lowY = math.min(lowY, hand.Y)
+			highY = math.max(highY, hand.Y)
+		end
+		ankleSpan = math.max(ankleSpan, math.deg(math.acos(math.clamp(posedNpc.RightFoot.CFrame.LookVector:Dot(ankleFirst), -1, 1))))
+	end
+	clientLog:FireServer(("pose: right hand start (%.2f,%.2f,%.2f) hand Y range %.2f..%.2f foot swing %.1f deg"):format(first.X, first.Y, first.Z, lowY, highY, ankleSpan))
+end
+
 local goose = CollectionService:GetTagged("GooseRig")[1]
 local gooseHead = goose and goose:FindFirstChild("Head", true)
 local gooseBody = goose and goose:FindFirstChild("Body", true)
