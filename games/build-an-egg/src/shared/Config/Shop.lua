@@ -34,7 +34,7 @@ return {
 			Color = Color3.fromRGB(180, 110, 255),
 			Note = "Unlock forever in every server!",
 			Items = {
-				{ Key = "GoldenGoose", Kind = "Pass", Icon = "🪿", Name = "Golden Goose", Desc = "2x eggs, instant pickup + place", Featured = true, Badge = "BEST" },
+				{ Key = "GoldenGoose", Kind = "Pass", Icon = "🦆", Name = "Golden Goose", Desc = "2x eggs, instant pickup + place", Featured = true, Badge = "BEST" },
 				{ Key = "Gym2", Kind = "Pass", Icon = "🏋️", Name = "Unlock 2x Gym", Desc = "Skip the 1 egg gate" },
 				{ Key = "Gym5", Kind = "Pass", Icon = "🏋️", Name = "Unlock 5x Gym", Desc = "Skip the 3 egg gate" },
 				{ Key = "Gym10", Kind = "Pass", Icon = "🏋️", Name = "Unlock 10x Gym", Desc = "Skip the 8 egg gate" },

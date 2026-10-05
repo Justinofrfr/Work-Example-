@@ -674,7 +674,7 @@ local function shopCard(name, ratio, left, buyWidth)
 	desc.TextWrapped = true
 	make("UITextSizeConstraint", { MaxTextSize = 30, MinTextSize = 10, Parent = desc })
 	button({ Name = "Buy", Text = "R$0", Color = C.Robux, Size = UDim2.fromScale(buyWidth, 0.29), Position = UDim2.fromScale(left, 0.65), Radius = 0.4, Parent = card })
-	local badge = label({ Name = "Badge", Text = "BEST", Size = UDim2.fromScale(0.97 - left - buyWidth - 0.03, 0.22), Position = UDim2.fromScale(0.97, 0.685), AnchorPoint = Vector2.new(1, 0), BackgroundTransparency = 0, BackgroundColor3 = Color3.fromRGB(255, 90, 90), StrokeThickness = 2, Visible = false, Parent = card })
+	local badge = label({ Name = "Badge", Text = "BEST", Size = UDim2.fromScale(math.min(0.97 - left - buyWidth - 0.03, 0.24), 0.22), Position = UDim2.fromScale(0.97, 0.685), AnchorPoint = Vector2.new(1, 0), BackgroundTransparency = 0, BackgroundColor3 = Color3.fromRGB(255, 90, 90), StrokeThickness = 2, Visible = false, Parent = card })
 	corner(0.5).Parent = badge
 	stroke(2.5).Parent = badge
 	make("UIPadding", { PaddingLeft = UDim.new(0.08, 0), PaddingRight = UDim.new(0.08, 0), PaddingTop = UDim.new(0.14, 0), PaddingBottom = UDim.new(0.14, 0), Parent = badge })
@@ -682,7 +682,7 @@ local function shopCard(name, ratio, left, buyWidth)
 end
 
 shopCard("ShopItem", nil, 0.34, 0.36)
-shopCard("ShopFeature", 3.4, 0.24, 0.3)
+shopCard("ShopFeature", 4.1, 0.22, 0.28)
 
 local shopTab = button({ Name = "ShopTab", Icon = "⚡", Text = "BOOSTS", Color = C.Locked, Size = UDim2.fromScale(0.96, 0.3), Radius = 0.2, Parent = templates })
 aspect(1.05).Parent = shopTab
