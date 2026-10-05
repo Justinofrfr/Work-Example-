@@ -52,6 +52,7 @@ end
 local function onStage(name)
 	if name == "Idle" then
 		local inset = GuiService.TopbarInset
+		task.wait(1.2)
 		log(("insets topbarMaxY=%d topLeftY=%d topLeftBottom=%d offerVisible=%s offerY=%d"):format(inset.Max.Y, hud.TopLeft.AbsolutePosition.Y, hud.TopLeft.AbsolutePosition.Y + hud.TopLeft.AbsoluteSize.Y, tostring(hud.Offer.Visible), hud.Offer.AbsolutePosition.Y))
 		local rigs = CollectionService:GetTagged("GooseRig")
 		local bird = rigs[1]
@@ -81,9 +82,9 @@ local function onStage(name)
 		PanelController:Close()
 	elseif name == "Interlude" then
 		local found
-		for _ = 1, 40 do
-			found = findText("hatch")
-			if found and found:lower():find("train") then
+		for _ = 1, 60 do
+			found = findText("just hatched") or findText("egg hatching")
+			if found then
 				break
 			end
 			task.wait(0.25)

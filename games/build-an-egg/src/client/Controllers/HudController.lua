@@ -78,14 +78,16 @@ function HudController:Start()
 	end)
 	local GuiService = game:GetService("GuiService")
 	local function placeTopLeft()
-		local inset = GuiService.TopbarInset
-		local top = inset.Height > 0 and inset.Max.Y or 0
-		hud.TopLeft.Position = UDim2.new(hud.TopLeft.Position.X.Scale, 0, 0, top + 8)
+		local wanted = UDim2.new(hud.TopLeft.Position.X.Scale, 0, 0, GuiService.TopbarInset.Max.Y + 8)
+		if hud.TopLeft.Position ~= wanted then
+			hud.TopLeft.Position = wanted
+		end
 	end
 	placeTopLeft()
 	GuiService:GetPropertyChangedSignal("TopbarInset"):Connect(placeTopLeft)
 	task.spawn(function()
 		while true do
+			placeTopLeft()
 			local state = ClientState.State
 			local remaining = state and (state.TrainBoostUntil or 0) - Workspace:GetServerTimeNow() or 0
 			hud.TrainBoost.Visible = remaining > 0
