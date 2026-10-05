@@ -90,6 +90,35 @@ for _, npc in CollectionService:GetTagged("NPC") do
 		table.insert(lookInfo, ("%s head yaw far %.1f -> near %.1f deg (target 41), neck wiggle %.1f deg"):format(npc.Name, away, total / 6, wiggle))
 	end
 end
+local RunService = game:GetService("RunService")
+local probe = workspace.Game.NPCs:FindFirstChild("Upgrades")
+if root and probe and workspace:GetAttribute("LookProbe") then
+	local neck = probe.Head.Neck
+	local waist = probe.UpperTorso.Waist
+	local function yawOf(cf)
+		local _, y = cf:ToEulerAnglesYXZ()
+		return math.deg(y)
+	end
+	root.CFrame = probe.HumanoidRootPart.CFrame * CFrame.new(-7, 0, -8)
+	task.wait(2)
+	local lines = {}
+	local connections = {}
+	for _, eventName in { "PreAnimation", "PreSimulation", "PostSimulation", "PreRender" } do
+		table.insert(connections, RunService[eventName]:Connect(function()
+			if #lines < 40 then
+				table.insert(lines, ("%s n=%.1f w=%.1f"):format(eventName, yawOf(neck.Transform), yawOf(waist.Transform)))
+			end
+		end))
+	end
+	task.wait(0.3)
+	for _, connection in connections do
+		connection:Disconnect()
+	end
+	local ambient = require(player.PlayerScripts.Client.Controllers.AmbientController)
+	local looker = ambient.Lookers[probe]
+	clientLog:FireServer(("probe yaw=%.1f offsets n=%.1f w=%.1f kinematic=%s | %s"):format(looker and looker.Yaw or -999, looker and looker.Offsets.Neck and yawOf(looker.Offsets.Neck) or -999, looker and looker.Offsets.Waist and yawOf(looker.Offsets.Waist) or -999, tostring(neck.IsKinematic), table.concat(lines, "; ")))
+end
+
 local goose = CollectionService:GetTagged("GooseRig")[1]
 local gooseHead = goose and goose:FindFirstChild("Head", true)
 local gooseBody = goose and goose:FindFirstChild("Body", true)
