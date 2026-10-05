@@ -52,6 +52,7 @@ return {
 		EmblemColor = Color3.fromRGB(250, 244, 228),
 		StackLift = 1,
 		MaxStack = 200,
+		Mesh = { Source = "MapKit11", Part = "HFBackpack", Offset = Vector3.new(0, 0, 0.1) },
 		PieceSize = Vector3.new(1.9, 1.5, 1.9),
 		PieceSpacing = 0.95,
 		PieceTwist = 23,

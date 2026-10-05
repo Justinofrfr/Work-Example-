@@ -93,7 +93,7 @@ return {
 		InteriorWall = Color3.fromRGB(250, 244, 228),
 	},
 	Scenery = {
-		Sources = { "MapKit", "MapKit2", "MapKit3", "MapKit4", "MapKit5", "MapKit6", "MapKit7", "MapKit8" },
+		Sources = { "MapKit", "MapKit2", "MapKit3", "MapKit4", "MapKit5", "MapKit6", "MapKit7", "MapKit8", "MapKit11" },
 		OrganicTrails = true,
 		TrailLift = { World_TrailSpawn = 0, World_TrailGallery = 0.03, World_TrailAvenue = 0.06, World_Trail = 0.09 },
 		LampOffset = 5,
@@ -181,6 +181,8 @@ return {
 				Tassel = { Colors = { Color3.fromRGB(255, 210, 80) } },
 				Bird = { Colors = { Color3.new(1, 1, 1) }, KeepTexture = true, Tag = "GooseRig" },
 			},
+			Treadmill = { Body = { Colors = { Color3.new(1, 1, 1) }, KeepTexture = true } },
+			Bench = { Body = { Colors = { Color3.new(1, 1, 1) }, KeepTexture = true } },
 			World_Trail = { Dirt = { Colors = { Color3.fromRGB(150, 104, 66) } } },
 			World_TrailSpawn = { Sand = { Colors = { Color3.fromRGB(190, 162, 120) } } },
 			World_TrailGallery = { Sand = { Colors = { Color3.fromRGB(190, 162, 120) } } },

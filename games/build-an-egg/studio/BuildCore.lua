@@ -232,18 +232,34 @@ local function backpackPiece(name, size, offset, color, shape, studs)
 	make("WeldConstraint", { Part0 = backpackBody, Part1 = piece, Parent = piece })
 	return piece
 end
-local X, Y, Z = BP.Size.X, BP.Size.Y, BP.Size.Z
-backpackPiece("Lid", Vector3.new(X + 0.12, 0.3, Z + 0.12), Vector3.new(0, Y / 2 + 0.1, 0), BP.TrimColor, nil, true)
-backpackPiece("Flap", Vector3.new(X * 0.82, Y * 0.42, 0.14), Vector3.new(0, Y * 0.24, Z / 2 + 0.08), BP.TrimColor)
-backpackPiece("Buckle", Vector3.new(0.34, 0.3, 0.1), Vector3.new(0, Y * 0.06, Z / 2 + 0.19), BP.BuckleColor)
-backpackPiece("Pocket", Vector3.new(X * 0.62, Y * 0.36, 0.34), Vector3.new(0, -Y * 0.24, Z / 2 + 0.16), BP.PocketColor, nil, true)
-backpackPiece("Emblem", Vector3.new(0.42, 0.52, 0.1), Vector3.new(0, -Y * 0.24, Z / 2 + 0.36), BP.EmblemColor, Enum.PartType.Ball)
-for side = -1, 1, 2 do
-	backpackPiece("SidePocket", Vector3.new(0.3, Y * 0.5, Z * 0.7), Vector3.new(side * (X / 2 + 0.14), -Y * 0.15, 0), BP.PocketColor, nil, true)
-	backpackPiece("Strap", Vector3.new(0.32, Y + 0.3, 0.22), Vector3.new(side * X * 0.3, 0, -Z / 2 - 0.1), BP.StrapColor)
-	backpackPiece("Band", Vector3.new(0.2, 0.86, 0.86), Vector3.new(side * X * 0.32, Y / 2 + 0.6, 0), BP.BandColor, Enum.PartType.Cylinder)
+local meshSource = BP.Mesh and imported and imported:FindFirstChild(BP.Mesh.Source)
+local meshTemplate = meshSource and meshSource:FindFirstChild(BP.Mesh.Part, true)
+if meshTemplate then
+	backpackBody.Transparency = 1
+	local shell = meshTemplate:Clone()
+	shell.Name = "Mesh"
+	shell.Anchored = false
+	shell.CanCollide = false
+	shell.CanQuery = false
+	shell.CanTouch = false
+	shell.Massless = true
+	shell.CFrame = backpackBody.CFrame * CFrame.new(BP.Mesh.Offset)
+	shell.Parent = backpack
+	make("WeldConstraint", { Part0 = backpackBody, Part1 = shell, Parent = shell })
+else
+	local X, Y, Z = BP.Size.X, BP.Size.Y, BP.Size.Z
+	backpackPiece("Lid", Vector3.new(X + 0.12, 0.3, Z + 0.12), Vector3.new(0, Y / 2 + 0.1, 0), BP.TrimColor, nil, true)
+	backpackPiece("Flap", Vector3.new(X * 0.82, Y * 0.42, 0.14), Vector3.new(0, Y * 0.24, Z / 2 + 0.08), BP.TrimColor)
+	backpackPiece("Buckle", Vector3.new(0.34, 0.3, 0.1), Vector3.new(0, Y * 0.06, Z / 2 + 0.19), BP.BuckleColor)
+	backpackPiece("Pocket", Vector3.new(X * 0.62, Y * 0.36, 0.34), Vector3.new(0, -Y * 0.24, Z / 2 + 0.16), BP.PocketColor, nil, true)
+	backpackPiece("Emblem", Vector3.new(0.42, 0.52, 0.1), Vector3.new(0, -Y * 0.24, Z / 2 + 0.36), BP.EmblemColor, Enum.PartType.Ball)
+	for side = -1, 1, 2 do
+		backpackPiece("SidePocket", Vector3.new(0.3, Y * 0.5, Z * 0.7), Vector3.new(side * (X / 2 + 0.14), -Y * 0.15, 0), BP.PocketColor, nil, true)
+		backpackPiece("Strap", Vector3.new(0.32, Y + 0.3, 0.22), Vector3.new(side * X * 0.3, 0, -Z / 2 - 0.1), BP.StrapColor)
+		backpackPiece("Band", Vector3.new(0.2, 0.86, 0.86), Vector3.new(side * X * 0.32, Y / 2 + 0.6, 0), BP.BandColor, Enum.PartType.Cylinder)
+	end
+	backpackPiece("Bedroll", Vector3.new(X + 0.5, 0.8, 0.8), Vector3.new(0, Y / 2 + 0.6, 0), BP.BedrollColor, Enum.PartType.Cylinder)
 end
-backpackPiece("Bedroll", Vector3.new(X + 0.5, 0.8, 0.8), Vector3.new(0, Y / 2 + 0.6, 0), BP.BedrollColor, Enum.PartType.Cylinder)
 make("Weld", { Name = "Mount", Part1 = backpackBody, Parent = backpackBody })
 
 local stackPiece = shellChunk(Names.Templates.StackPiece, SH.StackSize)

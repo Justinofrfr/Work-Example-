@@ -146,3 +146,10 @@ Generated through the official Higgsfield MCP (mcp.higgsfield.ai). The Blender b
 | Water mist sprite | f0586c45-6eef-4467-b300-00b0ce6d305f | gpt_image_2_5 | 1.5 | 77178893644467 | waterfall mist emitter |
 
 Rig bones on the goose: Root, LegL, LegR, Body, Neck, Head, WingL, WingR, Tail. The client animates them procedurally (`Effects.GooseRig`).
+
+### Higgsfield props (MapKit11)
+| asset | image job | 3D job (tripo_h3_1_image_to_3d, standard) | credits | Roblox texture id | used by |
+|---|---|---|---|---|---|
+| Treadmill | 11a99f80-d198-406e-9be7-29efc81b54bf | 9e630d1a-fe04-4514-9276-ddc3bf53b29f | 10.5 | 119330713689977 | `Treadmill_Body` kit template in every gym |
+| Weight bench | b892af8a-3197-495e-ba5b-a375d7560832 | 17da6bef-db78-4a5c-a944-6fd12381fb14 | 10.5 | 70540761105014 | `Bench_Body` kit template in every gym |
+| Backpack | 1d48beb3-9b9b-40e0-9fd6-7b24ac617094 | 6df7d8c9-836d-4c82-8699-f979c498411a | 10.5 | 113427928980016 | `Game.Backpack.Mesh` (`HFBackpack`) |
