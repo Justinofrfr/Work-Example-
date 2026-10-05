@@ -32,6 +32,15 @@ task.spawn(function()
 		local start = nearest and nearest.Position
 		task.wait(0.3)
 		clientLog:FireServer(("belt rib found %s moved %.2f in 0.3s"):format(tostring(nearest ~= nil), (nearest and start) and (nearest.Position - start).Magnitude or -1))
+		local ambient = require(player.PlayerScripts.Client.Controllers.AmbientController)
+		local count, info = 0, "none"
+		for belt, state in ambient.Belts or {} do
+			count += 1
+			if nearest and belt.Parent == nearest.Parent then
+				info = ("pad %s ribs %d speed %.2f travel %.2f padDist %.2f"):format(tostring(state.Pad), #state.Ribs, state.Speed, state.Travel, state.Pad and (Vector3.new(state.Pad.Position.X, 0, state.Pad.Position.Z) - Vector3.new(root.Position.X, 0, root.Position.Z)).Magnitude or -1)
+			end
+		end
+		clientLog:FireServer(("belts registered %d nearest %s training attr %s"):format(count, info, tostring(player.Character:GetAttribute("Training"))))
 	end)
 	local bubble
 	repeat
