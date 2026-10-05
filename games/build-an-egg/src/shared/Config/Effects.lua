@@ -151,6 +151,7 @@ return {
 		Neck = { Speed = 0.7, Yaw = 7, Pitch = 4 },
 		Head = { Speed = 0.45, Yaw = 22, Nod = 6, NodSpeed = 1.9 },
 		Tail = { Speed = 3.2, Yaw = 10 },
+		Look = { Radius = 30, MaxYaw = 70, NeckShare = 0.4, IdleDamp = 0.7 },
 		Flap = { Every = { 5, 11 }, Time = 0.9, Beats = 3, Angle = 40 },
 	},
 	Vfx = {

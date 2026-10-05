@@ -60,19 +60,51 @@ for _, npc in CollectionService:GetTagged("NPC") do
 	local npcRoot = npc:FindFirstChild("HumanoidRootPart")
 	local neck = npc:FindFirstChild("Neck", true)
 	if root and npcRoot and neck and neck:IsA("AnimationConstraint") then
-		local transforms = {}
-		root.CFrame = npcRoot.CFrame * CFrame.new(-7, 0, -8)
-		for i = 1, 6 do
-			task.wait(0.4)
-			transforms[i] = neck.Transform
+		local humanoid = npc:FindFirstChildOfClass("Humanoid")
+		local animator = humanoid and humanoid:FindFirstChildOfClass("Animator")
+		local function stopEmotes()
+			for _, track in animator and animator:GetPlayingAnimationTracks() or {} do
+				if track.Priority == Enum.AnimationPriority.Action then
+					track:Stop(0)
+				end
+			end
 		end
-		local headLocal = npcRoot.CFrame:VectorToObjectSpace(npc.Head.CFrame.LookVector)
-		local turned = math.deg(math.atan2(-headLocal.X, -headLocal.Z))
+		local function headYaw()
+			local headLocal = npcRoot.CFrame:VectorToObjectSpace(npc.Head.CFrame.LookVector)
+			return math.deg(math.atan2(-headLocal.X, -headLocal.Z))
+		end
+		root.CFrame = npcRoot.CFrame * CFrame.new(0, 0, -40)
+		stopEmotes()
+		task.wait(2)
+		local away = headYaw()
+		root.CFrame = npcRoot.CFrame * CFrame.new(-7, 0, -8)
+		local transforms, total = {}, 0
+		task.wait(1.6)
+		for i = 1, 6 do
+			stopEmotes()
+			task.wait(0.15)
+			transforms[i] = neck.Transform
+			total += headYaw()
+		end
 		local wiggle = math.deg(math.acos(math.clamp(transforms[1].LookVector:Dot(transforms[6].LookVector), -1, 1)))
-		local toPlayer = (root.Position - npc.Head.Position) * Vector3.new(1, 0, 1)
-		local headFacing = npc.Head.CFrame.LookVector * Vector3.new(1, 0, 1)
-		local facing = math.deg(math.acos(math.clamp(toPlayer.Unit:Dot(headFacing.Unit), -1, 1)))
-		table.insert(lookInfo, ("%s head yaw %.1f deg (target 41), head off player %.1f deg, posed wiggle %.1f deg"):format(npc.Name, turned, facing, wiggle))
+		table.insert(lookInfo, ("%s head yaw far %.1f -> near %.1f deg (target 41), neck wiggle %.1f deg"):format(npc.Name, away, total / 6, wiggle))
 	end
+end
+local goose = CollectionService:GetTagged("GooseRig")[1]
+local gooseHead = goose and goose:FindFirstChild("Head", true)
+local gooseBody = goose and goose:FindFirstChild("Body", true)
+if root and gooseHead and gooseBody and gooseHead:IsA("Bone") then
+	local forward = ((gooseHead.WorldPosition - gooseBody.WorldPosition) * Vector3.new(1, 0, 1)).Unit
+	local side = forward:Cross(Vector3.yAxis)
+	local function yaw()
+		local look = gooseHead.WorldCFrame:VectorToWorldSpace(Vector3.new(0, 0, -1)) * Vector3.new(1, 0, 1)
+		return math.deg(math.atan2(forward:Cross(look.Unit).Y, forward:Dot(look.Unit)))
+	end
+	root.CFrame = CFrame.new(gooseHead.WorldPosition + forward * 70)
+	task.wait(2)
+	local far = yaw()
+	root.CFrame = CFrame.new(gooseHead.WorldPosition + side * 12 + forward * 4)
+	task.wait(2)
+	table.insert(lookInfo, ("goose head yaw far %.1f -> near %.1f deg"):format(far, yaw()))
 end
 clientLog:FireServer("look: " .. table.concat(lookInfo, " | "))

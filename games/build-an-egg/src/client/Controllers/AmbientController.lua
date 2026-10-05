@@ -302,6 +302,9 @@ local function rigBones(rig)
 		rig.Axes[name] = { Up = rest:VectorToObjectSpace(Vector3.yAxis), Side = rest:VectorToObjectSpace(side), Forward = rest:VectorToObjectSpace(forward) }
 	end
 	rig.WingSign = bones.WingL and (bones.WingL.WorldPosition - bones.Body.WorldPosition):Dot(side) > 0 and 1 or -1
+	rig.Forward = forward
+	rig.LookYaw = 0
+	rig.LookWeight = 0
 	rig.Bones = bones
 	return true
 end
@@ -318,17 +321,32 @@ function AmbientController:StepRigs(dt, t, cameraPosition)
 		end
 		rigAccumulator = 0
 	end
+	local character = Players.LocalPlayer.Character
+	local target = character and character:FindFirstChild("Head")
 	for part, rig in self.Rigs do
 		if not part.Parent then
 			self.Rigs[part] = nil
 		elseif (part.Position - cameraPosition).Magnitude < RIG.Radius and (rig.Bones or rigBones(rig)) then
 			local bones, axes, phase = rig.Bones, rig.Axes, rig.Phase
+			local lookYaw, lookWeight = 0, 0
+			local toTarget = target and (target.Position - bones.Head.WorldPosition) * Vector3.new(1, 0, 1)
+			if toTarget and toTarget.Magnitude < RIG.Look.Radius and toTarget.Magnitude > 0.1 then
+				local raw = math.deg(math.atan2(rig.Forward:Cross(toTarget.Unit).Y, rig.Forward:Dot(toTarget.Unit)))
+				if math.abs(raw) < LOOK.Behind then
+					lookYaw, lookWeight = math.clamp(raw, -RIG.Look.MaxYaw, RIG.Look.MaxYaw), 1
+				end
+			end
+			local blend = math.min(1, dt * LOOK.Speed)
+			rig.LookYaw += (lookYaw - rig.LookYaw) * blend
+			rig.LookWeight += (lookWeight - rig.LookWeight) * blend
+			local idle = 1 - RIG.Look.IdleDamp * rig.LookWeight
 			local breath = math.sin(t * RIG.Breath.Speed + phase)
 			bones.Body.Transform = CFrame.new(axes.Body.Up * breath * RIG.Breath.Lift) * turn(axes.Body.Side, breath * RIG.Breath.Tilt)
+			local headShare = bones.Neck and 1 - RIG.Look.NeckShare or 1
 			if bones.Neck then
-				bones.Neck.Transform = turn(axes.Neck.Up, math.sin(t * RIG.Neck.Speed + phase) * RIG.Neck.Yaw) * turn(axes.Neck.Side, math.sin(t * RIG.Neck.Speed * 1.7 + phase) * RIG.Neck.Pitch)
+				bones.Neck.Transform = turn(axes.Neck.Up, math.sin(t * RIG.Neck.Speed + phase) * RIG.Neck.Yaw * idle + rig.LookYaw * RIG.Look.NeckShare) * turn(axes.Neck.Side, math.sin(t * RIG.Neck.Speed * 1.7 + phase) * RIG.Neck.Pitch)
 			end
-			bones.Head.Transform = turn(axes.Head.Up, math.sin(t * RIG.Head.Speed + phase * 1.3) * RIG.Head.Yaw) * turn(axes.Head.Side, math.sin(t * RIG.Head.NodSpeed + phase) * RIG.Head.Nod)
+			bones.Head.Transform = turn(axes.Head.Up, math.sin(t * RIG.Head.Speed + phase * 1.3) * RIG.Head.Yaw * idle + rig.LookYaw * headShare) * turn(axes.Head.Side, math.sin(t * RIG.Head.NodSpeed + phase) * RIG.Head.Nod)
 			if bones.Tail then
 				bones.Tail.Transform = turn(axes.Tail.Up, math.sin(t * RIG.Tail.Speed + phase) * RIG.Tail.Yaw)
 			end
