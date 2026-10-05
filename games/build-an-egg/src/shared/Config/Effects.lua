@@ -113,6 +113,22 @@ return {
 		StreakWave = 2.2,
 		LeafHeight = 26,
 	},
+	Water = {
+		FoamSpin = 0.05,
+		FoamBase = 0.05,
+		FoamPulse = 0.25,
+		FoamPulseSpeed = 0.8,
+	},
+	GooseRig = {
+		Tag = "GooseRig",
+		Radius = 160,
+		MobileInterval = 1 / 30,
+		Breath = { Speed = 1.8, Lift = 0.08, Tilt = 2 },
+		Neck = { Speed = 0.7, Yaw = 7, Pitch = 4 },
+		Head = { Speed = 0.45, Yaw = 22, Nod = 6, NodSpeed = 1.9 },
+		Tail = { Speed = 3.2, Yaw = 10 },
+		Flap = { Every = { 5, 11 }, Time = 0.9, Beats = 3, Angle = 40 },
+	},
 	Vfx = {
 		Pickup = { Preset = "StarBling", Scale = 0.8 },
 		PickupPuff = { Preset = "Puff", Scale = 0.6 },

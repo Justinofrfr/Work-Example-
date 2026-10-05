@@ -10,6 +10,7 @@ local TutorialService = {}
 
 local DataService
 local StateService
+local OfferService
 local remotes
 
 local limiter = RateLimiter.new(10, 1)
@@ -17,6 +18,7 @@ local limiter = RateLimiter.new(10, 1)
 function TutorialService:Init(modules, context)
 	DataService = modules.DataService
 	StateService = modules.StateService
+	OfferService = modules.OfferService
 	remotes = context.Remotes
 end
 
@@ -41,6 +43,9 @@ function TutorialService:SetStep(player, step)
 		data.TutorialStep = step
 		DataService:MarkDirty(player)
 		StateService:Dirty(player)
+		if OfferService then
+			OfferService:Check(player)
+		end
 	end
 end
 

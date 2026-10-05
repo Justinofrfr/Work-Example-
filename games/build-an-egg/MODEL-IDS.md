@@ -131,3 +131,18 @@ There's no good cute or low-poly gym set. Consider recoloring these, or build pr
 - **Synty packs:** Roblox also publishes other official, licensed Synty packs that may hold chests, thrones and props in the same art style as the Nature Pack. Contents not inspected. Examples are "Synty Dungeon Pack: Weapons & Props" 6933790012 and "Cave & Castle Interiors" 6934021345.
 - **Removed listings:** Some search results return 404 on the store (e.g. 15308754803 "Snow Owl cute", 4655803920 "Cute LowPoly Chicken"), so don't use those.
 - **Avoided:** Pet Simulator, Adopt Me, Chicken Gun, Minecraft and Duolingo rips, plus a "Pet Pack" (4537799968, 900 votes) whose contents couldn't be verified.
+
+## Higgsfield-generated assets (2026-10-05)
+Generated through the official Higgsfield MCP (mcp.higgsfield.ai). The Blender bridge connector refuses generation on trial accounts with `{"detail":{"error_type":"only_mcp_usage_on_trial_is_available"}}`. Source files are in `assets/higgsfield`.
+
+| asset | Higgsfield job | model | credits | Roblox image id | used by |
+|---|---|---|---|---|---|
+| Golden goose reference | ca982692-7fdb-453c-b311-d22c9711eb39 | gpt_image_2_5 (high, transparent) | 1.5 | - | image-to-3D source |
+| Golden goose mesh (11.7k tris, rigged in Blender) | 8e815db0-e842-4d4a-9930-09029d4b1ca8 | tripo_h3_1_image_to_3d | 12 | 132008718532908 (texture) | MapKit8 `World_Goose_Bird` |
+| Water foam sprite | 075d4910-2504-46d2-9d03-f5bc77e63f73 | gpt_image_2_5 | 1.5 | 122701034300557 | pool/pond foam decals |
+| Water splash sprite | de6a6b5a-b72c-49ed-998a-6d3da071a235 | gpt_image_2_5 | 1.5 | 138479375877399 | waterfall splash emitter |
+| Water ripple sprite | 2449506c-9dc9-4bb6-b043-afb85342d596 | gpt_image_2_5 | 1.5 | 92515165368995 | pool/pond ripple decals |
+| Water droplets sprite | fe7e6516-243f-4cb2-9f8d-9de2db90592d | gpt_image_2_5 | 1.5 | 93083921246854 | waterfall + pond inlet droplets |
+| Water mist sprite | f0586c45-6eef-4467-b300-00b0ce6d305f | gpt_image_2_5 | 1.5 | 77178893644467 | waterfall mist emitter |
+
+Rig bones on the goose: Root, LegL, LegR, Body, Neck, Head, WingL, WingR, Tail. The client animates them procedurally (`Effects.GooseRig`).

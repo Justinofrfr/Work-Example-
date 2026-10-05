@@ -93,12 +93,12 @@ return {
 		InteriorWall = Color3.fromRGB(250, 244, 228),
 	},
 	Scenery = {
-		Sources = { "MapKit", "MapKit2", "MapKit3", "MapKit4", "MapKit5", "MapKit6", "MapKit7", "MapKit8", "MapKit10" },
+		Sources = { "MapKit", "MapKit2", "MapKit3", "MapKit4", "MapKit5", "MapKit6", "MapKit7", "MapKit8" },
 		OrganicTrails = true,
 		TrailLift = { World_TrailSpawn = 0, World_TrailGallery = 0.03, World_TrailAvenue = 0.06, World_Trail = 0.09 },
 		LampOffset = 5,
-		KitFolders = { World_Quarry = "QuarryKit", World_Incubator = "Incubator", World_Shop = "Shop", World_Nest = "Nest", World_Goose = "Goose", World_Splash = "Waterfall", World_Ripple = "Waterfall" },
-		KitTags = { World_Ripple = "Ripple" },
+		KitFolders = { World_Quarry = "QuarryKit", World_Incubator = "Incubator", World_Shop = "Shop", World_Nest = "Nest", World_Goose = "Goose" },
+		KitTags = {},
 		KitRoles = {
 			World_Nest = {
 				Mound = { Colors = { Color3.fromRGB(110, 76, 46) } },
@@ -179,12 +179,8 @@ return {
 				Crown = { Colors = { Color3.fromRGB(255, 214, 60) }, Reflectance = 0.15 },
 				GoldTrim = { Colors = { Color3.fromRGB(255, 200, 50) }, Reflectance = 0.12 },
 				Tassel = { Colors = { Color3.fromRGB(255, 210, 80) } },
+				Bird = { Colors = { Color3.new(1, 1, 1) }, KeepTexture = true, Tag = "GooseRig" },
 			},
-			World_Splash = {
-				Foam = { Colors = { Color3.fromRGB(240, 250, 255) } },
-				Churn = { Colors = { Color3.fromRGB(255, 255, 255) } },
-			},
-			World_Ripple = { Ring = { Colors = { Color3.fromRGB(225, 245, 255) }, Transparency = 0.3 } },
 			World_Trail = { Dirt = { Colors = { Color3.fromRGB(150, 104, 66) } } },
 			World_TrailSpawn = { Sand = { Colors = { Color3.fromRGB(190, 162, 120) } } },
 			World_TrailGallery = { Sand = { Colors = { Color3.fromRGB(190, 162, 120) } } },
@@ -374,6 +370,26 @@ return {
 			Out = 2,
 			Reach = 5,
 			Splash = "rbxassetid://16669188960",
+		},
+		WaterSprites = {
+			Source = "WaterSprites",
+			Parts = { Foam = "Sprite_Foam", Splash = "Sprite_Splash", Ripple = "Sprite_Ripple", Droplets = "Sprite_Droplets", Mist = "Sprite_Mist" },
+			Lift = 0.1,
+			InletInset = 6,
+			Ripples = {
+				{ At = "Impact", Count = 5, Size = { 16, 28 }, Spread = 10 },
+				{ At = "Pond", Count = 7, Size = { 12, 22 }, Spread = 30 },
+			},
+			Foam = {
+				{ At = "Impact", Count = 8, Size = { 6, 11 }, Spread = 13 },
+				{ At = "Pool", Count = 6, Size = { 4, 7 }, Spread = 30 },
+				{ At = "Pond", Count = 8, Size = { 4, 8 }, Spread = 34 },
+				{ At = "Inlet", Count = 5, Size = { 4, 7 }, Spread = 6 },
+			},
+			Splash = { Rate = 18, Lifetime = { 0.6, 0.9 }, Speed = { 10, 16 }, Size = { 4, 7 } },
+			Droplets = { Rate = 14, Lifetime = { 0.8, 1.2 }, Speed = { 12, 20 }, Size = { 1.5, 2.5 } },
+			Mist = { Rate = 8, Lifetime = { 2.5, 3.5 }, Speed = { 2, 4 }, Size = { 10, 22 } },
+			Pond = { Rate = 3, Lifetime = { 0.6, 0.9 }, Speed = { 3, 5 }, Size = { 2, 3.5 } },
 		},
 		Sway = { Oak = 1.6, Pine = 1.2, Bush = 4, Grass = 9, Fern = 6, Flower = 7 },
 		Lighting = {

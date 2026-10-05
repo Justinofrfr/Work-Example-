@@ -17,9 +17,13 @@ local AmbientController = {
 	Clouds = {},
 	Swayers = {},
 	Streaks = {},
+	Foams = {},
+	Rigs = {},
 }
 
 local WIND = EffectsConfig.Wind
+local WATER = EffectsConfig.Water
+local RIG = EffectsConfig.GooseRig
 local lowEnd = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 local windDirection = WIND.Direction.Unit
 local swayAxis = Vector3.new(windDirection.Z, 0, -windDirection.X)
@@ -135,13 +139,32 @@ function AmbientController:Start()
 	self.Ripples = {}
 	local function addRipple(part)
 		if part:IsA("BasePart") then
-			self.Ripples[part] = { Size = part.Size, Phase = part:GetAttribute("Phase") or 0 }
+			self.Ripples[part] = { Size = part.Size, Phase = part:GetAttribute("Phase") or 0, Sprite = part:FindFirstChildOfClass("Decal") }
 		end
 	end
 	for _, part in CollectionService:GetTagged("Ripple") do
 		addRipple(part)
 	end
 	CollectionService:GetInstanceAddedSignal("Ripple"):Connect(addRipple)
+	local function addFoam(part)
+		local sprite = part:IsA("BasePart") and part:FindFirstChildOfClass("Decal")
+		if sprite then
+			self.Foams[part] = { Base = part.CFrame, Phase = part:GetAttribute("Phase") or 0, Sprite = sprite }
+		end
+	end
+	for _, part in CollectionService:GetTagged("Foam") do
+		addFoam(part)
+	end
+	CollectionService:GetInstanceAddedSignal("Foam"):Connect(addFoam)
+	local function addRig(part)
+		if part:IsA("BasePart") then
+			self.Rigs[part] = { Part = part, Phase = random:NextNumber(0, math.pi * 2), FlapAt = -math.huge, NextFlap = os.clock() + random:NextNumber(RIG.Flap.Every[1], RIG.Flap.Every[2]) }
+		end
+	end
+	for _, part in CollectionService:GetTagged(RIG.Tag) do
+		addRig(part)
+	end
+	CollectionService:GetInstanceAddedSignal(RIG.Tag):Connect(addRig)
 	templates = ReplicatedStorage:WaitForChild(Names.Templates.Folder)
 	local leafTemplate = templates:FindFirstChild("WindLeaves")
 	if leafTemplate then
@@ -154,6 +177,71 @@ function AmbientController:Start()
 end
 
 local swayAccumulator = 0
+local rigAccumulator = 0
+
+local function rigBones(rig)
+	local bones = {}
+	for _, bone in rig.Part:GetDescendants() do
+		if bone:IsA("Bone") then
+			bones[bone.Name] = bone
+		end
+	end
+	if not (bones.Body and bones.Head) then
+		return false
+	end
+	local forward = (bones.Head.WorldPosition - bones.Body.WorldPosition) * Vector3.new(1, 0, 1)
+	forward = forward.Magnitude > 1e-3 and forward.Unit or rig.Part.CFrame.LookVector
+	local side = forward:Cross(Vector3.yAxis)
+	rig.Axes = {}
+	for name, bone in bones do
+		local rest = bone.WorldCFrame.Rotation
+		rig.Axes[name] = { Up = rest:VectorToObjectSpace(Vector3.yAxis), Side = rest:VectorToObjectSpace(side), Forward = rest:VectorToObjectSpace(forward) }
+	end
+	rig.WingSign = bones.WingL and (bones.WingL.WorldPosition - bones.Body.WorldPosition):Dot(side) > 0 and 1 or -1
+	rig.Bones = bones
+	return true
+end
+
+local function turn(axis, degrees)
+	return CFrame.fromAxisAngle(axis, math.rad(degrees))
+end
+
+function AmbientController:StepRigs(dt, t, cameraPosition)
+	if lowEnd then
+		rigAccumulator += dt
+		if rigAccumulator < RIG.MobileInterval then
+			return
+		end
+		rigAccumulator = 0
+	end
+	for part, rig in self.Rigs do
+		if not part.Parent then
+			self.Rigs[part] = nil
+		elseif (part.Position - cameraPosition).Magnitude < RIG.Radius and (rig.Bones or rigBones(rig)) then
+			local bones, axes, phase = rig.Bones, rig.Axes, rig.Phase
+			local breath = math.sin(t * RIG.Breath.Speed + phase)
+			bones.Body.Transform = CFrame.new(axes.Body.Up * breath * RIG.Breath.Lift) * turn(axes.Body.Side, breath * RIG.Breath.Tilt)
+			if bones.Neck then
+				bones.Neck.Transform = turn(axes.Neck.Up, math.sin(t * RIG.Neck.Speed + phase) * RIG.Neck.Yaw) * turn(axes.Neck.Side, math.sin(t * RIG.Neck.Speed * 1.7 + phase) * RIG.Neck.Pitch)
+			end
+			bones.Head.Transform = turn(axes.Head.Up, math.sin(t * RIG.Head.Speed + phase * 1.3) * RIG.Head.Yaw) * turn(axes.Head.Side, math.sin(t * RIG.Head.NodSpeed + phase) * RIG.Head.Nod)
+			if bones.Tail then
+				bones.Tail.Transform = turn(axes.Tail.Up, math.sin(t * RIG.Tail.Speed + phase) * RIG.Tail.Yaw)
+			end
+			if t >= rig.NextFlap then
+				rig.FlapAt = t
+				rig.NextFlap = t + RIG.Flap.Time + random:NextNumber(RIG.Flap.Every[1], RIG.Flap.Every[2])
+			end
+			local k = (t - rig.FlapAt) / RIG.Flap.Time
+			local lift = (k >= 0 and k <= 1) and math.abs(math.sin(k * math.pi * RIG.Flap.Beats)) * RIG.Flap.Angle or 0
+			for name, sign in { WingL = rig.WingSign, WingR = -rig.WingSign } do
+				if bones[name] then
+					bones[name].Transform = turn(axes[name].Forward, -sign * lift)
+				end
+			end
+		end
+	end
+end
 
 function AmbientController:StepWind(dt, t, cameraPosition)
 	local enabled = Settings:EffectScale() > 0
@@ -241,9 +329,22 @@ function AmbientController:Step(dt)
 			local p = (t / WIND.RipplePeriod + state.Phase / 3) % 1
 			local grow = 0.55 + 0.75 * p
 			part.Size = Vector3.new(state.Size.X * grow, state.Size.Y, state.Size.Z * grow)
-			part.Transparency = 0.2 + 0.8 * p
+			if state.Sprite then
+				state.Sprite.Transparency = 0.2 + 0.8 * p
+			else
+				part.Transparency = 0.2 + 0.8 * p
+			end
 		end
 	end
+	for part, state in self.Foams do
+		if not part.Parent then
+			self.Foams[part] = nil
+		elseif (part.Position - cameraPosition).Magnitude < WIND.RippleRadius then
+			part.CFrame = state.Base * CFrame.Angles(0, t * WATER.FoamSpin + state.Phase, 0)
+			state.Sprite.Transparency = WATER.FoamBase + WATER.FoamPulse * (0.5 + 0.5 * math.sin(t * WATER.FoamPulseSpeed + state.Phase))
+		end
+	end
+	self:StepRigs(dt, t, cameraPosition)
 	self:StepWind(dt, t, cameraPosition)
 	local display = PropsConfig.Displays
 	for model, state in self.Wobblers do

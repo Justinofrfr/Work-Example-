@@ -18,6 +18,7 @@ local MonetizationService = {
 local DataService
 local StateService
 local BuildService
+local OfferService
 local remotes
 
 local productLookup = {}
@@ -40,6 +41,7 @@ function MonetizationService:Init(modules, context)
 	DataService = modules.DataService
 	StateService = modules.StateService
 	BuildService = modules.BuildService
+	OfferService = modules.OfferService
 	remotes = context.Remotes
 	buildLookup()
 end
@@ -139,6 +141,7 @@ function MonetizationService:ProcessReceipt(receipt)
 	elseif product.Duration then
 		data.TrainBoostUntil = math.max(os.time(), previousBoost) + product.Duration
 	end
+	local previousOffer = OfferService and OfferService:MarkBought(player, entry.Key)
 	table.insert(data.Purchases, receipt.PurchaseId)
 	while #data.Purchases > ProductsConfig.PurchaseHistoryCap do
 		table.remove(data.Purchases, 1)
@@ -155,6 +158,9 @@ function MonetizationService:ProcessReceipt(receipt)
 			data.TrainBoostUntil = previousBoost
 		else
 			data.Coins -= coinsGranted
+		end
+		if previousOffer ~= nil then
+			data.StarterOffer.Bought = previousOffer
 		end
 		StateService:Dirty(player)
 		return Enum.ProductPurchaseDecision.NotProcessedYet

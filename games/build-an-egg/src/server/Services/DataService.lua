@@ -38,6 +38,7 @@ local function template()
 		DailyStreak = 0,
 		DailyLast = -1,
 		TrainBoostUntil = 0,
+		StarterOffer = { Ready = 0, Ends = 0, Bought = false },
 	}
 end
 

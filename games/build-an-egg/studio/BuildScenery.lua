@@ -63,11 +63,18 @@ end
 local function style(part, prefix, role)
 	local def = roleDef(prefix, role)
 	for _, child in part:GetChildren() do
-		child:Destroy()
+		if not (def.KeepTexture and (child:IsA("SurfaceAppearance") or child:IsA("Bone"))) then
+			child:Destroy()
+		end
 	end
 	local solid = solidFor(prefix, role)
 	part.Anchored = true
-	part.TextureID = ""
+	if not def.KeepTexture then
+		part.TextureID = ""
+	end
+	if def.Tag then
+		CollectionService:AddTag(part, def.Tag)
+	end
 	part.PivotOffset = CFrame.identity
 	part.Color = pick(def.Colors)
 	part.Material = def.Material or Enum.Material.SmoothPlastic
@@ -233,10 +240,6 @@ for prefix, group in groups do
 						part.CanQuery = false
 						part:SetAttribute("Phase", tonumber(prefix:match("%d+$")) or 0)
 						CollectionService:AddTag(part, SC.KitTags[family])
-					end
-					if family == "World_Splash" then
-						part.CastShadow = false
-						part.CanQuery = false
 					end
 					part.Parent = folder(SC.KitFolders[baseName(prefix)])
 				elseif prefix:find("^World_Falls") then
@@ -1014,8 +1017,71 @@ local pool = SC.River.Pool.Center
 local poolDirection = flat(falls.Lip - pool).Unit
 local impact = flat(pool) + poolDirection * 32 + Vector3.new(0, 1.5, 0)
 local splash = emitterPart("Splash", impact, Vector3.new(18, 1, 6))
-puff(splash, { Rate = 30, Lifetime = NumberRange.new(0.7, 1.1), Speed = NumberRange.new(6, 12), SpreadAngle = Vector2.new(50, 50), EmissionDirection = Enum.NormalId.Top, Acceleration = Vector3.new(0, -10, 0), Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 3), NumberSequenceKeypoint.new(1, 6) }), Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.1), NumberSequenceKeypoint.new(1, 1) }) })
-puff(splash, { Name = "Mist", Rate = 10, Lifetime = NumberRange.new(2.5, 3.5), Speed = NumberRange.new(2, 4), SpreadAngle = Vector2.new(70, 70), EmissionDirection = Enum.NormalId.Top, Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 10), NumberSequenceKeypoint.new(1, 22) }), Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.55), NumberSequenceKeypoint.new(1, 1) }) })
+local WS = SC.WaterSprites
+local spriteKit = imported:FindFirstChild(WS.Source)
+local function sprite(key)
+	local part = spriteKit and spriteKit:FindFirstChild(WS.Parts[key], true)
+	if not part then
+		return nil
+	end
+	local surface = part:FindFirstChildOfClass("SurfaceAppearance")
+	local id = surface and surface.ColorMap or (part:IsA("MeshPart") and part.TextureID) or ""
+	return id ~= "" and id or nil
+end
+local function span(pair)
+	return NumberRange.new(pair[1], pair[2])
+end
+local function grow(pair)
+	return NumberSequence.new({ NumberSequenceKeypoint.new(0, pair[1]), NumberSequenceKeypoint.new(1, pair[2]) })
+end
+local function fade(start)
+	return NumberSequence.new({ NumberSequenceKeypoint.new(0, start), NumberSequenceKeypoint.new(0.7, math.min(start + 0.2, 1)), NumberSequenceKeypoint.new(1, 1) })
+end
+local splashTexture, dropTexture, mistTexture = sprite("Splash"), sprite("Droplets"), sprite("Mist")
+if splashTexture then
+	puff(splash, { Texture = splashTexture, FlipbookLayout = Enum.ParticleFlipbookLayout.None, LightEmission = 0.1, Rate = WS.Splash.Rate, Lifetime = span(WS.Splash.Lifetime), Speed = span(WS.Splash.Speed), SpreadAngle = Vector2.new(20, 20), EmissionDirection = Enum.NormalId.Top, Acceleration = Vector3.new(0, -32, 0), Size = grow(WS.Splash.Size), Transparency = fade(0.05), Rotation = NumberRange.new(-12, 12), RotSpeed = NumberRange.new(-15, 15) })
+else
+	puff(splash, { Rate = 30, Lifetime = NumberRange.new(0.7, 1.1), Speed = NumberRange.new(6, 12), SpreadAngle = Vector2.new(50, 50), EmissionDirection = Enum.NormalId.Top, Acceleration = Vector3.new(0, -10, 0), Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 3), NumberSequenceKeypoint.new(1, 6) }), Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.1), NumberSequenceKeypoint.new(1, 1) }) })
+end
+if dropTexture then
+	puff(splash, { Name = "Droplets", Texture = dropTexture, FlipbookLayout = Enum.ParticleFlipbookLayout.None, LightEmission = 0.15, Rate = WS.Droplets.Rate, Lifetime = span(WS.Droplets.Lifetime), Speed = span(WS.Droplets.Speed), SpreadAngle = Vector2.new(40, 40), EmissionDirection = Enum.NormalId.Top, Acceleration = Vector3.new(0, -40, 0), Size = grow(WS.Droplets.Size), Transparency = fade(0) })
+end
+puff(splash, { Name = "Mist", Texture = mistTexture or falls.Splash, FlipbookLayout = mistTexture and Enum.ParticleFlipbookLayout.None or Enum.ParticleFlipbookLayout.Grid4x4, Rate = WS.Mist.Rate, Lifetime = span(WS.Mist.Lifetime), Speed = span(WS.Mist.Speed), SpreadAngle = Vector2.new(70, 70), EmissionDirection = Enum.NormalId.Top, Size = grow(WS.Mist.Size), Transparency = fade(0.55) })
+
+local pondCenter = flat(SC.River.Pond.Center)
+local riverEnd = flat(SC.River.Points[#SC.River.Points])
+local inlet = pondCenter + (riverEnd - pondCenter).Unit * (water.PondRadius - WS.InletInset)
+if dropTexture then
+	local pondSplash = emitterPart("PondSplash", inlet + Vector3.new(0, water.Surface, 0), Vector3.new(8, 0.5, 8))
+	puff(pondSplash, { Texture = dropTexture, FlipbookLayout = Enum.ParticleFlipbookLayout.None, LightEmission = 0.15, Rate = WS.Pond.Rate, Lifetime = span(WS.Pond.Lifetime), Speed = span(WS.Pond.Speed), SpreadAngle = Vector2.new(35, 35), EmissionDirection = Enum.NormalId.Top, Acceleration = Vector3.new(0, -20, 0), Size = grow(WS.Pond.Size), Transparency = fade(0) })
+end
+
+local spriteAnchors = { Impact = flat(impact), Pool = flat(pool), Pond = pondCenter, Inlet = inlet }
+local function scatter(center, spread)
+	local angle = random:NextNumber(0, math.pi * 2)
+	local radius = math.sqrt(random:NextNumber()) * spread
+	return center + Vector3.new(math.cos(angle) * radius, 0, math.sin(angle) * radius)
+end
+local function waterDecal(name, texture, position, size, lift)
+	local holder = make("Part", { Name = name, Anchored = true, CanCollide = false, CanQuery = false, CanTouch = false, CastShadow = false, Transparency = 1, Size = Vector3.new(size, 0.05, size), CFrame = CFrame.new(position.X, water.Surface + lift, position.Z) * CFrame.Angles(0, random:NextNumber(0, math.pi * 2), 0), Parent = folder("WaterSprites") })
+	make("Decal", { Name = "Sprite", Texture = texture, Face = Enum.NormalId.Top, Parent = holder })
+	return holder
+end
+local rippleTexture, foamTexture = sprite("Ripple"), sprite("Foam")
+for _, spot in rippleTexture and WS.Ripples or {} do
+	for n = 1, spot.Count do
+		local ripple = waterDecal("Ripple", rippleTexture, scatter(spriteAnchors[spot.At], spot.Spread), random:NextNumber(spot.Size[1], spot.Size[2]), WS.Lift + 0.008 * n)
+		ripple:SetAttribute("Phase", random:NextNumber(0, 3))
+		CollectionService:AddTag(ripple, "Ripple")
+	end
+end
+for _, spot in foamTexture and WS.Foam or {} do
+	for n = 1, spot.Count do
+		local foam = waterDecal("Foam", foamTexture, scatter(spriteAnchors[spot.At], spot.Spread), random:NextNumber(spot.Size[1], spot.Size[2]), WS.Lift + 0.1 + 0.005 * n)
+		foam:SetAttribute("Phase", random:NextNumber(0, math.pi * 2))
+		CollectionService:AddTag(foam, "Foam")
+	end
+end
 local waterFx = imported:FindFirstChild(falls.Fx)
 local fallTemplate = waterFx and waterFx:FindFirstChild(falls.Model)
 if fallTemplate then

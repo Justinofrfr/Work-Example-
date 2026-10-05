@@ -237,6 +237,7 @@ function StateService:Sync(player)
 		DailyStreak = data.DailyStreak or 0,
 		DailyLast = data.DailyLast or -1,
 		TrainBoostUntil = data.TrainBoostUntil or 0,
+		StarterOffer = data.StarterOffer,
 		Training = runtime.Training and runtime.Training.Stat or nil,
 		TrainingTier = runtime.Training and runtime.Training.Tier or nil,
 		RoundPieces = BuildService and BuildService:Contribution(player) or 0,

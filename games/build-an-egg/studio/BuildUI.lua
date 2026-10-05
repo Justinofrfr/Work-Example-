@@ -223,6 +223,11 @@ for index, def in { { "Codes", UIConfig.Icons.Codes, Color3.fromRGB(80, 170, 255
 	end
 end
 
+local offerButton = button({ Name = "Offer", Icon = "🎁", Text = "30:00", Color = Color3.fromRGB(255, 70, 120), Size = UDim2.fromScale(0.07, 0.07), Position = UDim2.fromScale(0.008, 0.165), Parent = hud })
+offerButton.Visible = false
+aspect(1).Parent = offerButton
+label({ Name = "Ribbon", Text = "OFFER!", Size = UDim2.fromScale(1.1, 0.3), Position = UDim2.fromScale(0.5, -0.12), AnchorPoint = Vector2.new(0.5, 0), TextColor3 = Color3.fromRGB(255, 230, 80), ZIndex = 3, Parent = offerButton })
+
 local stats = make("Frame", {
 	Name = "Stats",
 	Size = UDim2.fromScale(0.16, 0.34),
@@ -531,6 +536,19 @@ label({ Name = "Message", Text = "👍 LIKE the game & ⭐ FAVORITE it so you ne
 button({ Name = "Favorite", Text = "⭐ FAVORITE", Color = Color3.fromRGB(255, 190, 40), Size = UDim2.fromScale(0.44, 0.26), Position = UDim2.fromScale(0.04, 0.5), Parent = socialBody })
 button({ Name = "Group", Text = "👥 JOIN GROUP", Color = C.Good, Size = UDim2.fromScale(0.44, 0.26), Position = UDim2.fromScale(0.52, 0.5), Parent = socialBody })
 label({ Name = "Note", Text = "Tap 👍 on the game page to like it!", Size = UDim2.fromScale(0.94, 0.14), Position = UDim2.fromScale(0.03, 0.82), TextColor3 = Color3.fromRGB(255, 236, 190), StrokeThickness = 1.5, Parent = socialBody })
+
+local _, offerBody = panel("StarterOffer", "EXCLUSIVE OFFER!", UDim2.fromScale(0.42, 0.52), Color3.fromRGB(255, 70, 120), 1.3)
+local ribbon = make("Frame", { Name = "Ribbon", Size = UDim2.fromScale(0.62, 0.11), Position = UDim2.fromScale(0.5, 0.01), AnchorPoint = Vector2.new(0.5, 0), BackgroundColor3 = Color3.new(1, 1, 1), Parent = offerBody }, { corner(0.5), stroke(3), gradient(Color3.fromRGB(255, 200, 40)) })
+label({ Name = "Text", Text = "ONE TIME ONLY!", Size = UDim2.fromScale(0.9, 0.8), Position = UDim2.fromScale(0.05, 0.1), Parent = ribbon })
+label({ Name = "Egg", Text = "🥚", Size = UDim2.fromScale(0.2, 0.28), Position = UDim2.fromScale(0.08, 0.15), Parent = offerBody })
+label({ Name = "Amount", Text = "+20,000", Size = UDim2.fromScale(0.62, 0.28), Position = UDim2.fromScale(0.28, 0.15), TextColor3 = Color3.fromRGB(120, 255, 120), StrokeThickness = 4, Parent = offerBody })
+label({ Name = "Desc", Text = "EGG PROGRESS + 20K SHELLS", Size = UDim2.fromScale(0.9, 0.1), Position = UDim2.fromScale(0.05, 0.44), TextColor3 = Color3.fromRGB(255, 236, 190), Parent = offerBody })
+local valueLabel = label({ Name = "Value", Text = "<s>R$138 VALUE</s>", Size = UDim2.fromScale(0.5, 0.09), Position = UDim2.fromScale(0.25, 0.555), TextColor3 = Color3.fromRGB(255, 120, 120), StrokeThickness = 2, Parent = offerBody })
+valueLabel.RichText = true
+label({ Name = "Timer", Text = "⏰ ENDS IN 30:00", Size = UDim2.fromScale(0.7, 0.1), Position = UDim2.fromScale(0.15, 0.655), TextColor3 = Color3.fromRGB(255, 230, 80), Parent = offerBody })
+button({ Name = "Buy", Text = "BUY R$19", Color = C.Robux, Size = UDim2.fromScale(0.6, 0.2), Position = UDim2.fromScale(0.5, 0.79), AnchorPoint = Vector2.new(0.5, 0), Parent = offerBody })
+local sale = make("Frame", { Name = "Sale", Size = UDim2.fromScale(0.2, 0.2), Position = UDim2.fromScale(0.97, 0.12), AnchorPoint = Vector2.new(1, 0), BackgroundColor3 = Color3.fromRGB(235, 40, 60), Rotation = 12, ZIndex = 3, Parent = offerBody }, { corner(1), stroke(3), aspect(1) })
+label({ Name = "Text", Text = "-86%", Size = UDim2.fromScale(0.8, 0.5), Position = UDim2.fromScale(0.1, 0.25), ZIndex = 4, Parent = sale })
 
 local _, lockedBody = panel("Locked", "GYM LOCKED", UDim2.fromScale(0.36, 0.36), Color3.fromRGB(120, 120, 130), 1.6)
 label({ Name = "Lock", Text = "🔒", Size = UDim2.fromScale(0.25, 0.4), Position = UDim2.fromScale(0.375, 0), Parent = lockedBody })
