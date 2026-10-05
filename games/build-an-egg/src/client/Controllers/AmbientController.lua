@@ -107,17 +107,18 @@ function AmbientController:Start()
 		if not root or not head then
 			return
 		end
+		local posed = npc:GetAttribute("Posed") == true
 		local joints = {}
 		for _, name in { "Neck", "Waist" } do
 			local joint = npc:FindFirstChild(name, true)
-			if joint and joint:IsA("AnimationConstraint") and joint.Attachment0 then
-				joints[name] = { Attachment = joint.Attachment0, Base = joint.Attachment0.CFrame }
-			elseif joint and joint:IsA("Motor6D") then
-				joints[name] = { Motor = joint, Base = joint.C0 }
+			if joint and joint:IsA("AnimationConstraint") and posed and joint.Attachment0 then
+				joints[name] = { Joint = joint, Attachment = joint.Attachment0, Base = joint.Attachment0.CFrame }
+			elseif joint and (joint:IsA("AnimationConstraint") or joint:IsA("Motor6D")) then
+				joints[name] = { Joint = joint }
 			end
 		end
 		if joints.Neck then
-			self.Lookers[npc] = { Root = root, Head = head, Joints = joints, Offsets = {}, Posed = npc:GetAttribute("Posed") == true, Yaw = 0, Pitch = 0 }
+			self.Lookers[npc] = { Root = root, Head = head, Joints = joints, Offsets = {}, Posed = posed, Yaw = 0, Pitch = 0 }
 		end
 	end
 	local function addNPC(npc)
@@ -270,6 +271,9 @@ function AmbientController:Start()
 	end
 	RunService.Heartbeat:Connect(function(dt)
 		self:Step(dt)
+	end)
+	RunService.PreSimulation:Connect(function()
+		self:ApplyLook()
 	end)
 end
 
@@ -577,8 +581,25 @@ function AmbientController:StepLook(dt, cameraPosition)
 			for name, joint in state.Joints do
 				if joint.Attachment then
 					joint.Attachment.CFrame = joint.Base * state.Offsets[name]
-				elseif not state.Posed then
-					joint.Motor.C0 = joint.Base * state.Offsets[name]
+				end
+			end
+		end
+	end
+end
+
+function AmbientController:ApplyLook()
+	for _, state in self.Lookers do
+		if not state.Posed then
+			for name, joint in state.Joints do
+				local offset = state.Offsets[name]
+				if offset then
+					local current = joint.Joint.Transform
+					if joint.Written and current == joint.Written then
+						current = joint.Raw
+					end
+					joint.Raw = current
+					joint.Written = current * offset
+					joint.Joint.Transform = joint.Written
 				end
 			end
 		end

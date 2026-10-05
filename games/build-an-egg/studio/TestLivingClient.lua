@@ -60,19 +60,19 @@ for _, npc in CollectionService:GetTagged("NPC") do
 	local npcRoot = npc:FindFirstChild("HumanoidRootPart")
 	local neck = npc:FindFirstChild("Neck", true)
 	if root and npcRoot and neck and neck:IsA("AnimationConstraint") then
-		local rest = neck.Attachment0.CFrame
 		local transforms = {}
 		root.CFrame = npcRoot.CFrame * CFrame.new(-7, 0, -8)
 		for i = 1, 6 do
 			task.wait(0.4)
 			transforms[i] = neck.Transform
 		end
-		local turned = math.deg(math.acos(math.clamp(neck.Attachment0.CFrame.LookVector:Dot(rest.LookVector), -1, 1)))
+		local headLocal = npcRoot.CFrame:VectorToObjectSpace(npc.Head.CFrame.LookVector)
+		local turned = math.deg(math.atan2(-headLocal.X, -headLocal.Z))
 		local wiggle = math.deg(math.acos(math.clamp(transforms[1].LookVector:Dot(transforms[6].LookVector), -1, 1)))
 		local toPlayer = (root.Position - npc.Head.Position) * Vector3.new(1, 0, 1)
 		local headFacing = npc.Head.CFrame.LookVector * Vector3.new(1, 0, 1)
 		local facing = math.deg(math.acos(math.clamp(toPlayer.Unit:Dot(headFacing.Unit), -1, 1)))
-		table.insert(lookInfo, ("%s neck turned %.1f deg, head off player %.1f deg, posed wiggle %.1f deg"):format(npc.Name, turned, facing, wiggle))
+		table.insert(lookInfo, ("%s head yaw %.1f deg (target 41), head off player %.1f deg, posed wiggle %.1f deg"):format(npc.Name, turned, facing, wiggle))
 	end
 end
 clientLog:FireServer("look: " .. table.concat(lookInfo, " | "))
