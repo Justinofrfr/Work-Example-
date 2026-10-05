@@ -69,14 +69,16 @@ for _, npc in CollectionService:GetTagged("NPC") do
 				end
 			end
 		end
-		local function headYaw()
-			local headLocal = npcRoot.CFrame:VectorToObjectSpace(npc.Head.CFrame.LookVector)
-			return math.deg(math.atan2(-headLocal.X, -headLocal.Z))
+		local function turnedFrom(far)
+			local forward = npcRoot.CFrame.LookVector
+			local moved = (npc.Head.CFrame.Rotation * far:Inverse()):VectorToWorldSpace(forward)
+			local a = npcRoot.CFrame:VectorToObjectSpace(moved)
+			return math.deg(math.atan2(-a.X, -a.Z))
 		end
 		root.CFrame = npcRoot.CFrame * CFrame.new(0, 0, -40)
 		stopEmotes()
 		task.wait(2)
-		local away = headYaw()
+		local far = npc.Head.CFrame.Rotation
 		root.CFrame = npcRoot.CFrame * CFrame.new(-7, 0, -8)
 		local transforms, total = {}, 0
 		task.wait(1.6)
@@ -84,10 +86,10 @@ for _, npc in CollectionService:GetTagged("NPC") do
 			stopEmotes()
 			task.wait(0.15)
 			transforms[i] = neck.Transform
-			total += headYaw()
+			total += turnedFrom(far)
 		end
 		local wiggle = math.deg(math.acos(math.clamp(transforms[1].LookVector:Dot(transforms[6].LookVector), -1, 1)))
-		table.insert(lookInfo, ("%s head yaw far %.1f -> near %.1f deg (target 41), neck wiggle %.1f deg"):format(npc.Name, away, total / 6, wiggle))
+		table.insert(lookInfo, ("%s head turned %.1f deg toward player (player at 41), neck wiggle %.1f deg"):format(npc.Name, total / 6, wiggle))
 	end
 end
 local RunService = game:GetService("RunService")
@@ -125,15 +127,12 @@ local gooseBody = goose and goose:FindFirstChild("Body", true)
 if root and gooseHead and gooseBody and gooseHead:IsA("Bone") then
 	local forward = ((gooseHead.WorldPosition - gooseBody.WorldPosition) * Vector3.new(1, 0, 1)).Unit
 	local side = forward:Cross(Vector3.yAxis)
-	local function yaw()
-		local look = gooseHead.WorldCFrame:VectorToWorldSpace(Vector3.new(0, 0, -1)) * Vector3.new(1, 0, 1)
-		return math.deg(math.atan2(forward:Cross(look.Unit).Y, forward:Dot(look.Unit)))
-	end
 	root.CFrame = CFrame.new(gooseHead.WorldPosition + forward * 70)
 	task.wait(2)
-	local far = yaw()
+	local far = gooseHead.WorldCFrame.Rotation
 	root.CFrame = CFrame.new(gooseHead.WorldPosition + side * 12 + forward * 4)
 	task.wait(2)
-	table.insert(lookInfo, ("goose head yaw far %.1f -> near %.1f deg"):format(far, yaw()))
+	local moved = ((gooseHead.WorldCFrame.Rotation * far:Inverse()):VectorToWorldSpace(forward) * Vector3.new(1, 0, 1)).Unit
+	table.insert(lookInfo, ("goose head turned %.1f deg toward player (player at -72)"):format(math.deg(math.atan2(forward:Cross(moved).Y, forward:Dot(moved)))))
 end
 clientLog:FireServer("look: " .. table.concat(lookInfo, " | "))
