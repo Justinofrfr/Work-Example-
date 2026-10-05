@@ -153,3 +153,18 @@ Rig bones on the goose: Root, LegL, LegR, Body, Neck, Head, WingL, WingR, Tail. 
 | Treadmill | 11a99f80-d198-406e-9be7-29efc81b54bf | 9e630d1a-fe04-4514-9276-ddc3bf53b29f | 10.5 | 119330713689977 | `Treadmill_Body` kit template in every gym |
 | Weight bench | b892af8a-3197-495e-ba5b-a375d7560832 | 17da6bef-db78-4a5c-a944-6fd12381fb14 | 10.5 | 70540761105014 | `Bench_Body` kit template in every gym |
 | Backpack | 1d48beb3-9b9b-40e0-9fd6-7b24ac617094 | 6df7d8c9-836d-4c82-8699-f979c498411a | 10.5 | 113427928980016 | `Game.Backpack.Mesh` (`HFBackpack`) |
+
+### Higgsfield egg shell textures (gpt_image_2_5, 1.5 credits each)
+Uploaded through the EggTextures kits and applied as `Props.Displays.Looks[*].ColorMap`.
+| look | image job | Roblox image id |
+|---|---|---|
+| Common | 89d9c94a-1727-482f-ab18-0707c252fbe9 | 113934429431489 |
+| Candy | a61544b3-7ce7-4fd7-b49f-eb99cc63be13 | 107417960845788 |
+| Lava | 352337a6-0005-47a0-9145-693384f263f8 | 105755404537454 |
+| Ocean | 25943e4f-564d-4674-b06a-f12a94ba6b03 | 79448817844499 |
+| Toxic | c34d86e9-a7c9-4b6c-ac46-32a441eea3c8 | 95600011617233 |
+| Frost | 18bb54f4-fcd7-4ca8-aa5f-874515af1cf3 | 75773976271989 |
+| Galaxy | da994172-aaf4-430c-b629-72849bd4faa6 | 100276705023845 |
+| Cosmic | 33135993-5fbf-4a23-b35d-f69e6e959f15 | 105694445168143 |
+| Shadow | 294186fa-cd0d-4648-a22c-c00b5814ba48 | 77484517607218 |
+| Divine | d71d9933-d5f2-4734-a6ff-97665ce6a496 | 85790535973195 |
