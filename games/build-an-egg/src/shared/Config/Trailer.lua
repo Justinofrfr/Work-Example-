@@ -4,6 +4,7 @@ return {
 	Attribute = "Trailer",
 	AutoAttribute = "TrailerAuto",
 	StartKey = Enum.KeyCode.T,
+	AutoStart = 30,
 	StartDelay = 1.5,
 	Lead = 0.8,
 	Tail = 0.6,

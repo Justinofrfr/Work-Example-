@@ -72,6 +72,12 @@ function TrailerController:Start()
 		end
 	end)
 	tryAuto()
+	if armed() then
+		print(("[Trailer] armed autostart %d"):format(TrailerConfig.AutoStart))
+		task.delay(TrailerConfig.AutoStart, function()
+			self:Run()
+		end)
+	end
 end
 
 function TrailerController:Root()
