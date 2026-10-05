@@ -104,7 +104,7 @@ function AmbientController:Start()
 	local function addLook(npc)
 		local root = npc:FindFirstChild("HumanoidRootPart")
 		local head = npc:FindFirstChild("Head")
-		if not root or not head then
+		if not root or not head or head.Transparency >= 1 then
 			return
 		end
 		local posed = npc:GetAttribute("Posed") == true

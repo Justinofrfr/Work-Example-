@@ -57,6 +57,17 @@ clientLog:FireServer(("cart moved max %.2f studs | bucket swing max %.1f deg | b
 
 local lookInfo = {}
 for _, npc in CollectionService:GetTagged("NPC") do
+	local humanoid = npc:FindFirstChildOfClass("Humanoid")
+	local animator = humanoid and humanoid:FindFirstChildOfClass("Animator")
+	if animator then
+		animator.AnimationPlayed:Connect(function(track)
+			if track.Priority == Enum.AnimationPriority.Action then
+				track:Stop(0)
+			end
+		end)
+	end
+end
+for _, npc in CollectionService:GetTagged("NPC") do
 	local npcRoot = npc:FindFirstChild("HumanoidRootPart")
 	local neck = npc:FindFirstChild("Neck", true)
 	if root and npcRoot and neck and neck:IsA("AnimationConstraint") then
