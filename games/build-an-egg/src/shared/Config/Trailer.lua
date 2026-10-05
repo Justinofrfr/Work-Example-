@@ -97,7 +97,7 @@ return {
 			Time = 5,
 			FieldOfView = 50,
 			Stage = { Teleport = { Position = Vector3.new(65, 4, -206), Face = Vector3.new(1, 0, 0) } },
-			Camera = { Mode = "Path", From = Vector3.new(69, 9, -212), To = Vector3.new(70, 8, -199), Focus = Vector3.new(88, 5.5, -205) },
+			Camera = { Mode = "Path", From = Vector3.new(73, 14, -215), To = Vector3.new(74, 12.5, -196), Focus = Vector3.new(88, 6.5, -205) },
 		},
 		{
 			Name = "Goose",
