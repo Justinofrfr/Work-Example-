@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 local ProximityPromptService = game:GetService("ProximityPromptService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -115,6 +116,13 @@ function TrailerController:Prepare(on)
 		local item = cutscene and cutscene:FindFirstChild(name)
 		if item then
 			item.Visible = not on
+		end
+	end
+	for _, other in Players:GetPlayers() do
+		local head = other.Character and other.Character:FindFirstChild("Head")
+		local tag = head and head:FindFirstChild(Names.Templates.RankTag)
+		if tag and tag:IsA("BillboardGui") then
+			tag.Enabled = not on
 		end
 	end
 	local controls = self:Controls()

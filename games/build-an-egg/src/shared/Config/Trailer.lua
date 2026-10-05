@@ -18,9 +18,9 @@ return {
 		TutorialDone = true,
 		Upgrades = { BulkPickup = 6, BulkPlace = 6, Range = 2 },
 		Pets = {
-			{ Collection = "Divine", Rarity = "Mythic" },
-			{ Collection = "Galaxy", Rarity = "Legendary" },
-			{ Collection = "Rainbow", Rarity = "Mythic" },
+			{ Collection = "Divine", Rarity = 5 },
+			{ Collection = "Galaxy", Rarity = 4 },
+			{ Collection = "Rainbow", Rarity = 5 },
 		},
 		Progress = 0.55,
 	},
@@ -95,7 +95,7 @@ return {
 			Name = "Incubator",
 			Time = 5,
 			FieldOfView = 50,
-			Stage = { Teleport = { Position = Vector3.new(76, 4, -205), Face = Vector3.new(1, 0, 0) } },
+			Stage = { Teleport = { Position = Vector3.new(65, 4, -206), Face = Vector3.new(1, 0, 0) } },
 			Camera = { Mode = "Path", From = Vector3.new(69, 9, -212), To = Vector3.new(70, 8, -199), Focus = Vector3.new(88, 5.5, -205) },
 		},
 		{
