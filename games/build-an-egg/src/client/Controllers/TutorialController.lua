@@ -143,14 +143,19 @@ function TutorialController:WorldTarget(name)
 		local root = npc and npc:FindFirstChild("HumanoidRootPart")
 		return root and root.Position
 	elseif name == "Gym" then
-		local gym = world:FindFirstChild(W.Gyms) and world.Gyms:FindFirstChild("Gym1")
-		if gym then
-			for _, descendant in gym:GetDescendants() do
-				if descendant.Name == W.Pad and descendant:GetAttribute(Names.Attributes.Stat) == "Speed" then
-					return descendant.Position
+		local target = TutorialConfig.GymTarget
+		local gym = world:FindFirstChild(W.Gyms) and world.Gyms:FindFirstChild(target.Gym)
+		local platform = gym and gym:FindFirstChild("Platform")
+		local best, bestSide
+		for _, descendant in gym and gym:GetDescendants() or {} do
+			if descendant.Name == W.Pad and descendant:GetAttribute(Names.Attributes.Stat) == target.Stat then
+				local side = platform and (descendant.Position - platform.Position):Dot(platform.CFrame.RightVector) * target.Side or 0
+				if not best or side > bestSide then
+					best, bestSide = descendant, side
 				end
 			end
 		end
+		return best and best.Position
 	end
 	return nil
 end

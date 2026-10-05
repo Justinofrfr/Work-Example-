@@ -16,6 +16,7 @@ return {
 	BenchHeight = 3.25,
 	LieHeightOffset = 0.6,
 	TreadmillStandHeight = 5.05,
+	R6HipHeight = 2,
 	StepOffDistance = 3,
 	RackParts = { RackBar = true, Bar = true, Plate = true },
 	Bubbles = {

@@ -11,6 +11,7 @@ local TutorialService = {}
 local DataService
 local StateService
 local OfferService
+local FunnelService
 local remotes
 
 local limiter = RateLimiter.new(10, 1)
@@ -19,6 +20,7 @@ function TutorialService:Init(modules, context)
 	DataService = modules.DataService
 	StateService = modules.StateService
 	OfferService = modules.OfferService
+	FunnelService = modules.FunnelService
 	remotes = context.Remotes
 end
 
@@ -39,8 +41,14 @@ function TutorialService:SetStep(player, step)
 		return
 	end
 	step = math.clamp(math.floor(step), 0, #TutorialConfig.Steps)
-	if step > (data.TutorialStep or 0) then
+	local previous = data.TutorialStep or 0
+	if step > previous then
 		data.TutorialStep = step
+		if FunnelService then
+			for completed = previous + 1, step do
+				FunnelService:Onboarding(player, completed)
+			end
+		end
 		DataService:MarkDirty(player)
 		StateService:Dirty(player)
 		if OfferService then

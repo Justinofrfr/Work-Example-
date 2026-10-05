@@ -10,6 +10,7 @@ local Names = require(Shared.Config.Names)
 
 local Ui = require(script.Parent.Parent.Util.Ui)
 local Purchase = require(script.Parent.Parent.Util.Purchase)
+local Analytics = require(script.Parent.Parent.Util.Analytics)
 
 local ShopController = {
 	Cards = {},
@@ -68,6 +69,11 @@ function ShopController:Start()
 	end
 	self:Select(1)
 	self:Refresh()
+	PanelController.Opened:Connect(function(name)
+		if name == "Shop" then
+			Analytics.Track("Open", name)
+		end
+	end)
 	ClientState.StateChanged:Connect(function()
 		self:Refresh()
 	end)
@@ -134,6 +140,7 @@ function ShopController:Buy(item)
 		NotifyController:Toast(UIConfig.Messages.ComingSoon)
 		return
 	end
+	Analytics.Track("Buy", item.Key)
 	if item.Kind == "Pass" then
 		Purchase.Pass(id)
 	else

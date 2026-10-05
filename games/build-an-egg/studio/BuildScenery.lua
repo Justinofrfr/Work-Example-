@@ -853,7 +853,7 @@ end
 
 for _, gym in world:FindFirstChild(W.Gyms) and world[W.Gyms]:GetChildren() or {} do
 	local platform = gym:FindFirstChild("Platform")
-	local pavilion = platform and decorPart(decor.Pavilion.Part)
+	local pavilion = platform and platform.Size.Y <= decor.Pavilion.MaxPlatformHeight and decorPart(decor.Pavilion.Part)
 	if pavilion then
 		local look = platform.CFrame.LookVector * Vector3.new(1, 0, 1)
 		look = look.Magnitude > 0 and look.Unit or Vector3.new(0, 0, -1)
@@ -952,9 +952,33 @@ for _, gym in gymsFolder and gymsFolder:GetChildren() or {} do
 			local kit = fitTo(machine.Name == "Treadmill" and "Treadmill" or "Bench", floor, Vector3.one, machine)
 			if kit then
 				kit.Name = "KitMachine"
+				local tint = SC.MachineTints[gym.Name]
 				for _, part in kit:GetChildren() do
 					if part.Name == "Trim" then
 						part.Color = tierColor
+					end
+					if tint and part:IsA("MeshPart") and part.TextureID ~= "" then
+						make("SurfaceAppearance", { Name = "Tint", ColorMap = part.TextureID, Color = tint, Parent = part })
+					end
+				end
+				local belt = kit:FindFirstChild("Belt")
+				if belt then
+					local ribs = SC.BeltRibs
+					local top = belt.CFrame * CFrame.new(0, belt.Size.Y / 2 + ribs.Lift, 0)
+					for index = 1, ribs.Count do
+						make("Part", {
+							Name = "BeltRib",
+							Anchored = true,
+							CanCollide = false,
+							CanQuery = false,
+							CanTouch = false,
+							CastShadow = false,
+							Material = Enum.Material.SmoothPlastic,
+							Color = ribs.Color,
+							Size = Vector3.new(belt.Size.X * ribs.Width, ribs.Height, ribs.Depth),
+							CFrame = top * CFrame.new(0, 0, (index - 0.5) / ribs.Count * belt.Size.Z * ribs.Span - belt.Size.Z * ribs.Span / 2),
+							Parent = kit,
+						})
 					end
 				end
 			end

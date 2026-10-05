@@ -7,6 +7,7 @@ local ProductsConfig = require(Shared.Config.Products)
 
 local Ui = require(script.Parent.Parent.Util.Ui)
 local Purchase = require(script.Parent.Parent.Util.Purchase)
+local Analytics = require(script.Parent.Parent.Util.Analytics)
 
 local OfferController = {}
 
@@ -91,7 +92,13 @@ function OfferController:Start()
 		PanelController:Open("StarterOffer")
 	end)
 	Ui.Feel(body.Buy, function()
+		Analytics.Track("Buy", OFFER.Product)
 		Purchase.Product(PRODUCT.Id)
+	end)
+	PanelController.Opened:Connect(function(name)
+		if name == "StarterOffer" then
+			Analytics.Track("Open", name)
+		end
 	end)
 
 	local autoShown = false
@@ -107,6 +114,7 @@ function OfferController:Start()
 				body.Timer.Text = "⏰ ENDS IN " .. text
 				if not wasActive then
 					Ui.Pop(button, 1.2)
+					Analytics.Track("Shown", "StarterOffer")
 				end
 				if OFFER.AutoOpen and not autoShown and not PanelController.Current then
 					autoShown = true

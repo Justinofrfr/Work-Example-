@@ -1,3 +1,4 @@
+local CollectionService = game:GetService("CollectionService")
 local LogService = game:GetService("LogService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -16,6 +17,22 @@ task.spawn(function()
 	repeat
 		task.wait(0.1)
 	until player.Character and player.Character:GetAttribute("Training") == "Speed"
+	task.spawn(function()
+		local root = player.Character.HumanoidRootPart
+		local nearest, nearestDistance
+		for _, rib in workspace.Game.Gyms:GetDescendants() do
+			if rib.Name == "BeltRib" then
+				local distance = (rib.Position - root.Position).Magnitude
+				if not nearest or distance < nearestDistance then
+					nearest, nearestDistance = rib, distance
+				end
+			end
+		end
+		task.wait(1.5)
+		local start = nearest and nearest.Position
+		task.wait(0.3)
+		clientLog:FireServer(("belt rib found %s moved %.2f in 0.3s"):format(tostring(nearest ~= nil), (nearest and start) and (nearest.Position - start).Magnitude or -1))
+	end)
 	local bubble
 	repeat
 		task.wait(0.1)
@@ -50,36 +67,31 @@ task.spawn(function()
 		local character = player.Character
 		if character and character:GetAttribute("Training") == "Strength" then
 			task.wait(1)
-			local barbell = workspace:FindFirstChild("Barbell")
 			local right = character:FindFirstChild("RightHand")
 			local left = character:FindFirstChild("LeftHand")
-			local elbow = character:FindFirstChild("RightLowerArm") and character.RightLowerArm:FindFirstChild("RightElbow")
+			local rack, rackDistance
+			for _, candidate in CollectionService:GetTagged("RackBarbell") do
+				local distance = (candidate.Position - character.HumanoidRootPart.Position).Magnitude
+				if not rack or distance < rackDistance then
+					rack, rackDistance = candidate, distance
+				end
+			end
+			local held = workspace:FindFirstChild("Barbell")
+			local handsMid = (right and left) and (right.Position + left.Position) / 2
 			local samples = {}
 			for _ = 1, 4 do
 				table.insert(samples, right and string.format("%.2f", right.Position.Y) or "?")
 				task.wait(0.25)
 			end
-			clientLog:FireServer(("camDist %.0f barbell %s at %s hands mid %s rightHand Y samples %s elbowC0 %s"):format(
-				(workspace.CurrentCamera.CFrame.Position - character.HumanoidRootPart.Position).Magnitude,
-				tostring(barbell ~= nil),
-				barbell and tostring(barbell:GetPivot().Position) or "-",
-				(right and left) and tostring((right.Position + left.Position) / 2) or "-",
-				table.concat(samples, ","),
-				elbow and tostring(elbow.C0.Rotation) or "-"
-			))
-			local pose = require(player.PlayerScripts.Client.Controllers.PoseController)
-			local rig = pose.Rigs[character]
-			local info = rig and ("shoulders=" .. #rig.Shoulders .. " elbows=" .. #rig.Elbows) or "no rig"
-			if rig and rig.Shoulders[1] then
-				info ..= " angle=" .. tostring(rig.Shoulders[1].Angle) .. " motorParent=" .. tostring(rig.Shoulders[1].Motor.Parent) .. " C0=" .. tostring(rig.Shoulders[1].Motor.C0.Rotation)
-			end
-			local found = {}
-			for _, d in character:GetDescendants() do
-				if d.Name:find("Shoulder") or d.Name:find("Elbow") then
-					table.insert(found, d.ClassName .. ":" .. d.Name .. "@" .. d.Parent.Name)
-				end
-			end
-			clientLog:FireServer(info .. " | " .. table.concat(found, ", "))
+			clientLog:FireServer(("rack found %s dist %.1f rackLTM while lifting %s held is mesh %s held to hands %.2f rightHand Y %s"):format(tostring(rack ~= nil), rackDistance or -1, rack and tostring(rack.LocalTransparencyModifier) or "-", tostring(held ~= nil and held:IsA("MeshPart")), (held and handsMid) and (held.Position - handsMid).Magnitude or -1, table.concat(samples, ",")))
+			repeat
+				task.wait(0.05)
+			until character:GetAttribute("Training") ~= "Strength"
+			task.wait(0.15)
+			local midway = workspace:FindFirstChild("Barbell")
+			local midDistance = (midway and rack) and (midway.Position - rack.Position).Magnitude or -1
+			task.wait(0.8)
+			clientLog:FireServer(("after stop: returning dist to rack %.2f, held gone %s, rackLTM %s"):format(midDistance, tostring(workspace:FindFirstChild("Barbell") == nil), rack and tostring(rack.LocalTransparencyModifier) or "-"))
 			reported = true
 		end
 	end

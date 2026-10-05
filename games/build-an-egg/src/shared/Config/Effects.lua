@@ -93,6 +93,17 @@ return {
 		LiftShoulderMax = 90,
 		LiftSpeed = 3.5,
 		CullDistance = 400,
+		RackTag = "RackBarbell",
+		RackRange = 9,
+		PickupTime = 0.45,
+		ReturnTime = 0.45,
+	},
+	Belt = {
+		Tag = "TreadmillBelt",
+		Speed = 7,
+		Accel = 3,
+		ActiveRange = 4,
+		Radius = 160,
 	},
 	Wind = {
 		Direction = Vector3.new(1, 0, 0.35),

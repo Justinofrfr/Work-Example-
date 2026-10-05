@@ -320,6 +320,12 @@ function GymService:Snap(player, rootPart, pad, stat)
 		target = CFrame.fromMatrix(position, -pad.CFrame.RightVector, pad.CFrame.LookVector)
 	else
 		local position = floor.Position + Vector3.new(0, GymsConfig.TreadmillStandHeight, 0)
+		local belt = pad.Parent:FindFirstChild("Belt", true)
+		local humanoid = rootPart.Parent:FindFirstChildOfClass("Humanoid")
+		if belt and humanoid then
+			local hip = humanoid.RigType == Enum.HumanoidRigType.R15 and humanoid.HipHeight or GymsConfig.R6HipHeight
+			position = Vector3.new(belt.Position.X, belt.Position.Y + belt.Size.Y / 2 + hip + rootPart.Size.Y / 2, belt.Position.Z)
+		end
 		target = CFrame.lookAt(position, position + pad.CFrame.LookVector)
 	end
 	if stat == "Strength" then

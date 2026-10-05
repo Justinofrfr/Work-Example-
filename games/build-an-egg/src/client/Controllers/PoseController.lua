@@ -1,3 +1,4 @@
+local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -55,27 +56,87 @@ function PoseController:Start()
 	end)
 end
 
-function PoseController:Barbell(rig, show)
-	if show and not rig.Barbell then
-		local template = templates:FindFirstChild("Barbell")
-		if template then
-			rig.Barbell = template:Clone()
-			rig.Barbell.Parent = Workspace
+local function nearestRack(character)
+	local root = character:FindFirstChild("HumanoidRootPart")
+	local best, bestDistance
+	for _, rack in root and CollectionService:GetTagged(P.RackTag) or {} do
+		local distance = (rack.Position - root.Position).Magnitude
+		if rack:IsDescendantOf(Workspace) and distance < P.RackRange and (not best or distance < bestDistance) then
+			best, bestDistance = rack, distance
 		end
-	elseif not show and rig.Barbell then
+	end
+	return best
+end
+
+local function ease(alpha)
+	return 0.5 - math.cos(math.clamp(alpha, 0, 1) * math.pi) / 2
+end
+
+function PoseController:DropBarbell(rig)
+	if rig.Barbell then
 		rig.Barbell:Destroy()
 		rig.Barbell = nil
 	end
-	if rig.Barbell then
-		local character = rig.Character
-		local left = character:FindFirstChild("LeftHand") or character:FindFirstChild("Left Arm")
-		local right = character:FindFirstChild("RightHand") or character:FindFirstChild("Right Arm")
-		if left and right then
-			local middle = (left.Position + right.Position) / 2
-			local axis = right.Position - left.Position
-			if axis.Magnitude > 0.01 then
-				rig.Barbell:PivotTo(CFrame.lookAt(middle, middle + axis) * CFrame.Angles(0, math.rad(90), 0))
+	if rig.Rack then
+		rig.Rack.LocalTransparencyModifier = 0
+		rig.Rack = nil
+	end
+	rig.Returning = nil
+end
+
+function PoseController:Barbell(rig, show)
+	local t = os.clock()
+	if show and (not rig.Barbell or rig.Returning) then
+		if not rig.Barbell then
+			local rack = nearestRack(rig.Character)
+			local template = rack or templates:FindFirstChild("Barbell")
+			if template then
+				rig.Barbell = template:Clone()
+				for _, tag in CollectionService:GetTags(rig.Barbell) do
+					CollectionService:RemoveTag(rig.Barbell, tag)
+				end
+				if rig.Barbell:IsA("BasePart") then
+					rig.Barbell.Anchored = true
+					rig.Barbell.CanCollide = false
+					rig.Barbell.CanQuery = false
+				end
+				rig.Barbell.Parent = Workspace
+				rig.Rack = rack
+				rig.PickedAt = t
+				if rack then
+					rack.LocalTransparencyModifier = 1
+				end
 			end
+		end
+		rig.Returning = nil
+	elseif not show and rig.Barbell and not rig.Returning then
+		if rig.Rack and rig.Rack.Parent then
+			rig.Returning = { From = rig.Barbell:GetPivot(), At = t }
+		else
+			self:DropBarbell(rig)
+		end
+	end
+	if not rig.Barbell then
+		return
+	end
+	if rig.Returning then
+		local alpha = (t - rig.Returning.At) / P.ReturnTime
+		rig.Barbell:PivotTo(rig.Returning.From:Lerp(rig.Rack.CFrame, ease(alpha)))
+		if alpha >= 1 then
+			self:DropBarbell(rig)
+		end
+		return
+	end
+	local character = rig.Character
+	local left = character:FindFirstChild("LeftHand") or character:FindFirstChild("Left Arm")
+	local right = character:FindFirstChild("RightHand") or character:FindFirstChild("Right Arm")
+	if left and right then
+		local middle = (left.Position + right.Position) / 2
+		local axis = right.Position - left.Position
+		if axis.Magnitude > 0.01 then
+			local hands = CFrame.lookAt(middle, middle + axis) * CFrame.Angles(0, math.rad(90), 0)
+			local alpha = rig.Rack and (t - rig.PickedAt) / P.PickupTime or 1
+			rig.Barbell:PivotTo(alpha < 1 and rig.Rack.CFrame:Lerp(hands, ease(alpha)) or hands)
 		end
 	end
 end
@@ -95,7 +156,7 @@ function PoseController:Step(dt)
 	local cameraPosition = camera.CFrame.Position
 	for character, rig in self.Rigs do
 		if not character.Parent then
-			self:Barbell(rig, false)
+			self:DropBarbell(rig)
 			self.Rigs[character] = nil
 			continue
 		end

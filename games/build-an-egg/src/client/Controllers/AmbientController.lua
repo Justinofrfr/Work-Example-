@@ -25,6 +25,7 @@ local AmbientController = {
 	Posed = {},
 	Lookers = {},
 	Rattles = {},
+	Belts = {},
 }
 
 local WIND = EffectsConfig.Wind
@@ -35,6 +36,8 @@ local POTION = EffectsConfig.Potions
 local LOOK = EffectsConfig.NPCLook
 local POSED = PropsConfig.PosedRig
 local RATTLE = EffectsConfig.Rattle
+local BELT = EffectsConfig.Belt
+local MapConfigScenery = require(Shared.Config.Map).Scenery
 local EffectController
 local lowEnd = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 local windDirection = WIND.Direction.Unit
@@ -311,9 +314,61 @@ function AmbientController:Start()
 		addRattle(part)
 	end
 	CollectionService:GetInstanceAddedSignal(RATTLE.Tag):Connect(addRattle)
+	local function addBelt(belt)
+		local kit = belt.Parent
+		local pad = kit and kit.Parent and kit.Parent:FindFirstChild(Names.World.Pad)
+		if not belt:IsA("BasePart") or not pad then
+			return
+		end
+		local ribs = {}
+		for _, rib in kit:GetChildren() do
+			if rib.Name == "BeltRib" then
+				table.insert(ribs, { Part = rib, Rel = belt.CFrame:ToObjectSpace(rib.CFrame) })
+			end
+		end
+		if #ribs > 0 then
+			self.Belts[belt] = { Pad = pad, Ribs = ribs, Length = belt.Size.Z * MapConfigScenery.BeltRibs.Span, Speed = 0, Travel = 0 }
+		end
+	end
+	for _, belt in CollectionService:GetTagged(BELT.Tag) do
+		addBelt(belt)
+	end
+	CollectionService:GetInstanceAddedSignal(BELT.Tag):Connect(addBelt)
 	RunService.Heartbeat:Connect(function(dt)
 		self:Step(dt)
 	end)
+end
+
+function AmbientController:StepBelts(dt, cameraPosition)
+	local runners = {}
+	for _, player in Players:GetPlayers() do
+		local character = player.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart")
+		if root and character:GetAttribute(Names.Attributes.Training) == "Speed" then
+			table.insert(runners, root.Position)
+		end
+	end
+	for belt, state in self.Belts do
+		if not belt.Parent then
+			self.Belts[belt] = nil
+		elseif (belt.Position - cameraPosition).Magnitude < BELT.Radius and (state.Speed > 0 or #runners > 0) then
+			local active = false
+			for _, position in runners do
+				local flat = Vector3.new(position.X - state.Pad.Position.X, 0, position.Z - state.Pad.Position.Z)
+				if flat.Magnitude < BELT.ActiveRange then
+					active = true
+					break
+				end
+			end
+			local goal = active and BELT.Speed or 0
+			state.Speed = math.abs(goal - state.Speed) < 0.05 and goal or state.Speed + (goal - state.Speed) * math.min(1, dt * BELT.Accel)
+			state.Travel = (state.Travel + state.Speed * dt) % state.Length
+			for _, rib in state.Ribs do
+				local z = (rib.Rel.Position.Z + state.Length / 2 + state.Travel) % state.Length - state.Length / 2
+				rib.Part.CFrame = belt.CFrame * CFrame.new(rib.Rel.Position.X, rib.Rel.Position.Y, z) * rib.Rel.Rotation
+			end
+		end
+	end
 end
 
 function AmbientController:StepRattles(t, cameraPosition)
@@ -783,6 +838,7 @@ function AmbientController:Step(dt)
 	self:StepLook(dt, cameraPosition)
 	self:StepPosed(t, cameraPosition)
 	self:StepRattles(t, cameraPosition)
+	self:StepBelts(dt, cameraPosition)
 	self:StepWind(dt, t, cameraPosition)
 	local display = PropsConfig.Displays
 	for model, state in self.Wobblers do
