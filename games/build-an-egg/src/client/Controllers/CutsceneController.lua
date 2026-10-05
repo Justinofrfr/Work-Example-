@@ -96,9 +96,11 @@ function CutsceneController:Play(shots)
 			local alpha = (os.clock() - started) / shot.Time
 			local eased = alpha < 0.5 and 2 * alpha * alpha or 1 - (-2 * alpha + 2) ^ 2 / 2
 			camera.CFrame = CFrame.lookAt(shot.From:Lerp(shot.To, eased), shot.Focus)
+			Cinematic.Focus(shot.Focus)
 			RunService.RenderStepped:Wait()
 		end
 	end
+	Cinematic.Focus(nil)
 	if not EggController.InCutscene then
 		camera.CameraType = previousType == Enum.CameraType.Scriptable and Enum.CameraType.Custom or previousType
 	end

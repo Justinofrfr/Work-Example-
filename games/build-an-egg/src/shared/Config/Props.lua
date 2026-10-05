@@ -201,6 +201,14 @@ return {
 		},
 	},
 	NPCIdleAnimation = "rbxassetid://507766666",
+	PosedMotion = {
+		Neck = { Yaw = 18, Pitch = 6, Speed = 0.55 },
+		Waist = { Pitch = 3, Speed = 1.3 },
+		RightElbow = { Pitch = 14, Speed = 2.6 },
+		LeftElbow = { Pitch = 12, Speed = 2.2, Phase = 1.6 },
+		RightShoulder = { Roll = 5, Speed = 1.1 },
+		LeftShoulder = { Roll = 4, Speed = 1, Phase = 0.8 },
+	},
 	NPCEmotes = {
 		Upgrades = { Every = { 6, 11 }, Emotes = { "rbxassetid://507770239", "rbxassetid://507770453", "rbxassetid://507770677" } },
 		Incubator = { Every = { 7, 12 }, Emotes = { "rbxassetid://507770818", "rbxassetid://507770677", "rbxassetid://507771019" } },

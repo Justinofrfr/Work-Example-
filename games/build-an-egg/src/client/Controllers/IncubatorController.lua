@@ -10,6 +10,7 @@ local PetRules = require(Shared.Util.PetRules)
 local Ui = require(script.Parent.Parent.Util.Ui)
 local Audio = require(script.Parent.Parent.Util.Audio)
 local PetView = require(script.Parent.Parent.Util.PetView)
+local Cinematic = require(script.Parent.Parent.Util.Cinematic)
 
 local IncubatorController = {
 	Mode = "Fragments",
@@ -70,6 +71,9 @@ function IncubatorController:Start()
 	end
 	Ui.Feel(reveal.Collect, function()
 		reveal.Visible = false
+	end)
+	reveal:GetPropertyChangedSignal("Visible"):Connect(function()
+		Cinematic.Blur(reveal.Visible)
 	end)
 	PanelController.Opened:Connect(function(name)
 		if name == "Incubator" then

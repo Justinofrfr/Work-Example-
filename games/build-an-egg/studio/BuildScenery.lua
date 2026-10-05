@@ -1292,6 +1292,16 @@ depth.FarIntensity = L.DepthFar
 depth.NearIntensity = 0
 depth.FocusDistance = L.DepthFocus
 depth.InFocusRadius = L.DepthRadius
+local focusDef = EffectsConfig.Cutscene.Focus
+local cutsceneFocus = Lighting:FindFirstChild("CutsceneFocus") or make("DepthOfFieldEffect", { Name = "CutsceneFocus", Parent = Lighting })
+cutsceneFocus.Enabled = false
+cutsceneFocus.FarIntensity = focusDef.Far
+cutsceneFocus.NearIntensity = focusDef.Near
+cutsceneFocus.InFocusRadius = focusDef.Radius
+cutsceneFocus.FocusDistance = 20
+local revealBlur = Lighting:FindFirstChild("RevealBlur") or make("BlurEffect", { Name = "RevealBlur", Parent = Lighting })
+revealBlur.Enabled = false
+revealBlur.Size = EffectsConfig.RevealBlur
 local clouds = terrain:FindFirstChildOfClass("Clouds") or make("Clouds", { Parent = terrain })
 clouds.Cover = L.CloudCover
 clouds.Density = L.CloudDensity

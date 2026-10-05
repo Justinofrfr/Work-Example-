@@ -68,6 +68,7 @@ return {
 		DecorPush = 1.03,
 		CrackRings = 8,
 		FadeTime = 0.35,
+		Focus = { Far = 0.85, Near = 0, Radius = 50, MaxDistance = 215, Ramp = 0.04 },
 		Shots = {
 			{ Time = 2.6, From = Vector3.new(-40, 70, -330), To = Vector3.new(60, 120, -290), Focus = "Egg", Caption = "%s COMPLETE!" },
 			{ Time = 2.8, From = Vector3.new(-170, 150, -110), To = Vector3.new(-140, 175, -125), Focus = "EggTop", Caption = "It's glowing... something is inside!", Glow = true },
@@ -119,6 +120,8 @@ return {
 		FoamPulse = 0.25,
 		FoamPulseSpeed = 0.8,
 	},
+	RevealBlur = 16,
+	NPCLook = { Radius = 24, MaxYaw = 65, MaxPitch = 25, Behind = 125, Speed = 5, WaistShare = 0.35 },
 	QuarryCart = {
 		Tag = "QuarryCart",
 		Axis = Vector3.new(1, 0, 0),

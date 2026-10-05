@@ -530,13 +530,16 @@ function EggController:PlayCutscene()
 			local alpha = (os.clock() - started) / shot.Time
 			local eased = alpha * alpha * (3 - 2 * alpha)
 			local position = shot.From:Lerp(shot.To, eased)
-			camera.CFrame = CFrame.lookAt(position, self:FocusPoint(shot.Focus))
+			local focusPoint = self:FocusPoint(shot.Focus)
+			camera.CFrame = CFrame.lookAt(position, focusPoint)
+			Cinematic.Focus(focusPoint)
 			if shot.Glow then
 				self:SetGlow(alpha)
 			end
 			RunService.RenderStepped:Wait()
 		end
 	end
+	Cinematic.Focus(nil)
 	if glowSound then
 		glowSound:Stop()
 	end

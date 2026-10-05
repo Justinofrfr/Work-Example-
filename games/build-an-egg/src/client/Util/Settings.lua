@@ -18,6 +18,13 @@ local Settings = {
 		Shake = "Camera Shake",
 		Cutscenes = "Cutscenes",
 	},
+	Icons = {
+		Music = "🎵",
+		Sfx = "🔊",
+		Effects = "✨",
+		Shake = "📳",
+		Cutscenes = "🎬",
+	},
 	Cycles = {
 		Effects = { "High", "Low", "Off" },
 	},

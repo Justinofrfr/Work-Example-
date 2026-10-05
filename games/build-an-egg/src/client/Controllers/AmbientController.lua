@@ -22,6 +22,8 @@ local AmbientController = {
 	Rigs = {},
 	CartParts = {},
 	Bottles = {},
+	Posed = {},
+	Lookers = {},
 }
 
 local WIND = EffectsConfig.Wind
@@ -29,6 +31,7 @@ local WATER = EffectsConfig.Water
 local RIG = EffectsConfig.GooseRig
 local CART = EffectsConfig.QuarryCart
 local POTION = EffectsConfig.Potions
+local LOOK = EffectsConfig.NPCLook
 local EffectController
 local lowEnd = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 local windDirection = WIND.Direction.Unit
@@ -86,10 +89,46 @@ function AmbientController:Start()
 	for _, model in CollectionService:GetTagged("Wander") do
 		addWander(model)
 	end
+	local function addPosed(npc)
+		local joints = {}
+		for name, motion in PropsConfig.PosedMotion or {} do
+			local joint = npc:FindFirstChild(name, true)
+			if joint and joint:IsA("AnimationConstraint") then
+				table.insert(joints, { Joint = joint, Name = name, Base = joint.Transform, Motion = motion })
+			elseif joint and joint:IsA("Motor6D") then
+				table.insert(joints, { Joint = joint, Name = name, Base = joint.C0, Motion = motion, Motor = true })
+			end
+		end
+		self.Posed[npc] = { Joints = joints, Phase = random:NextNumber(0, math.pi * 2) }
+	end
+	local function addLook(npc)
+		local root = npc:FindFirstChild("HumanoidRootPart")
+		local head = npc:FindFirstChild("Head")
+		if not root or not head then
+			return
+		end
+		local joints = {}
+		for _, name in { "Neck", "Waist" } do
+			local joint = npc:FindFirstChild(name, true)
+			if joint and joint:IsA("AnimationConstraint") and joint.Attachment0 then
+				joints[name] = { Attachment = joint.Attachment0, Base = joint.Attachment0.CFrame }
+			elseif joint and joint:IsA("Motor6D") then
+				joints[name] = { Motor = joint, Base = joint.C0 }
+			end
+		end
+		if joints.Neck then
+			self.Lookers[npc] = { Root = root, Head = head, Joints = joints, Offsets = {}, Posed = npc:GetAttribute("Posed") == true, Yaw = 0, Pitch = 0 }
+		end
+	end
 	local function addNPC(npc)
+		addLook(npc)
+		if npc:GetAttribute("Posed") then
+			addPosed(npc)
+			return
+		end
 		local humanoid = npc:FindFirstChildOfClass("Humanoid")
 		local animator = humanoid and (humanoid:FindFirstChildOfClass("Animator") or humanoid:WaitForChild("Animator", 5))
-		if not animator or PropsConfig.NPCIdleAnimation == "" or npc:GetAttribute("Posed") then
+		if not animator or PropsConfig.NPCIdleAnimation == "" then
 			return
 		end
 		local animation = Instance.new("Animation")
@@ -511,6 +550,41 @@ function AmbientController:StepWind(dt, t, cameraPosition)
 	end
 end
 
+function AmbientController:StepLook(dt, cameraPosition)
+	local character = Players.LocalPlayer.Character
+	local target = character and character:FindFirstChild("Head")
+	for npc, state in self.Lookers do
+		if not npc.Parent or not state.Head.Parent then
+			self.Lookers[npc] = nil
+		elseif (state.Root.Position - cameraPosition).Magnitude < CULL then
+			local yaw, pitch = 0, 0
+			if target then
+				local offset = state.Root.CFrame:VectorToObjectSpace(target.Position - state.Head.Position)
+				if offset.Magnitude < LOOK.Radius then
+					local raw = math.deg(math.atan2(-offset.X, -offset.Z))
+					if math.abs(raw) < LOOK.Behind then
+						yaw = math.clamp(raw, -LOOK.MaxYaw, LOOK.MaxYaw)
+						pitch = math.clamp(math.deg(math.atan2(offset.Y, math.sqrt(offset.X * offset.X + offset.Z * offset.Z))), -LOOK.MaxPitch, LOOK.MaxPitch)
+					end
+				end
+			end
+			local blend = math.min(1, dt * LOOK.Speed)
+			state.Yaw += (yaw - state.Yaw) * blend
+			state.Pitch += (pitch - state.Pitch) * blend
+			local share = state.Joints.Waist and LOOK.WaistShare or 0
+			state.Offsets.Waist = CFrame.Angles(0, math.rad(state.Yaw * share), 0)
+			state.Offsets.Neck = CFrame.Angles(0, math.rad(state.Yaw * (1 - share)), 0) * CFrame.Angles(math.rad(state.Pitch), 0, 0)
+			for name, joint in state.Joints do
+				if joint.Attachment then
+					joint.Attachment.CFrame = joint.Base * state.Offsets[name]
+				elseif not state.Posed then
+					joint.Motor.C0 = joint.Base * state.Offsets[name]
+				end
+			end
+		end
+	end
+end
+
 function AmbientController:Step(dt)
 	local t = os.clock()
 	local cameraPosition = camera.CFrame.Position
@@ -539,6 +613,24 @@ function AmbientController:Step(dt)
 	self:StepRigs(dt, t, cameraPosition)
 	self:StepCart(t, cameraPosition)
 	self:StepPotions(t, cameraPosition)
+	self:StepLook(dt, cameraPosition)
+	for npc, state in self.Posed do
+		if not npc.Parent then
+			self.Posed[npc] = nil
+		elseif (npc:GetPivot().Position - cameraPosition).Magnitude < CULL then
+			local looker = self.Lookers[npc]
+			for _, entry in state.Joints do
+				local m = entry.Motion
+				local wave = math.sin(t * m.Speed + state.Phase + (m.Phase or 0))
+				local offset = CFrame.Angles(math.rad(m.Pitch or 0) * wave, math.rad(m.Yaw or 0) * math.sin(t * m.Speed * 0.7 + state.Phase), math.rad(m.Roll or 0) * wave)
+				if entry.Motor then
+					entry.Joint.C0 = entry.Base * offset * (looker and looker.Offsets[entry.Name] or CFrame.identity)
+				else
+					entry.Joint.Transform = entry.Base * offset
+				end
+			end
+		end
+	end
 	self:StepWind(dt, t, cameraPosition)
 	local display = PropsConfig.Displays
 	for model, state in self.Wobblers do

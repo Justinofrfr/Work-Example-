@@ -70,6 +70,10 @@ function UpgradeController:Refresh()
 		local cost = Formulas.UpgradeCost(key, level)
 		local max = #UpgradesConfig.List[key].Costs
 		card.Level.Text = ("Lv %d/%d"):format(level, max)
+		local bar = card:FindFirstChild("LevelBar")
+		if bar then
+			bar.Fill.Size = UDim2.fromScale(math.clamp(level / math.max(max, 1), 0, 1), 1)
+		end
 		if cost then
 			card.Effect.Text = effectText(key, level)
 			Ui.SetText(card.Buy, cost == 0 and UpgradesConfig.FreeText or Format.Short(cost))

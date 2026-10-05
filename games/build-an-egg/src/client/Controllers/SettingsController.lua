@@ -32,6 +32,9 @@ function SettingsController:Start()
 		row.Name = key
 		row.LayoutOrder = index
 		row.Title.Text = Settings.Labels[key]
+		if row:FindFirstChild("Icon") then
+			row.Icon.Text = Settings.Icons[key] or "⚙️"
+		end
 		row.Parent = list
 		local function render()
 			local text, color = display(Settings:Get(key))
