@@ -8,8 +8,8 @@ return {
 			Color = Color3.fromRGB(255, 170, 40),
 			Note = "Boosts last forever and stack with every buy!",
 			Items = {
-				{ Key = "SpeedBoost", Kind = "Product", Icon = "⚡", Name = "2x Speed", Desc = "Doubles Speed gains forever · stacks", Badge = "STACKS" },
-				{ Key = "StrengthBoost", Kind = "Product", Icon = "💪", Name = "2x Strength", Desc = "Doubles Strength gains forever · stacks", Badge = "STACKS" },
+				{ Key = "SpeedBoost", Kind = "Product", Icon = "⚡", Name = "2x Speed", Desc = "Doubles Speed gains forever · stacks", Badge = "STACKS", Featured = true },
+				{ Key = "StrengthBoost", Kind = "Product", Icon = "💪", Name = "2x Strength", Desc = "Doubles Strength gains forever · stacks", Badge = "STACKS", Featured = true },
 			},
 		},
 		{
@@ -23,7 +23,7 @@ return {
 				{ Key = "ServerPack1K", Kind = "Product", Icon = "📦", Name = "+1,000 Shells", Desc = "Adds 1,000 to the egg for everyone" },
 				{ Key = "ServerPack5K", Kind = "Product", Icon = "📦", Name = "+5,000 Shells", Desc = "Adds 5,000 to the egg for everyone" },
 				{ Key = "ServerPack10K", Kind = "Product", Icon = "🎁", Name = "+10,000 Shells", Desc = "Adds 10,000 to the egg for everyone", Badge = "POPULAR" },
-				{ Key = "ServerPack50K", Kind = "Product", Icon = "🎁", Name = "+50,000 Shells", Desc = "Adds 50,000 to the egg for everyone", Badge = "BEST VALUE" },
+				{ Key = "ServerPack50K", Kind = "Product", Icon = "💎", Name = "+50,000 Shells", Desc = "Adds 50,000 to the egg for everyone", Badge = "BEST VALUE" },
 			},
 		},
 		{

@@ -681,8 +681,8 @@ local function shopCard(name, ratio, left, buyWidth)
 	return card
 end
 
-shopCard("ShopItem", nil, 0.33, 0.36)
-shopCard("ShopFeature", 4.4, 0.21, 0.3)
+shopCard("ShopItem", nil, 0.34, 0.36)
+shopCard("ShopFeature", 3.4, 0.24, 0.3)
 
 local shopTab = button({ Name = "ShopTab", Icon = "⚡", Text = "BOOSTS", Color = C.Locked, Size = UDim2.fromScale(0.96, 0.3), Radius = 0.2, Parent = templates })
 aspect(1.05).Parent = shopTab
@@ -708,7 +708,7 @@ make("Frame", { Name = "Featured", Size = UDim2.fromScale(1, 0), AutomaticSize =
 	make("UIListLayout", { Padding = UDim.new(0, 10), SortOrder = Enum.SortOrder.LayoutOrder }),
 })
 make("Frame", { Name = "Grid", Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = 3, Parent = shopPage }, {
-	make("UIGridLayout", { CellSize = UDim2.fromScale(0.485, 1), CellPadding = UDim2.new(0.03, 0, 0, 10), SortOrder = Enum.SortOrder.LayoutOrder }, { make("UIAspectRatioConstraint", { AspectRatio = 2.45, DominantAxis = Enum.DominantAxis.Width }) }),
+	make("UIGridLayout", { CellSize = UDim2.fromScale(0.485, 1), CellPadding = UDim2.new(0.03, 0, 0, 10), SortOrder = Enum.SortOrder.LayoutOrder }, { make("UIAspectRatioConstraint", { AspectRatio = 2.05, DominantAxis = Enum.DominantAxis.Width }) }),
 })
 
 local card = panelFrame({ Name = "UpgradeCard", Size = UDim2.fromScale(1, 0.3), BackgroundColor3 = Color3.fromRGB(255, 252, 240), Parent = templates })
