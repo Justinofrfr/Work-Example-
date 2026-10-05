@@ -52,8 +52,18 @@ local ok, err = pcall(function()
 			note("  rack rel pad", rackRel, "rack transparency while training", rack.Transparency)
 		end
 		if beltTop then
-			local foot = character:FindFirstChild("LeftFoot") or character:FindFirstChild("Left Leg")
-			note("  belt top", beltTop, "foot bottom", foot and (foot.Position.Y - foot.Size.Y / 2))
+			local lowest = math.huge
+			for _ = 1, 30 do
+				for _, name in { "LeftFoot", "RightFoot", "Left Leg", "Right Leg" } do
+					local foot = character:FindFirstChild(name)
+					if foot then
+						lowest = math.min(lowest, foot.Position.Y - foot.Size.Y / 2)
+					end
+				end
+				task.wait(0.05)
+			end
+			local humanoid = character:FindFirstChildOfClass("Humanoid")
+			note("  belt top", beltTop, "lowest foot bottom", lowest, "hipHeight", humanoid and humanoid.HipHeight, "rootHalf", root.Size.Y / 2)
 		end
 		local training = StateService:Get(player).Training
 		local waited = 0
