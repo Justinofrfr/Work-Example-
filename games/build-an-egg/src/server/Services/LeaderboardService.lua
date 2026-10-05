@@ -16,9 +16,11 @@ local LeaderboardService = {
 }
 
 local DataService
+local TrailerService
 
 function LeaderboardService:Init(modules)
 	DataService = modules.DataService
+	TrailerService = modules.TrailerService
 end
 
 function LeaderboardService:Start()
@@ -47,7 +49,7 @@ end
 
 function LeaderboardService:Submit(player)
 	local data = DataService:Get(player)
-	if not data then
+	if not data or TrailerService:IsServer() then
 		return
 	end
 	for _, board in LeaderboardsConfig.Boards do

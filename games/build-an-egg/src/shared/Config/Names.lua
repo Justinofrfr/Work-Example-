@@ -20,6 +20,7 @@ return {
 		PopBubble = "PopBubble",
 		ClaimDaily = "ClaimDaily",
 		Funnel = "Funnel",
+		Trailer = "Trailer",
 	},
 	RemoteKinds = {
 		StateSync = "RemoteEvent",
@@ -41,6 +42,7 @@ return {
 		PopBubble = "RemoteEvent",
 		ClaimDaily = "RemoteFunction",
 		Funnel = "RemoteEvent",
+		Trailer = "RemoteFunction",
 	},
 	World = {
 		Root = "Game",

@@ -15,12 +15,16 @@ local FunnelService = {
 }
 
 local DataService
+local TrailerService
 local remotes
 
 local FUNNELS = AnalyticsConfig.Funnels
 local limiter = RateLimiter.new(AnalyticsConfig.RateLimit.Count, AnalyticsConfig.RateLimit.Window)
 
 local function log(method, ...)
+	if TrailerService:IsServer() then
+		return
+	end
 	pcall(AnalyticsService[method], AnalyticsService, ...)
 end
 
@@ -30,6 +34,7 @@ end
 
 function FunnelService:Init(modules, context)
 	DataService = modules.DataService
+	TrailerService = modules.TrailerService
 	remotes = context.Remotes
 end
 

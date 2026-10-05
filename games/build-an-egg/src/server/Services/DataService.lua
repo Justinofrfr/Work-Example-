@@ -78,8 +78,8 @@ local function key(player)
 	return "u_" .. player.UserId
 end
 
-function DataService:Init()
-	if RunService:IsStudio() and not GameConfig.SaveInStudio then
+function DataService:Init(modules)
+	if (RunService:IsStudio() and not GameConfig.SaveInStudio) or modules.TrailerService:IsServer() then
 		store = nil
 		return
 	end
