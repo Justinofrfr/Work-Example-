@@ -10,6 +10,7 @@ local function note(...)
 		table.insert(parts, tostring(value))
 	end
 	table.insert(results, table.concat(parts, " "))
+	print("[gymtest] " .. table.concat(parts, " "))
 end
 
 ReplicatedStorage:WaitForChild("__TestLog").OnServerEvent:Connect(function(_, message)
