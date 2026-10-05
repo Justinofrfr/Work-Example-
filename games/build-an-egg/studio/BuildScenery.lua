@@ -42,6 +42,10 @@ local function folder(name)
 	return folders[name]
 end
 
+local function studTexture(part)
+	make("Texture", { Name = "Studs", Texture = SC.Hills.Studs, Face = Enum.NormalId.Top, StudsPerTileU = SC.Hills.StudsPerTile, StudsPerTileV = SC.Hills.StudsPerTile, Transparency = SC.Hills.StudsTransparency, Parent = part })
+end
+
 local function pick(list)
 	return list[random:NextInteger(1, #list)]
 end
@@ -220,7 +224,7 @@ for prefix, group in groups do
 					pcall(function()
 						part.CollisionFidelity = Enum.CollisionFidelity.PreciseConvexDecomposition
 					end)
-					make("SurfaceAppearance", { ColorMap = SC.Hills.Studs, AlphaMode = Enum.AlphaMode.Overlay, Parent = part })
+					studTexture(part)
 					part.Parent = folder("Hills")
 					table.insert(hillParts, part)
 				elseif prefix:find("^World_Path") then
@@ -231,7 +235,7 @@ for prefix, group in groups do
 					part.CastShadow = false
 					part.CanCollide = false
 					part.CanQuery = false
-					make("SurfaceAppearance", { ColorMap = SC.Hills.Studs, AlphaMode = Enum.AlphaMode.Overlay, Parent = part })
+					studTexture(part)
 					part.Parent = folder("Paths")
 				elseif SC.KitFolders[baseName(prefix)] then
 					local family = (prefix:gsub("%d+$", ""))
@@ -841,7 +845,7 @@ for _, gym in gymsFolder and gymsFolder:GetChildren() or {} do
 				if part.Name == "Trim" then
 					part.Color = tierColor
 				elseif part.Name == "Floor" then
-					make("SurfaceAppearance", { ColorMap = SC.Hills.Studs, AlphaMode = Enum.AlphaMode.Overlay, Parent = part })
+					studTexture(part)
 				end
 			end
 			platform.Transparency = platform.Size.Y > 3 and 0 or 1

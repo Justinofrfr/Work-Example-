@@ -291,7 +291,7 @@ return {
 			World_Riverrocks = { Rock = true },
 		},
 		Keep = { "^World_Riverrocks$", "^Fence$", "^Bridge$", "^Lamp$", "^Bench$", "^Board$", "^Pedestal$", "^Arch$" },
-		Hills = { Color = Color3.fromRGB(104, 192, 78), Studs = "rbxassetid://18878365966" },
+		Hills = { Color = Color3.fromRGB(104, 192, 78), Studs = "rbxassetid://18878365966", StudsPerTile = 4, StudsTransparency = 0 },
 		River = {
 			Points = { Vector3.new(-430, 0, 330), Vector3.new(-385, 0, 240), Vector3.new(-340, 0, 140), Vector3.new(-312, 0, 30), Vector3.new(-322, 0, -80), Vector3.new(-300, 0, -185), Vector3.new(-262, 0, -275), Vector3.new(-235, 0, -330) },
 			Clearance = 26,
