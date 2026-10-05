@@ -200,7 +200,7 @@ return {
 			Aura = true,
 		},
 	},
-	NPCIdleAnimation = "rbxassetid://507766666",
+	NPCIdleAnimation = "rbxassetid://507766951",
 	PosedMotion = {
 		Neck = { Yaw = 18, Pitch = 6, Speed = 0.55 },
 		Waist = { Pitch = 3, Speed = 1.3 },

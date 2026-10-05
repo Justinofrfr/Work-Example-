@@ -154,14 +154,14 @@ if root and probe and workspace:GetAttribute("LookProbe") then
 	local series = {}
 	for _ = 1, 16 do
 		task.wait(0.25)
-		table.insert(series, ("%.0f"):format(yawDelta(first, probe.Head.CFrame.Rotation)))
+		table.insert(series, ("%.0f/%.2f"):format(yawDelta(first, probe.Head.CFrame.Rotation), probe.Head.ReceiveAge))
 	end
 	local tracks = {}
 	for _, track in animator:GetPlayingAnimationTracks() do
 		table.insert(tracks, track.Animation.AnimationId .. "@" .. tostring(track.Priority.Name))
 	end
 	ambient.Lookers[probe] = saved
-	clientLog:FireServer("probe " .. on .. " | " .. off .. " | idle series " .. table.concat(series, ",") .. " | tracks " .. table.concat(tracks, " ") .. " | anchored " .. tostring(probe.Head.Anchored) .. " " .. tostring(probeRoot.Anchored))
+	clientLog:FireServer("probe " .. on .. " | " .. off .. " | idle series " .. table.concat(series, ",") .. " | tracks " .. table.concat(tracks, " ") .. " | anchored " .. tostring(probe.Head.Anchored) .. " " .. tostring(probeRoot.Anchored) .. " | assembly " .. tostring(probe.Head.AssemblyRootPart) .. " ballsockets " .. tostring(probe.Head:FindFirstChildWhichIsA("BallSocketConstraint", true) and probe.Head:FindFirstChildWhichIsA("BallSocketConstraint", true).Enabled))
 end
 
 local goose = CollectionService:GetTagged("GooseRig")[1]
