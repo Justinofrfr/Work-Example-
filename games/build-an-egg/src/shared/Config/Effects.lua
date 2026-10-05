@@ -53,6 +53,10 @@ return {
 		PoolSize = 20,
 		Rise = 3,
 		Duration = 0.6,
+		Size = UDim2.new(3, 40, 1.2, 16),
+		Color = Color3.fromRGB(255, 210, 70),
+		PickupColor = Color3.fromRGB(255, 255, 255),
+		PickupLift = 4.5,
 	},
 	Shake = {
 		LastPiece = { Magnitude = 0.6, Duration = 0.4, Range = 300 },

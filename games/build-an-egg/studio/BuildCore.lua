@@ -468,7 +468,7 @@ make("ParticleEmitter", {
 
 make("BillboardGui", {
 	Name = Names.Templates.CoinPopup,
-	Size = UDim2.fromOffset(80, 30),
+	Size = EffectsConfig.CoinPopup.Size,
 	AlwaysOnTop = true,
 	LightInfluence = 0,
 	MaxDistance = 120,

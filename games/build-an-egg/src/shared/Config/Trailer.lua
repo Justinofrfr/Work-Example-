@@ -14,7 +14,9 @@ return {
 	Warm = { Modes = { Path = true, Orbit = true }, Points = { 0, 0.25, 0.5, 0.75, 1 }, Hold = 0.5 },
 	CompleteDelay = 0.5,
 	GameWait = 6,
-	SyncFlash = { Time = 0.25, Color = Color3.new(1, 1, 1) },
+	SyncFlash = { Time = 0.25, Color = Color3.new(1, 1, 1), Sound = "Coin" },
+	StillSpeed = 2,
+	StillPoll = 0.05,
 	Setup = {
 		Stats = { Coins = 1250000, Speed = 6, Strength = 250000, Eggs = 30 },
 		TutorialDone = true,
@@ -38,8 +40,8 @@ return {
 			Name = "Quarry",
 			Time = 7,
 			FieldOfView = 55,
-			Stage = { Teleport = { Position = Vector3.new(-32, -3, -192), Face = Vector3.new(1, 0, 0) }, Carry = 0, Loop = { Action = "Pickup", Every = 0.45 }, WalkSpeed = 12 },
-			Move = { Vector3.new(30, -4, -196) },
+			Stage = { Teleport = { Position = Vector3.new(-12, -3, -192), Face = Vector3.new(1, 0, 0) }, Carry = 0, Loop = { Action = "Pickup", Every = 0.3, WhenStill = true }, WalkSpeed = 12 },
+			Move = { Points = { Vector3.new(-1, -4, -194), Vector3.new(10, -4, -195), Vector3.new(22, -4, -197) }, Pause = 1.1 },
 			Camera = { Mode = "Follow", Offset = Vector3.new(-3, 5, -15), OffsetTo = Vector3.new(4, 4, -13), Look = Vector3.new(0, 3, 0) },
 		},
 		{

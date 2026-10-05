@@ -138,10 +138,16 @@ end
 function TrailerService:Loop(player, loop, generation)
 	while self.Generation == generation and player.Parent do
 		local runtime = StateService:Get(player)
+		local rootPart = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+		local velocity = rootPart and rootPart.AssemblyLinearVelocity or Vector3.zero
+		local still = Vector3.new(velocity.X, 0, velocity.Z).Magnitude < TrailerConfig.StillSpeed
+		if loop.WhenStill and not still then
+			task.wait(TrailerConfig.StillPoll)
+			continue
+		end
 		if loop.Action == "Pickup" then
 			CarryService:Pickup(player)
 		elseif loop.Action == "Place" and runtime then
-			local rootPart = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 			runtime.PickupPosition = nil
 			if rootPart then
 				BuildService:TryPlace(player, rootPart)

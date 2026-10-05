@@ -13,6 +13,8 @@ local TrailerConfig = require(Shared.Config.Trailer)
 local EggShape = require(Shared.Util.EggShape)
 
 local Cinematic = require(script.Parent.Parent.Util.Cinematic)
+local Audio = require(script.Parent.Parent.Util.Audio)
+local Settings = require(script.Parent.Parent.Util.Settings)
 
 local TrailerController = {
 	Running = false,
@@ -139,6 +141,13 @@ function TrailerController:Prepare(on)
 			controls:Enable()
 		end
 	end
+	if on and Settings:Get("Music") then
+		self.MusicWas = true
+		Settings:Toggle("Music")
+	elseif not on and self.MusicWas then
+		self.MusicWas = nil
+		Settings:Toggle("Music")
+	end
 	camera.CameraType = on and Enum.CameraType.Scriptable or Enum.CameraType.Custom
 	camera.FieldOfView = TrailerConfig.FieldOfView
 	Cinematic.Focus(nil)
@@ -152,6 +161,7 @@ function TrailerController:Flash()
 	local color = fade.BackgroundColor3
 	fade.BackgroundColor3 = TrailerConfig.SyncFlash.Color
 	fade.BackgroundTransparency = 0
+	Audio.Play(TrailerConfig.SyncFlash.Sound)
 	task.wait(TrailerConfig.SyncFlash.Time)
 	fade.BackgroundTransparency = 1
 	fade.BackgroundColor3 = color
@@ -227,7 +237,7 @@ function TrailerController:Walk(move, generation)
 			table.insert(points, (EggShape.ScaffoldPoint(height)))
 		end
 	else
-		points = move
+		points = move.Points or move
 	end
 	for _, point in points do
 		if self.Generation ~= generation then
@@ -235,6 +245,9 @@ function TrailerController:Walk(move, generation)
 		end
 		humanoid:MoveTo(point)
 		humanoid.MoveToFinished:Wait()
+		if move.Pause then
+			task.wait(move.Pause)
+		end
 	end
 end
 

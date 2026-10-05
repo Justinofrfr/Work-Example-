@@ -234,7 +234,7 @@ function EffectController:FragmentShower(granted)
 	end
 end
 
-function EffectController:CoinPopup(position, amount)
+function EffectController:CoinPopup(position, amount, color)
 	if #popupPool == 0 then
 		return
 	end
@@ -244,6 +244,7 @@ function EffectController:CoinPopup(position, amount)
 	entry.Attachment.WorldPosition = position
 	local label = entry.Gui:FindFirstChild("Text")
 	label.Text = "+" .. amount
+	label.TextColor3 = color or config.Color
 	label.TextTransparency = 0
 	entry.Gui.StudsOffsetWorldSpace = Vector3.zero
 	entry.Gui.Enabled = true
@@ -394,6 +395,7 @@ function EffectController:Handle(kind, a, b)
 			self:Burst("Dust", root.Position - Vector3.new(0, 2.5, 0), 14)
 			self:Vfx("Pickup", root.Position + Vector3.new(0, 4, 0))
 			self:Vfx("PickupPuff", root.Position - Vector3.new(0, 2, 0))
+			self:CoinPopup(root.Position + Vector3.new(0, EffectsConfig.CoinPopup.PickupLift, 0), a or 1, EffectsConfig.CoinPopup.PickupColor)
 		end
 	elseif kind == "Place" then
 		local ring = b or 1
