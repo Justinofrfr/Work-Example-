@@ -258,6 +258,21 @@ function TrailerController:Hold(spec, alpha, duration)
 	end
 end
 
+function TrailerController:Warm()
+	for _, shot in TrailerConfig.Shots do
+		local spec = shot.Camera
+		if TrailerConfig.Warm.Modes[spec.Mode] then
+			self:Stream(spec)
+			camera.FieldOfView = shot.FieldOfView or TrailerConfig.FieldOfView
+			for _, alpha in TrailerConfig.Warm.Points do
+				self:Frame(spec, alpha, nil)
+				task.wait(TrailerConfig.Warm.Hold)
+			end
+		end
+	end
+	camera.FieldOfView = TrailerConfig.FieldOfView
+end
+
 function TrailerController:Game(index, shot)
 	local started = os.clock()
 	while not EggController.InCutscene and os.clock() - started < TrailerConfig.GameWait do
@@ -316,6 +331,7 @@ function TrailerController:Run()
 	end
 	self:Prepare(true)
 	remotes[Names.Remotes.Trailer]:InvokeServer("Stage", 0)
+	self:Warm()
 	task.wait(TrailerConfig.StartDelay)
 	self.Clock = os.clock()
 	self:Log("flash", 0, nil)
