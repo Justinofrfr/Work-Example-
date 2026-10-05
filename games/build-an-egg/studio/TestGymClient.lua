@@ -30,8 +30,17 @@ task.spawn(function()
 		end
 		task.wait(1.5)
 		local start = nearest and nearest.Position
-		task.wait(0.3)
-		clientLog:FireServer(("belt rib found %s moved %.2f in 0.3s"):format(tostring(nearest ~= nil), (nearest and start) and (nearest.Position - start).Magnitude or -1))
+		local frames, maxMove, last = 0, 0, start
+		local connection = game:GetService("RunService").Heartbeat:Connect(function()
+			frames += 1
+			if nearest and last then
+				maxMove = math.max(maxMove, (nearest.Position - last).Magnitude)
+				last = nearest.Position
+			end
+		end)
+		task.wait(2)
+		connection:Disconnect()
+		clientLog:FireServer(("belt rib found %s frames in 2s %d max step move %.2f"):format(tostring(nearest ~= nil), frames, maxMove))
 		local ambient = require(player.PlayerScripts.Client.Controllers.AmbientController)
 		local count, info = 0, "none"
 		for belt, state in ambient.Belts or {} do
