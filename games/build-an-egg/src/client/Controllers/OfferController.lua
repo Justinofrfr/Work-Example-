@@ -1,3 +1,4 @@
+local MarketplaceService = game:GetService("MarketplaceService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
@@ -52,14 +53,30 @@ function OfferController:Start()
 	local panel = PanelController:Get("StarterOffer")
 	local body = panel.Body
 	local reference = ProductsConfig.DevProducts[OFFER.ValueOf]
-	local value = reference and math.floor(PRODUCT.Pieces / reference.Pieces * reference.Price + 0.5) or 0
 	body.Amount.Text = "+" .. Ui.Comma(PRODUCT.Pieces)
 	body.Desc.Text = ("EGG PROGRESS + %s SHELLS"):format(Ui.Comma(PRODUCT.Coins))
-	body.Value.Text = ("<s>R$%d VALUE</s>"):format(value)
-	body.Value.Visible = value > PRODUCT.Price
-	body.Sale.Visible = value > PRODUCT.Price
-	body.Sale.Text.Text = ("-%d%%"):format(math.floor((1 - PRODUCT.Price / math.max(value, 1)) * 100))
-	body.Buy.Label.Text = ("BUY R$%d"):format(PRODUCT.Price)
+	local function showPrices(price, referencePrice)
+		local value = reference and math.floor(PRODUCT.Pieces / reference.Pieces * referencePrice + 0.5) or 0
+		body.Value.Text = ("<s>R$%d VALUE</s>"):format(value)
+		body.Value.Visible = value > price
+		body.Sale.Visible = value > price
+		body.Sale.Text.Text = ("-%d%%"):format(math.floor((1 - price / math.max(value, 1)) * 100))
+		body.Buy.Label.Text = ("BUY R$%d"):format(price)
+	end
+	showPrices(PRODUCT.Price, reference and reference.Price or 0)
+	task.spawn(function()
+		local function localPrice(product)
+			if not product or product.Id == 0 then
+				return nil
+			end
+			local ok, info = pcall(MarketplaceService.GetProductInfo, MarketplaceService, product.Id, Enum.InfoType.Product)
+			return ok and info and info.PriceInRobux or nil
+		end
+		local price = localPrice(PRODUCT)
+		if price then
+			showPrices(price, localPrice(reference) or (reference and reference.Price or 0))
+		end
+	end)
 
 	local topLeft = hud:WaitForChild("TopLeft")
 	local function place()

@@ -116,7 +116,9 @@ local function onStage(name)
 		end
 		PanelController:Close()
 	elseif name == "Offer" then
-		Products.DevProducts.StarterPack.Id = 999
+		if Products.DevProducts.StarterPack.Id == 0 then
+			Products.DevProducts.StarterPack.Id = 999
+		end
 		task.wait(3)
 		local panel = PanelController:Get("StarterOffer")
 		local body = panel.Body

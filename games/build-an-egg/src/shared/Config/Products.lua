@@ -40,7 +40,7 @@ return {
 		ServerPack10K = { Id = 3715925880, Price = 69, Pieces = 10000, Coins = 10000, Name = "+10,000 Shells", Color = Color3.fromRGB(240, 60, 60) },
 		TrainBoost20 = { Id = 3716544555, Price = 49, Name = "20x Training", TrainMultiplier = 20, Duration = 600 },
 		ServerPack50K = { Id = 3715925884, Price = 299, Pieces = 50000, Coins = 50000, Name = "+50,000 Shells", Color = Color3.fromRGB(150, 70, 240) },
-		StarterPack = { Id = 0, Price = 19, Pieces = 20000, Coins = 20000, Name = "Starter Pack", Color = Color3.fromRGB(255, 70, 120) },
+		StarterPack = { Id = 3716624788, Price = 19, Pieces = 20000, Coins = 20000, Name = "Starter Pack", Color = Color3.fromRGB(255, 70, 120) },
 	},
 	StarterOffer = {
 		Product = "StarterPack",
