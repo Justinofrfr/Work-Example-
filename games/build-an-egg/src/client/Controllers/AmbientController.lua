@@ -272,8 +272,11 @@ function AmbientController:Start()
 	RunService.Heartbeat:Connect(function(dt)
 		self:Step(dt)
 	end)
+	RunService.PreAnimation:Connect(function()
+		self:ApplyLook(false)
+	end)
 	RunService.PreSimulation:Connect(function()
-		self:ApplyLook()
+		self:ApplyLook(true)
 	end)
 end
 
@@ -587,19 +590,20 @@ function AmbientController:StepLook(dt, cameraPosition)
 	end
 end
 
-function AmbientController:ApplyLook()
+function AmbientController:ApplyLook(apply)
 	for _, state in self.Lookers do
 		if not state.Posed then
 			for name, joint in state.Joints do
 				local offset = state.Offsets[name]
-				if offset then
-					local current = joint.Joint.Transform
-					if joint.Written and current == joint.Written then
-						current = joint.Raw
+				if offset and apply then
+					if not joint.Applied then
+						joint.Raw = joint.Joint.Transform
+						joint.Applied = true
 					end
-					joint.Raw = current
-					joint.Written = current * offset
-					joint.Joint.Transform = joint.Written
+					joint.Joint.Transform = joint.Raw * offset
+				elseif joint.Applied then
+					joint.Joint.Transform = joint.Raw
+					joint.Applied = false
 				end
 			end
 		end
