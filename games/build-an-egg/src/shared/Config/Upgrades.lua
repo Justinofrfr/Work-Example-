@@ -18,4 +18,10 @@ return {
 		},
 	},
 	FreeText = "FREE",
+	RobuxText = "+1 R$%d",
+	BuyLayout = {
+		Solo = { Size = UDim2.fromScale(0.21, 0.64), Position = UDim2.fromScale(0.97, 0.18) },
+		Stacked = { Size = UDim2.fromScale(0.21, 0.44), Position = UDim2.fromScale(0.97, 0.06) },
+		Robux = { Size = UDim2.fromScale(0.21, 0.36), Position = UDim2.fromScale(0.97, 0.56) },
+	},
 }

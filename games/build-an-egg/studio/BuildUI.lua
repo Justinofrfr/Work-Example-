@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Names = require(Shared.Config.Names)
 local UIConfig = require(Shared.Config.UI)
+local UpgradesConfig = require(Shared.Config.Upgrades)
 
 local C = UIConfig.Colors
 local FONT = Enum.Font.FredokaOne
@@ -721,11 +722,13 @@ make("Frame", { Name = "LevelBar", Size = UDim2.fromScale(0.55, 0.13), Position 
 	stroke(2),
 	make("Frame", { Name = "Fill", Size = UDim2.fromScale(0, 1), BackgroundColor3 = Color3.new(1, 1, 1) }, { corner(0.5), gradient(Color3.fromRGB(110, 230, 90)) }),
 })
-local upgradeBuy = button({ Name = "Buy", Text = "50", Color = C.Coins, Size = UDim2.fromScale(0.22, 0.64), Position = UDim2.fromScale(0.97, 0.5), AnchorPoint = Vector2.new(1, 0.5), Parent = card })
+local upgradeBuy = button({ Name = "Buy", Text = "50", Color = C.Coins, Size = UpgradesConfig.BuyLayout.Solo.Size, Position = UpgradesConfig.BuyLayout.Solo.Position, AnchorPoint = Vector2.new(1, 0), Parent = card })
 upgradeBuy.Label.Size = UDim2.fromScale(0.62, 0.7)
 upgradeBuy.Label.Position = UDim2.fromScale(0.6, 0.5)
 local upgradeCoin = iconElement({ Name = "Coin", Text = UIConfig.Icons.Coins, Size = UDim2.fromScale(0.62, 0.62), Position = UDim2.fromScale(0.17, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), ZIndex = 2, Parent = upgradeBuy })
 aspect(1).Parent = upgradeCoin
+local robuxBuy = button({ Name = "RobuxBuy", Text = "R$0", Color = C.Robux, Size = UpgradesConfig.BuyLayout.Robux.Size, Position = UpgradesConfig.BuyLayout.Robux.Position, AnchorPoint = Vector2.new(1, 0), Radius = 0.35, Parent = card })
+robuxBuy.Visible = false
 
 local petCard = panelFrame({ Name = "PetCard", Size = UDim2.fromScale(0.23, 0.3), BackgroundColor3 = Color3.fromRGB(255, 252, 240), Parent = templates })
 viewport({ Name = "View", Size = UDim2.fromScale(0.9, 0.5), Position = UDim2.fromScale(0.05, 0.02), Parent = petCard })

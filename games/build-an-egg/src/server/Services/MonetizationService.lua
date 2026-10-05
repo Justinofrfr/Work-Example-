@@ -8,6 +8,7 @@ local ProductsConfig = require(Shared.Config.Products)
 local Names = require(Shared.Config.Names)
 local UIConfig = require(Shared.Config.UI)
 local GameConfig = require(Shared.Config.Game)
+local UpgradesConfig = require(Shared.Config.Upgrades)
 local Signal = require(Shared.Util.Signal)
 
 local MonetizationService = {
@@ -137,9 +138,18 @@ function MonetizationService:ProcessReceipt(receipt)
 	local product = ProductsConfig.DevProducts[entry.Key]
 	local previousLevel = data.BoostLevels[entry.Key]
 	local previousBoost = data.TrainBoostUntil or 0
+	local previousUpgrade = product.Upgrade and data.Upgrades[product.Upgrade]
 	local coinsGranted = 0
 	if product.Tiers then
 		data.BoostLevels[entry.Key] = (previousLevel or 0) + 1
+	elseif product.Upgrade then
+		local level = previousUpgrade or 0
+		if level < #UpgradesConfig.List[product.Upgrade].Costs then
+			data.Upgrades[product.Upgrade] = level + 1
+		else
+			coinsGranted = product.MaxedCoins or 0
+			data.Coins += coinsGranted
+		end
 	elseif product.Pieces then
 		coinsGranted = product.Coins or 0
 		data.Coins += coinsGranted
@@ -159,6 +169,9 @@ function MonetizationService:ProcessReceipt(receipt)
 		end
 		if product.Tiers then
 			data.BoostLevels[entry.Key] = previousLevel
+		elseif product.Upgrade then
+			data.Upgrades[product.Upgrade] = previousUpgrade
+			data.Coins -= coinsGranted
 		elseif product.Duration then
 			data.TrainBoostUntil = previousBoost
 		else

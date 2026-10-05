@@ -8,8 +8,21 @@ local UIConfig = require(Shared.Config.UI)
 local Format = require(Shared.Util.Format)
 local Formulas = require(Shared.Util.Formulas)
 
+local ProductsConfig = require(Shared.Config.Products)
+
 local Ui = require(script.Parent.Parent.Util.Ui)
 local Audio = require(script.Parent.Parent.Util.Audio)
+local Purchase = require(script.Parent.Parent.Util.Purchase)
+local Analytics = require(script.Parent.Parent.Util.Analytics)
+
+local function robuxProduct(key)
+	local productKey = ProductsConfig.UpgradeProducts[key]
+	local product = productKey and ProductsConfig.DevProducts[productKey]
+	if product and product.Id ~= 0 then
+		return productKey, product
+	end
+	return nil
+end
 
 local UpgradeController = {
 	Cards = {},
@@ -55,6 +68,13 @@ function UpgradeController:Start()
 		Ui.Feel(card.Buy, function()
 			self:Buy(key, card)
 		end)
+		Ui.Feel(card.RobuxBuy, function()
+			local productKey, product = robuxProduct(key)
+			if product then
+				Analytics.Track("Buy", productKey)
+				Purchase.Product(product.Id)
+			end
+		end)
 		self.Cards[key] = card
 	end
 	self:Refresh()
@@ -73,6 +93,15 @@ function UpgradeController:Refresh()
 		local bar = card:FindFirstChild("LevelBar")
 		if bar then
 			bar.Fill.Size = UDim2.fromScale(math.clamp(level / math.max(max, 1), 0, 1), 1)
+		end
+		local _, product = robuxProduct(key)
+		local showRobux = product ~= nil and cost ~= nil
+		card.RobuxBuy.Visible = showRobux
+		local layout = showRobux and UpgradesConfig.BuyLayout.Stacked or UpgradesConfig.BuyLayout.Solo
+		card.Buy.Size = layout.Size
+		card.Buy.Position = layout.Position
+		if product then
+			Ui.SetText(card.RobuxBuy, UpgradesConfig.RobuxText:format(product.Price))
 		end
 		if cost then
 			card.Effect.Text = effectText(key, level)

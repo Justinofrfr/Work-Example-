@@ -41,7 +41,11 @@ return {
 		TrainBoost20 = { Id = 3716544555, Price = 9, Name = "20x Training", TrainMultiplier = 20, Duration = 600 },
 		ServerPack50K = { Id = 3715925884, Price = 299, Pieces = 50000, Coins = 50000, Name = "+50,000 Shells", Color = Color3.fromRGB(150, 70, 240) },
 		StarterPack = { Id = 3716624788, Price = 19, Pieces = 20000, Coins = 20000, Name = "Starter Pack", Color = Color3.fromRGB(255, 70, 120) },
+		UpgradeBulkPickup = { Id = 0, Price = 29, Name = "Bulk Pickup +1", Upgrade = "BulkPickup", MaxedCoins = 25000 },
+		UpgradeBulkPlace = { Id = 0, Price = 29, Name = "Bulk Place +1", Upgrade = "BulkPlace", MaxedCoins = 25000 },
+		UpgradeRange = { Id = 0, Price = 19, Name = "Placement Range +1", Upgrade = "Range", MaxedCoins = 15000 },
 	},
+	UpgradeProducts = { BulkPickup = "UpgradeBulkPickup", BulkPlace = "UpgradeBulkPlace", Range = "UpgradeRange" },
 	StarterOffer = {
 		Product = "StarterPack",
 		AfterStep = "EquipPet",

@@ -49,7 +49,7 @@ task.spawn(function()
 				info = ("pad %s ribs %d speed %.2f travel %.2f padDist %.2f"):format(tostring(state.Pad), #state.Ribs, state.Speed, state.Travel, state.Pad and (Vector3.new(state.Pad.Position.X, 0, state.Pad.Position.Z) - Vector3.new(root.Position.X, 0, root.Position.Z)).Magnitude or -1)
 			end
 		end
-		clientLog:FireServer(("belts registered %d nearest %s training attr %s"):format(count, info, tostring(player.Character:GetAttribute("Training"))))
+		clientLog:FireServer(("belts registered %d nearest %s training attr %s camera to rib %.0f"):format(count, info, tostring(player.Character:GetAttribute("Training")), nearest and (workspace.CurrentCamera.CFrame.Position - nearest.Position).Magnitude or -1))
 	end)
 	local bubble
 	repeat

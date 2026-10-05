@@ -329,6 +329,8 @@ function AmbientController:Start()
 end
 
 function AmbientController:StepBelts(dt, cameraPosition)
+	local localCharacter = Players.LocalPlayer.Character
+	local localRoot = localCharacter and localCharacter:FindFirstChild("HumanoidRootPart")
 	local runners = {}
 	for _, player in Players:GetPlayers() do
 		local character = player.Character
@@ -352,7 +354,7 @@ function AmbientController:StepBelts(dt, cameraPosition)
 		end
 		if not belt.Parent then
 			self.Belts[belt] = nil
-		elseif state.Pad and (belt.Position - cameraPosition).Magnitude < BELT.Radius and (state.Speed > 0 or #runners > 0) then
+		elseif state.Pad and (state.Speed > 0 or #runners > 0) and ((belt.Position - cameraPosition).Magnitude < BELT.Radius or (localRoot and (belt.Position - localRoot.Position).Magnitude < BELT.Radius)) then
 			local active = false
 			for _, position in runners do
 				local flat = Vector3.new(position.X - state.Pad.Position.X, 0, position.Z - state.Pad.Position.Z)
