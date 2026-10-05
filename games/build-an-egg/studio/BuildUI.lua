@@ -252,6 +252,9 @@ for index, def in { { "Coins", "💰", C.Coins }, { "Speed", "⚡", C.Speed, "Wa
 	label({ Name = "Value", Text = "0", TextColor3 = Color3.new(1, 1, 1), TextXAlignment = Enum.TextXAlignment.Left, Size = UDim2.fromScale(0.66, def[4] and 0.66 or 0.9), Position = UDim2.fromScale(0.32, def[4] and 0 or 0.05), StrokeThickness = 3, Parent = row })
 	if def[4] then
 		label({ Name = "Sub", Text = def[4], TextColor3 = Color3.fromRGB(235, 235, 235), TextXAlignment = Enum.TextXAlignment.Left, Size = UDim2.fromScale(0.66, 0.3), Position = UDim2.fromScale(0.32, 0.66), StrokeThickness = 2, Parent = row })
+		local boostPill = label({ Name = "Boost", Text = "x2", Size = UDim2.fromScale(0.2, 0.38), Position = UDim2.fromScale(0.2, -0.04), BackgroundTransparency = 0, BackgroundColor3 = def[3], StrokeThickness = 1.5, Visible = false, ZIndex = 3, Parent = row })
+		corner(0.5).Parent = boostPill
+		stroke(2).Parent = boostPill
 	end
 end
 

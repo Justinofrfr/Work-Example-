@@ -151,6 +151,12 @@ function HudController:RenderState(state, previous)
 		local quickButton = hud.Right:FindFirstChild(key)
 		local badge = quickButton and quickButton:FindFirstChild("Badge")
 		local level = state.BoostLevels and state.BoostLevels[key] or 0
+		local statRow = stats:FindFirstChild(ProductsConfig.DevProducts[key].Stat)
+		local boostPill = statRow and statRow:FindFirstChild("Boost")
+		if boostPill then
+			boostPill.Visible = level > 0
+			boostPill.Text = ("x%d"):format(Formulas.BoostValue(key, level))
+		end
 		local maxed = level >= #ProductsConfig.DevProducts[key].Tiers
 		if badge then
 			local _, price = ShopController:ProductInfo({ Key = key, Kind = "Product" })
