@@ -14,6 +14,7 @@ local Ui = require(script.Parent.Parent.Util.Ui)
 local Audio = require(script.Parent.Parent.Util.Audio)
 local Purchase = require(script.Parent.Parent.Util.Purchase)
 local Analytics = require(script.Parent.Parent.Util.Analytics)
+local Prices = require(script.Parent.Parent.Util.Prices)
 
 local function robuxProduct(key)
 	local productKey = ProductsConfig.UpgradeProducts[key]
@@ -81,6 +82,9 @@ function UpgradeController:Start()
 	ClientState.StateChanged:Connect(function()
 		self:Refresh()
 	end)
+	Prices.Changed:Connect(function()
+		self:Refresh()
+	end)
 end
 
 function UpgradeController:Refresh()
@@ -101,7 +105,7 @@ function UpgradeController:Refresh()
 		card.Buy.Size = layout.Size
 		card.Buy.Position = layout.Position
 		if product then
-			Ui.SetText(card.RobuxBuy, UpgradesConfig.RobuxText:format(product.Price))
+			Ui.SetText(card.RobuxBuy, UpgradesConfig.RobuxText:format(Prices.Get(product.Id, product.Price)))
 		end
 		if cost then
 			card.Effect.Text = effectText(key, level)

@@ -11,6 +11,7 @@ local Names = require(Shared.Config.Names)
 local Ui = require(script.Parent.Parent.Util.Ui)
 local Purchase = require(script.Parent.Parent.Util.Purchase)
 local Analytics = require(script.Parent.Parent.Util.Analytics)
+local Prices = require(script.Parent.Parent.Util.Prices)
 
 local ShopController = {
 	Cards = {},
@@ -69,6 +70,9 @@ function ShopController:Start()
 	end
 	self:Select(1)
 	self:Refresh()
+	Prices.Changed:Connect(function()
+		self:Refresh()
+	end)
 	PanelController.Opened:Connect(function(name)
 		if name == "Shop" then
 			Analytics.Track("Open", name)
@@ -102,16 +106,16 @@ end
 function ShopController:ProductInfo(item)
 	if item.Kind == "Pass" then
 		local pass = ProductsConfig.GamePasses[item.Key]
-		return pass.Id, pass.Price
+		return pass.Id, Prices.Get(pass.Id, pass.Price, Enum.InfoType.GamePass)
 	end
 	local product = ProductsConfig.DevProducts[item.Key]
 	if product.Tiers then
 		local state = ClientState.State
 		local level = state and state.BoostLevels and state.BoostLevels[item.Key] or 0
 		local tier = product.Tiers[math.min(level + 1, #product.Tiers)]
-		return tier.Id, tier.Price
+		return tier.Id, Prices.Get(tier.Id, tier.Price)
 	end
-	return product.Id, product.Price
+	return product.Id, Prices.Get(product.Id, product.Price)
 end
 
 function ShopController:Refresh()

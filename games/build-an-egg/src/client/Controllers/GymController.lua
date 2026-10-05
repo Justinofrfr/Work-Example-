@@ -12,6 +12,7 @@ local Formulas = require(Shared.Util.Formulas)
 
 local Ui = require(script.Parent.Parent.Util.Ui)
 local Audio = require(script.Parent.Parent.Util.Audio)
+local Prices = require(script.Parent.Parent.Util.Prices)
 
 local GymController = {
 	Training = nil,
@@ -141,7 +142,7 @@ function GymController:ShowLocked(key)
 		body.Desc.Text = UIConfig.Messages.GymLocked:format(tier.RequiredEggs)
 	end
 	local pass = tier.PassKey and ProductsConfig.GamePasses[tier.PassKey]
-	Ui.SetText(body.Buy, pass and ("UNLOCK R$" .. pass.Price) or "LOCKED")
+	Ui.SetText(body.Buy, pass and ("UNLOCK R$" .. Prices.Get(pass.Id, pass.Price, Enum.InfoType.GamePass)) or "LOCKED")
 	panel.Header.Title.Text = tier.Key == "GymAdmin" and "ADMIN GYM" or (tier.Multiplier .. "x GYM")
 	PanelController:Open("Locked")
 	Audio.Play("Locked")

@@ -11,6 +11,7 @@ local Formulas = require(Shared.Util.Formulas)
 
 local Ui = require(script.Parent.Parent.Util.Ui)
 local Audio = require(script.Parent.Parent.Util.Audio)
+local Prices = require(script.Parent.Parent.Util.Prices)
 
 local HudController = {}
 
@@ -58,6 +59,13 @@ function HudController:Start()
 	end
 	ClientState.StateChanged:Connect(function(state, previous)
 		self:RenderState(state, previous)
+	end)
+	self:RenderPackPrices()
+	Prices.Changed:Connect(function()
+		self:RenderPackPrices()
+		if ClientState.State then
+			self:RenderState(ClientState.State, nil)
+		end
 	end)
 	ClientState.ServerChanged:Connect(function(server, previous)
 		self:RenderServer(server, previous)
@@ -150,6 +158,17 @@ function HudController:RenderState(state, previous)
 		end
 		if quickButton then
 			Ui.SetText(quickButton, Formulas.BoostLabel(key, level))
+		end
+	end
+end
+
+function HudController:RenderPackPrices()
+	for _, key in ProductsConfig.QuickPacks do
+		local packButton = progress.Packs:FindFirstChild(key)
+		local badge = packButton and packButton:FindFirstChild("Badge")
+		local product = ProductsConfig.DevProducts[key]
+		if badge and product then
+			badge.Text.Text = "R$" .. tostring(Prices.Get(product.Id, product.Price))
 		end
 	end
 end
