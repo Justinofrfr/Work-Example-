@@ -6,7 +6,7 @@ local StudioTestService = game:GetService("StudioTestService")
 local results = {}
 local clientLog = ReplicatedStorage:WaitForChild("__TestLog")
 clientLog.OnServerEvent:Connect(function(_, message)
-	table.insert(results, "[client] " .. message)
+	print("[probe client] " .. message)
 end)
 local ok, err = pcall(function()
 	local player = Players:GetPlayers()[1] or Players.PlayerAdded:Wait()
@@ -23,12 +23,12 @@ local ok, err = pcall(function()
 	workspace:SetAttribute("Trailer", true)
 	workspace:SetAttribute("TrailerAuto", true)
 	local started = os.clock()
-	while os.clock() - started < 50 do
+	while os.clock() - started < 62 do
 		task.wait(0.5)
 		local runtime = StateService:Get(player)
 		local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 		local v = root and root.AssemblyLinearVelocity or Vector3.zero
-		table.insert(results, ("t=%.1f gen=%d carry=%s speed=%.1f"):format(os.clock() - started, TrailerService.Generation, tostring(runtime and runtime.Carry), Vector3.new(v.X, 0, v.Z).Magnitude))
+		print(("[probe] t=%.1f gen=%d carry=%s speed=%.1f"):format(os.clock() - started, TrailerService.Generation, tostring(runtime and runtime.Carry), Vector3.new(v.X, 0, v.Z).Magnitude))
 	end
 end)
 if not ok then
