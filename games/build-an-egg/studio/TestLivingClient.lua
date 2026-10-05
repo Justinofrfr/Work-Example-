@@ -138,8 +138,19 @@ if root and probe and workspace:GetAttribute("LookProbe") then
 		end
 	end
 	local off = measure("off")
+	root.CFrame = probeRoot.CFrame * CFrame.new(0, 0, -40)
+	local first = probe.Head.CFrame.Rotation
+	local series = {}
+	for _ = 1, 16 do
+		task.wait(0.25)
+		table.insert(series, ("%.0f"):format(yawDelta(first, probe.Head.CFrame.Rotation)))
+	end
+	local tracks = {}
+	for _, track in animator:GetPlayingAnimationTracks() do
+		table.insert(tracks, track.Animation.AnimationId .. "@" .. tostring(track.Priority.Name))
+	end
 	ambient.Lookers[probe] = saved
-	clientLog:FireServer("probe " .. on .. " | " .. off)
+	clientLog:FireServer("probe " .. on .. " | " .. off .. " | idle series " .. table.concat(series, ",") .. " | tracks " .. table.concat(tracks, " ") .. " | anchored " .. tostring(probe.Head.Anchored) .. " " .. tostring(probeRoot.Anchored))
 end
 
 local goose = CollectionService:GetTagged("GooseRig")[1]
