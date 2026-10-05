@@ -13,9 +13,9 @@ return {
 	InteriorMultiplier = 2,
 	PadMargin = 1.5,
 	PadCheckInterval = 0.25,
-	BenchHeight = 2.2,
+	BenchHeight = 3.25,
 	LieHeightOffset = 0.6,
-	TreadmillStandHeight = 4.4,
+	TreadmillStandHeight = 5.05,
 	StepOffDistance = 3,
 	RackParts = { RackBar = true, Bar = true, Plate = true },
 	Bubbles = {
