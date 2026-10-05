@@ -107,18 +107,17 @@ function AmbientController:Start()
 		if not root or not head then
 			return
 		end
-		local posed = npc:GetAttribute("Posed") == true
 		local joints = {}
 		for _, name in { "Neck", "Waist" } do
 			local joint = npc:FindFirstChild(name, true)
-			if joint and joint:IsA("AnimationConstraint") and posed and joint.Attachment0 then
+			if joint and joint:IsA("AnimationConstraint") and joint.Attachment0 then
 				joints[name] = { Joint = joint, Attachment = joint.Attachment0, Base = joint.Attachment0.CFrame }
-			elseif joint and (joint:IsA("AnimationConstraint") or joint:IsA("Motor6D")) then
-				joints[name] = { Joint = joint }
+			elseif joint and joint:IsA("Motor6D") then
+				joints[name] = { Joint = joint, Base = joint.C0 }
 			end
 		end
 		if joints.Neck then
-			self.Lookers[npc] = { Root = root, Head = head, Joints = joints, Offsets = {}, Posed = posed, Yaw = 0, Pitch = 0 }
+			self.Lookers[npc] = { Root = root, Head = head, Joints = joints, Offsets = {}, Posed = npc:GetAttribute("Posed") == true, Yaw = 0, Pitch = 0 }
 		end
 	end
 	local function addNPC(npc)
@@ -271,12 +270,6 @@ function AmbientController:Start()
 	end
 	RunService.Heartbeat:Connect(function(dt)
 		self:Step(dt)
-	end)
-	RunService.PreAnimation:Connect(function()
-		self:ApplyLook(false)
-	end)
-	RunService.PreSimulation:Connect(function()
-		self:ApplyLook(true)
 	end)
 end
 
@@ -602,26 +595,8 @@ function AmbientController:StepLook(dt, cameraPosition)
 			for name, joint in state.Joints do
 				if joint.Attachment then
 					joint.Attachment.CFrame = joint.Base * state.Offsets[name]
-				end
-			end
-		end
-	end
-end
-
-function AmbientController:ApplyLook(apply)
-	for _, state in self.Lookers do
-		if not state.Posed then
-			for name, joint in state.Joints do
-				local offset = state.Offsets[name]
-				if offset and apply then
-					if not joint.Applied then
-						joint.Raw = joint.Joint.Transform
-						joint.Applied = true
-					end
-					joint.Joint.Transform = joint.Raw * offset
-				elseif joint.Applied then
-					joint.Joint.Transform = joint.Raw
-					joint.Applied = false
+				elseif not state.Posed then
+					joint.Joint.C0 = joint.Base * state.Offsets[name]
 				end
 			end
 		end
