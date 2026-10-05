@@ -201,6 +201,10 @@ return {
 		},
 	},
 	NPCIdleAnimation = "rbxassetid://507766666",
+	NPCEmotes = {
+		Upgrades = { Every = { 6, 11 }, Emotes = { "rbxassetid://507770239", "rbxassetid://507770453", "rbxassetid://507770677" } },
+		Incubator = { Every = { 7, 12 }, Emotes = { "rbxassetid://507770818", "rbxassetid://507770677", "rbxassetid://507771019" } },
+	},
 	WanderPause = { 1.5, 4 },
 	WanderHop = 0.35,
 	CloudSway = 40,

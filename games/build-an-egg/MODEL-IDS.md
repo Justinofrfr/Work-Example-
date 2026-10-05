@@ -168,3 +168,13 @@ Uploaded through the EggTextures kits and applied as `Props.Displays.Looks[*].Co
 | Cosmic | 33135993-5fbf-4a23-b35d-f69e6e959f15 | 105694445168143 |
 | Shadow | 294186fa-cd0d-4648-a22c-c00b5814ba48 | 77484517607218 |
 | Divine | d71d9933-d5f2-4734-a6ff-97665ce6a496 | 85790535973195 |
+
+### Higgsfield decor (MapKit12)
+| asset | jobs | credits | Roblox texture id | used by |
+|---|---|---|---|---|
+| Quarry bucket | tripo_3d 0145f98a-4a25-4af8-a5be-c200023e0811 | 5 | 131219537797675 | `SwingBucket` sway model on the quarry rope |
+| Hanging vines | tripo_3d 7c4f9b7d-6b15-4074-a874-5bcc0230a377 | 5 | 130457881643540 | three swaying vine strands on every egg podium |
+| Display podium | image 70528b86-552c-4a6d-94d5-1aaf68094016, 3D b05138af-dea8-4bd3-8c6a-08b62d1536c9 | 10.5 | 127334561472834 | `Pedestal_Body` kit template under every egg display |
+| Gym pavilion | image 2e02b300-5ee6-49b6-81ee-bd3dc1b815b6, 3D 3cfeb5df-997c-4dae-8bcf-c1635a87844a | 10.5 | 123172750021644 | one behind each gym platform |
+
+MapKit5 now splits the shop potions into `World_ShopBottle<n>_Potion*`/`_Cork` so each bottle can animate; MapKit6 splits the quarry cart load and rim (`World_Quarry_CartLoad`/`CartRim`) so the cart rolls with its shells.

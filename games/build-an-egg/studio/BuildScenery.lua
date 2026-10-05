@@ -779,13 +779,84 @@ for _, board in boards and boards:GetChildren() or {} do
 	end
 end
 
+local decor = SC.Decor
+local decorKit = imported:FindFirstChild(decor.Source)
+local function decorPart(name)
+	local template = decorKit and decorKit:FindFirstChild(name, true)
+	if not template then
+		return nil
+	end
+	local part = template:Clone()
+	part.Anchored = true
+	part.CanCollide = false
+	part.CanQuery = false
+	part.CanTouch = false
+	return part
+end
+local function swayModel(name, parts, pivot, amount, parent)
+	local model = make("Model", { Name = name })
+	for _, part in parts do
+		part.Parent = model
+	end
+	model.WorldPivot = pivot
+	model:SetAttribute("Sway", amount)
+	CollectionService:AddTag(model, "Sway")
+	model.Parent = parent
+	return model
+end
+
 local displays = world:FindFirstChild("EggDisplays")
 for _, stand in displays and displays:GetChildren() or {} do
 	local pedestal = stand:FindFirstChild("Pedestal")
 	if pedestal and pedestal:IsA("BasePart") then
 		local position = pedestal.Position
 		pedestal:Destroy()
-		place("Pedestal", CFrame.new(position.X, 0, position.Z) * yaw(), 1, stand)
+		local podium = place("Pedestal", CFrame.new(position.X, 0, position.Z) * yaw(), 1, stand)
+		if podium then
+			local box, size = podium:GetBoundingBox()
+			local top = box.Position.Y + size.Y / 2 - decor.Vines.Drop
+			local radius = math.min(size.X, size.Z) / 2 - decor.Vines.Inset
+			local start = random:NextNumber(0, math.pi * 2)
+			for index = 1, decor.Vines.Count do
+				local vine = decorPart(decor.Vines.Part)
+				if vine then
+					local angle = start + (index - 1) * math.pi * 2 / decor.Vines.Count + random:NextNumber(-0.3, 0.3)
+					local hinge = CFrame.new(position.X + math.cos(angle) * radius, top, position.Z + math.sin(angle) * radius) * CFrame.Angles(0, -angle, 0)
+					vine.CFrame = hinge * CFrame.new(vine.Size.X / 2 + decor.Vines.Offset, -vine.Size.Y / 2, 0)
+					swayModel("Vine", { vine }, hinge, decor.Vines.Sway, stand)
+				end
+			end
+		end
+	end
+end
+
+local quarryRope
+for _, part in folder("QuarryKit"):GetChildren() do
+	if part:GetAttribute("Role") == "Rope" then
+		quarryRope = part
+	end
+end
+local bucket = quarryRope and decorPart(decor.Bucket.Part)
+if bucket then
+	local ropeTop = quarryRope.Position + Vector3.new(0, quarryRope.Size.Y / 2, 0)
+	local ropeBottom = quarryRope.Position - Vector3.new(0, quarryRope.Size.Y / 2, 0)
+	bucket.CFrame = CFrame.new(ropeBottom - Vector3.new(0, bucket.Size.Y / 2, 0)) * CFrame.Angles(0, random:NextNumber(0, math.pi * 2), 0)
+	quarryRope.CanCollide = false
+	swayModel("SwingBucket", { quarryRope, bucket }, CFrame.new(ropeTop), decor.Bucket.Sway, folder("QuarryKit"))
+end
+
+for _, gym in world:FindFirstChild(W.Gyms) and world[W.Gyms]:GetChildren() or {} do
+	local platform = gym:FindFirstChild("Platform")
+	local pavilion = platform and decorPart(decor.Pavilion.Part)
+	if pavilion then
+		local look = platform.CFrame.LookVector * Vector3.new(1, 0, 1)
+		look = look.Magnitude > 0 and look.Unit or Vector3.new(0, 0, -1)
+		local center = Vector3.new(platform.Position.X, 0, platform.Position.Z) - look * (platform.Size.Z / 2 + decor.Pavilion.Gap + pavilion.Size.Z / 2) + Vector3.new(0, pavilion.Size.Y / 2, 0)
+		pavilion.CFrame = CFrame.lookAt(center, center + look)
+		pavilion.CanCollide = true
+		pavilion.CastShadow = true
+		pavilion.Name = gym.Name .. "Pavilion"
+		pavilion.Parent = folder(decor.Pavilion.Folder)
 	end
 end
 

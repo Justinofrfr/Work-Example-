@@ -1,5 +1,6 @@
 local UserInputService = game:GetService("UserInputService")
 local CollectionService = game:GetService("CollectionService")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -19,11 +20,16 @@ local AmbientController = {
 	Streaks = {},
 	Foams = {},
 	Rigs = {},
+	CartParts = {},
+	Bottles = {},
 }
 
 local WIND = EffectsConfig.Wind
 local WATER = EffectsConfig.Water
 local RIG = EffectsConfig.GooseRig
+local CART = EffectsConfig.QuarryCart
+local POTION = EffectsConfig.Potions
+local EffectController
 local lowEnd = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 local windDirection = WIND.Direction.Unit
 local swayAxis = Vector3.new(windDirection.Z, 0, -windDirection.X)
@@ -34,6 +40,10 @@ local lastStreak = 0
 local CULL = 260
 local camera = Workspace.CurrentCamera
 local random = Random.new()
+
+function AmbientController:Init(modules)
+	EffectController = modules.EffectController
+end
 
 function AmbientController:Start()
 	if lowEnd then
@@ -89,6 +99,31 @@ function AmbientController:Start()
 			track.Looped = true
 			track:Play()
 		end
+		local emotes = PropsConfig.NPCEmotes and PropsConfig.NPCEmotes[npc.Name]
+		if not emotes then
+			return
+		end
+		local tracks = {}
+		for _, id in emotes.Emotes do
+			local emote = Instance.new("Animation")
+			emote.AnimationId = id
+			local loaded, emoteTrack = pcall(animator.LoadAnimation, animator, emote)
+			if loaded and emoteTrack then
+				emoteTrack.Looped = false
+				emoteTrack.Priority = Enum.AnimationPriority.Action
+				table.insert(tracks, emoteTrack)
+			end
+		end
+		task.spawn(function()
+			while npc.Parent and #tracks > 0 do
+				task.wait(random:NextNumber(emotes.Every[1], emotes.Every[2]))
+				if npc.Parent and (npc:GetPivot().Position - camera.CFrame.Position).Magnitude < CULL then
+					local pick = tracks[random:NextInteger(1, #tracks)]
+					pick:Play(0.25)
+					task.wait(math.max(pick.Length, 1))
+				end
+			end
+		end)
 	end
 	for _, npc in CollectionService:GetTagged("NPC") do
 		task.spawn(addNPC, npc)
@@ -165,6 +200,29 @@ function AmbientController:Start()
 		addRig(part)
 	end
 	CollectionService:GetInstanceAddedSignal(RIG.Tag):Connect(addRig)
+	self.Cart = { Offset = 0, From = 0, To = 0, Start = 0, Next = os.clock() + random:NextNumber(CART.Every[1], CART.Every[2]) }
+	local function addCartPart(part)
+		if part:IsA("BasePart") then
+			self.CartParts[part] = part.CFrame - CART.Axis * self.Cart.Offset
+		end
+	end
+	for _, part in CollectionService:GetTagged(CART.Tag) do
+		addCartPart(part)
+	end
+	CollectionService:GetInstanceAddedSignal(CART.Tag):Connect(addCartPart)
+	self.PotionShow = { Next = os.clock() + random:NextNumber(POTION.Every[1], POTION.Every[2]) }
+	local function addBottlePart(part)
+		if part:IsA("BasePart") then
+			local id = part:GetAttribute("Phase") or 0
+			local bottle = self.Bottles[id] or { Parts = {} }
+			bottle.Parts[part] = part.CFrame
+			self.Bottles[id] = bottle
+		end
+	end
+	for _, part in CollectionService:GetTagged(POTION.Tag) do
+		addBottlePart(part)
+	end
+	CollectionService:GetInstanceAddedSignal(POTION.Tag):Connect(addBottlePart)
 	templates = ReplicatedStorage:WaitForChild(Names.Templates.Folder)
 	local leafTemplate = templates:FindFirstChild("WindLeaves")
 	if leafTemplate then
@@ -240,6 +298,140 @@ function AmbientController:StepRigs(dt, t, cameraPosition)
 				end
 			end
 		end
+	end
+end
+
+local function ease(alpha)
+	return 0.5 - math.cos(math.clamp(alpha, 0, 1) * math.pi) / 2
+end
+
+function AmbientController:StepCart(t, cameraPosition)
+	local cart = self.Cart
+	local anchor = next(self.CartParts)
+	if not cart or not anchor or (anchor.Position - cameraPosition).Magnitude > CART.Radius then
+		return
+	end
+	if t >= cart.Next then
+		cart.From = cart.Offset
+		cart.To = random:NextNumber(CART.Range[1], CART.Range[2])
+		cart.Start = t
+		cart.Next = t + CART.Time + random:NextNumber(CART.Every[1], CART.Every[2])
+	end
+	local alpha = (t - cart.Start) / CART.Time
+	if alpha > 1 and cart.Offset == cart.To then
+		return
+	end
+	cart.Offset = cart.From + (cart.To - cart.From) * ease(alpha)
+	for part, base in self.CartParts do
+		if part.Parent then
+			part.CFrame = base + CART.Axis * cart.Offset
+		else
+			self.CartParts[part] = nil
+		end
+	end
+end
+
+local potionRay = RaycastParams.new()
+potionRay.FilterType = Enum.RaycastFilterType.Exclude
+
+local function placeBottle(bottle, transform)
+	for part, base in bottle.Parts do
+		if part.Parent then
+			part.CFrame = transform * base
+		end
+	end
+end
+
+function AmbientController:StartPotion(bottle)
+	local lowest, center, count = math.huge, Vector3.zero, 0
+	for part, base in bottle.Parts do
+		lowest = math.min(lowest, base.Position.Y - part.Size.Y / 2)
+		center += base.Position
+		count += 1
+	end
+	center /= count
+	local angle = random:NextNumber(0, math.pi * 2)
+	local direction = Vector3.new(math.cos(angle), 0, math.sin(angle))
+	local radius = 0.4
+	local pivot = Vector3.new(center.X, lowest, center.Z) + direction * radius
+	local axis = direction:Cross(Vector3.yAxis).Unit
+	local ignore = { self.PotionIgnore }
+	for part in bottle.Parts do
+		table.insert(ignore, part)
+	end
+	potionRay.FilterDescendantsInstances = ignore
+	local landing = pivot + direction * 1.4
+	local hit = Workspace:Raycast(landing + Vector3.new(0, 2, 0), Vector3.new(0, -60, 0), potionRay)
+	local drop = hit and math.max(0, pivot.Y - hit.Position.Y) or 0
+	bottle.Show = { Start = os.clock(), Pivot = pivot, Axis = axis, Direction = direction, Drop = drop, Landing = Vector3.new(0, -drop, 0) + direction * 1.4, Sparkle = 0 }
+end
+
+function AmbientController:StepPotions(t, cameraPosition)
+	local show = self.PotionShow
+	if not show then
+		return
+	end
+	local active = show.Active
+	if not active then
+		if t < show.Next then
+			return
+		end
+		show.Next = t + random:NextNumber(POTION.Every[1], POTION.Every[2])
+		local ids = {}
+		for id, bottle in self.Bottles do
+			local part = next(bottle.Parts)
+			if part and part.Parent and (part.Position - cameraPosition).Magnitude < POTION.Radius then
+				table.insert(ids, id)
+			end
+		end
+		if #ids == 0 then
+			return
+		end
+		active = self.Bottles[ids[random:NextInteger(1, #ids)]]
+		show.Active = active
+		self.PotionIgnore = Players.LocalPlayer.Character
+		self:StartPotion(active)
+	end
+	local state = active.Show
+	local elapsed = t - state.Start
+	local tipEnd = POTION.TipTime
+	local fallEnd = tipEnd + POTION.FallTime
+	local restEnd = fallEnd + POTION.RestTime
+	local floatEnd = restEnd + POTION.FloatTime
+	local tipped = CFrame.new(state.Pivot) * CFrame.fromAxisAngle(state.Axis, -math.pi / 2) * CFrame.new(-state.Pivot)
+	local lying = CFrame.new(state.Landing) * tipped
+	if elapsed < tipEnd then
+		local a = elapsed / tipEnd
+		placeBottle(active, CFrame.new(state.Pivot) * CFrame.fromAxisAngle(state.Axis, -math.pi / 2 * a * a) * CFrame.new(-state.Pivot))
+	elseif elapsed < fallEnd then
+		local a = (elapsed - tipEnd) / POTION.FallTime
+		local hop = a > 0.8 and math.sin((a - 0.8) / 0.2 * math.pi) * POTION.Bounce or 0
+		placeBottle(active, CFrame.new(state.Landing * a * a + Vector3.new(0, hop, 0)) * tipped)
+		if not state.Landed and a > 0.8 then
+			state.Landed = true
+			if EffectController then
+				EffectController:Vfx("PotionLand", state.Pivot + state.Landing)
+			end
+		end
+	elseif elapsed < restEnd then
+		placeBottle(active, lying)
+	elseif elapsed < floatEnd then
+		local a = ease((elapsed - restEnd) / POTION.FloatTime)
+		local lift = math.sin(a * math.pi) * POTION.FloatHeight
+		local position = state.Landing:Lerp(Vector3.zero, a) + Vector3.new(0, lift, 0)
+		local turn = CFrame.new(state.Pivot) * CFrame.fromAxisAngle(state.Axis, -math.pi / 2 * (1 - a)) * CFrame.Angles(0, a * math.pi * 2 * POTION.Spin * (1 - a), 0) * CFrame.new(-state.Pivot)
+		placeBottle(active, CFrame.new(position) * turn)
+		if EffectController and t - state.Sparkle > POTION.SparkleEvery then
+			state.Sparkle = t
+			EffectController:Vfx("PotionMagic", state.Pivot + position + Vector3.new(0, 0.6, 0))
+		end
+	else
+		placeBottle(active, CFrame.identity)
+		if EffectController then
+			EffectController:Vfx("PotionSettle", state.Pivot + Vector3.new(0, 0.8, 0))
+		end
+		active.Show = nil
+		show.Active = nil
 	end
 end
 
@@ -345,6 +537,8 @@ function AmbientController:Step(dt)
 		end
 	end
 	self:StepRigs(dt, t, cameraPosition)
+	self:StepCart(t, cameraPosition)
+	self:StepPotions(t, cameraPosition)
 	self:StepWind(dt, t, cameraPosition)
 	local display = PropsConfig.Displays
 	for model, state in self.Wobblers do
