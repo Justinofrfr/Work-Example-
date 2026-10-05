@@ -18,7 +18,7 @@ return {
 	StillSpeed = 2,
 	StillPoll = 0.05,
 	Setup = {
-		Stats = { Coins = 1250000, Speed = 6, Strength = 250000, Eggs = 30 },
+		Stats = { Coins = 1250000, Speed = 6, Strength = 250000, Eggs = 30, PiecesPlaced = 5000 },
 		TutorialDone = true,
 		Upgrades = { BulkPickup = 6, BulkPlace = 6, Range = 2 },
 		Pets = {
@@ -57,7 +57,7 @@ return {
 			Time = 6,
 			FieldOfView = 55,
 			Stage = { Teleport = { Scaffold = "Band" }, Carry = 400, Loop = { Action = "Place", Every = 0.25, Amount = { 8, 16 } } },
-			Camera = { Mode = "Radial", Offset = Vector3.new(16, 5, -12), OffsetTo = Vector3.new(15, 7, 10), Look = Vector3.new(-6, 4, 0) },
+			Camera = { Mode = "Radial", Offset = Vector3.new(16, 5, -12), OffsetTo = Vector3.new(15, 7, 10), Look = Vector3.new(0, 3, 0) },
 		},
 		{
 			Name = "Timelapse",

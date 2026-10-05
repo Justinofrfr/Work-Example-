@@ -173,6 +173,7 @@ function TrailerService:Place(player, runtime, loop)
 	local data = DataService:Get(player)
 	if data then
 		data.Coins += amount
+		data.PiecesPlaced += amount
 	end
 	runtime.Carry = math.max(runtime.Carry - amount, 0)
 	CarryService:UpdateVisual(player)
