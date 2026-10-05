@@ -145,16 +145,40 @@ function TrailerService:Loop(player, loop, generation)
 			task.wait(TrailerConfig.StillPoll)
 			continue
 		end
-		if loop.Action == "Pickup" then
-			CarryService:Pickup(player)
-		elseif loop.Action == "Place" and runtime then
-			runtime.PickupPosition = nil
-			if rootPart then
-				BuildService:TryPlace(player, rootPart)
-			end
+		if runtime and loop.Action == "Pickup" then
+			self:Pickup(player, runtime, loop)
+		elseif runtime and loop.Action == "Place" then
+			self:Place(player, runtime, loop)
 		end
 		task.wait(loop.Every)
 	end
+end
+
+function TrailerService:Pickup(player, runtime, loop)
+	local amount = math.random(loop.Amount[1], loop.Amount[2])
+	runtime.Carry += amount
+	CarryService:UpdateVisual(player)
+	StateService:Dirty(player)
+	remotes[Names.Remotes.Effect]:FireClient(player, "Pickup", amount, false)
+end
+
+function TrailerService:Place(player, runtime, loop)
+	if BuildService.Phase ~= "Building" then
+		return
+	end
+	local amount = math.min(math.random(loop.Amount[1], loop.Amount[2]), BuildService:Target() - BuildService.Progress)
+	if amount <= 0 then
+		return
+	end
+	local data = DataService:Get(player)
+	if data then
+		data.Coins += amount
+	end
+	runtime.Carry = math.max(runtime.Carry - amount, 0)
+	CarryService:UpdateVisual(player)
+	StateService:Dirty(player)
+	remotes[Names.Remotes.Effect]:FireClient(player, "Place", amount, BuildService:ActiveRing())
+	BuildService:AddPieces(player, amount, false)
 end
 
 function TrailerService:Grow(player, grow, generation)

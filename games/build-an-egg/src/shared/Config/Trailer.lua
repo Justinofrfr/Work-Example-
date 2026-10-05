@@ -40,7 +40,7 @@ return {
 			Name = "Quarry",
 			Time = 7,
 			FieldOfView = 55,
-			Stage = { Teleport = { Position = Vector3.new(-12, -3, -192), Face = Vector3.new(1, 0, 0) }, Carry = 0, Loop = { Action = "Pickup", Every = 0.3, WhenStill = true }, WalkSpeed = 12 },
+			Stage = { Teleport = { Position = Vector3.new(-12, -3, -192), Face = Vector3.new(1, 0, 0) }, Carry = 0, Loop = { Action = "Pickup", Every = 0.3, WhenStill = true, Amount = { 6, 14 } }, WalkSpeed = 12 },
 			Move = { Points = { Vector3.new(-1, -4, -194), Vector3.new(10, -4, -195), Vector3.new(22, -4, -197) }, Pause = 1.1 },
 			Camera = { Mode = "Follow", Offset = Vector3.new(-3, 5, -15), OffsetTo = Vector3.new(4, 4, -13), Look = Vector3.new(0, 3, 0) },
 		},
@@ -56,7 +56,7 @@ return {
 			Name = "Place",
 			Time = 6,
 			FieldOfView = 55,
-			Stage = { Teleport = { Scaffold = "Band" }, Carry = 400, Loop = { Action = "Place", Every = 0.2 } },
+			Stage = { Teleport = { Scaffold = "Band" }, Carry = 400, Loop = { Action = "Place", Every = 0.25, Amount = { 8, 16 } } },
 			Camera = { Mode = "Radial", Offset = Vector3.new(16, 5, -12), OffsetTo = Vector3.new(15, 7, 10), Look = Vector3.new(-6, 4, 0) },
 		},
 		{
