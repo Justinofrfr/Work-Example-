@@ -315,19 +315,8 @@ function AmbientController:Start()
 	end
 	CollectionService:GetInstanceAddedSignal(RATTLE.Tag):Connect(addRattle)
 	local function addBelt(belt)
-		local kit = belt.Parent
-		local pad = kit and kit.Parent and kit.Parent:FindFirstChild(Names.World.Pad)
-		if not belt:IsA("BasePart") or not pad then
-			return
-		end
-		local ribs = {}
-		for _, rib in kit:GetChildren() do
-			if rib.Name == "BeltRib" then
-				table.insert(ribs, { Part = rib, Rel = belt.CFrame:ToObjectSpace(rib.CFrame) })
-			end
-		end
-		if #ribs > 0 then
-			self.Belts[belt] = { Pad = pad, Ribs = ribs, Length = belt.Size.Z * MapConfigScenery.BeltRibs.Span, Speed = 0, Travel = 0 }
+		if belt:IsA("BasePart") then
+			self.Belts[belt] = { Ribs = {}, Length = belt.Size.Z * MapConfigScenery.BeltRibs.Span, Speed = 0, Travel = 0, Scanned = -math.huge }
 		end
 	end
 	for _, belt in CollectionService:GetTagged(BELT.Tag) do
@@ -348,10 +337,22 @@ function AmbientController:StepBelts(dt, cameraPosition)
 			table.insert(runners, root.Position)
 		end
 	end
+	local now = os.clock()
 	for belt, state in self.Belts do
+		if (not state.Pad or #state.Ribs < MapConfigScenery.BeltRibs.Count) and now - state.Scanned > BELT.Rescan and belt.Parent then
+			state.Scanned = now
+			local kit = belt.Parent
+			state.Pad = kit.Parent and kit.Parent:FindFirstChild(Names.World.Pad)
+			table.clear(state.Ribs)
+			for _, rib in kit:GetChildren() do
+				if rib.Name == "BeltRib" then
+					table.insert(state.Ribs, { Part = rib, Rel = belt.CFrame:ToObjectSpace(rib.CFrame) })
+				end
+			end
+		end
 		if not belt.Parent then
 			self.Belts[belt] = nil
-		elseif (belt.Position - cameraPosition).Magnitude < BELT.Radius and (state.Speed > 0 or #runners > 0) then
+		elseif state.Pad and (belt.Position - cameraPosition).Magnitude < BELT.Radius and (state.Speed > 0 or #runners > 0) then
 			local active = false
 			for _, position in runners do
 				local flat = Vector3.new(position.X - state.Pad.Position.X, 0, position.Z - state.Pad.Position.Z)

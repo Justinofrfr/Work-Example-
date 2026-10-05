@@ -104,6 +104,7 @@ return {
 		Accel = 3,
 		ActiveRange = 4,
 		Radius = 160,
+		Rescan = 2,
 	},
 	Wind = {
 		Direction = Vector3.new(1, 0, 0.35),

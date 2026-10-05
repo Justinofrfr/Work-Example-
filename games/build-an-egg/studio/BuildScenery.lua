@@ -952,6 +952,7 @@ for _, gym in gymsFolder and gymsFolder:GetChildren() or {} do
 			local kit = fitTo(machine.Name == "Treadmill" and "Treadmill" or "Bench", floor, Vector3.one, machine)
 			if kit then
 				kit.Name = "KitMachine"
+				machine.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
 				local tint = SC.MachineTints[gym.Name]
 				for _, part in kit:GetChildren() do
 					if part.Name == "Trim" then
