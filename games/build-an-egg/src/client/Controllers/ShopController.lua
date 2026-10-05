@@ -53,13 +53,13 @@ function ShopController:Start()
 			local card = templates[item.Featured and "ShopFeature" or "ShopItem"]:Clone()
 			card.Visible = true
 			card.Name = item.Key
-			card.LayoutOrder = itemIndex
+			card.LayoutOrder = item.Featured and itemIndex + 1 or itemIndex
 			card.Icon.Text = item.Icon
 			card.Title.Text = item.Name
 			card.Desc.Text = item.Desc
 			card.Badge.Text = item.Badge or ""
 			card.Badge.Visible = item.Badge ~= nil
-			card.Parent = item.Featured and page.Featured or page.Grid
+			card.Parent = item.Featured and page or page.Grid
 			Ui.Feel(card.Buy, function()
 				self:Buy(item)
 			end)

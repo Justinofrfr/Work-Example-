@@ -704,10 +704,7 @@ local shopPage = make("ScrollingFrame", {
 	make("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 14), PaddingLeft = UDim.new(0, 6), PaddingRight = UDim.new(0, 16) }),
 })
 wideAspect(14).Parent = label({ Name = "Note", Text = "Note", Size = UDim2.fromScale(1, 1), TextColor3 = Color3.fromRGB(255, 220, 120), StrokeThickness = 3, LayoutOrder = 1, Parent = shopPage })
-make("Frame", { Name = "Featured", Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = 2, Parent = shopPage }, {
-	make("UIListLayout", { Padding = UDim.new(0, 10), SortOrder = Enum.SortOrder.LayoutOrder }),
-})
-make("Frame", { Name = "Grid", Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = 3, Parent = shopPage }, {
+make("Frame", { Name = "Grid", Size = UDim2.fromScale(1, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = 100, Parent = shopPage }, {
 	make("UIGridLayout", { CellSize = UDim2.fromScale(0.485, 1), CellPadding = UDim2.new(0.03, 0, 0, 10), SortOrder = Enum.SortOrder.LayoutOrder }, { make("UIAspectRatioConstraint", { AspectRatio = 2.05, DominantAxis = Enum.DominantAxis.Width }) }),
 })
 
