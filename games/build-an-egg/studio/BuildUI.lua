@@ -703,7 +703,7 @@ make("Frame", { Name = "EquippedMark", Size = UDim2.fromScale(1, 1), BackgroundT
 local choice = panelFrame({ Name = "Choice", Size = UDim2.fromScale(1, 0.12), BackgroundColor3 = Color3.fromRGB(255, 252, 240), Parent = templates })
 make("UIAspectRatioConstraint", { AspectRatio = 5.2, AspectType = Enum.AspectType.ScaleWithParentSize, DominantAxis = Enum.DominantAxis.Width, Parent = choice })
 make("Frame", { Name = "Swatch", Size = UDim2.fromScale(0.11, 0.72), Position = UDim2.fromScale(0.03, 0.14), BackgroundColor3 = Color3.new(1, 1, 1), Parent = choice }, { corner(1), stroke(2.5), aspect(1) })
-label({ Name = "Title", Text = "Silver · Shiny", Size = UDim2.fromScale(0.5, 0.46), Position = UDim2.fromScale(0.17, 0.08), TextXAlignment = Enum.TextXAlignment.Left, Parent = choice })
+label({ Name = "Title", Text = "Silver · Shiny", Size = UDim2.fromScale(0.47, 0.46), Position = UDim2.fromScale(0.17, 0.08), TextXAlignment = Enum.TextXAlignment.Left, Parent = choice })
 label({ Name = "Sub", Text = "+25% Speed", Size = UDim2.fromScale(0.5, 0.32), Position = UDim2.fromScale(0.17, 0.58), TextXAlignment = Enum.TextXAlignment.Left, TextColor3 = Color3.fromRGB(255, 236, 190), StrokeThickness = 1.5, Parent = choice })
 local choiceCount = label({ Name = "Count", Text = "x3", Size = UDim2.fromScale(0.12, 0.5), Position = UDim2.fromScale(0.665, 0.25), BackgroundTransparency = 0, BackgroundColor3 = Color3.fromRGB(70, 56, 46), StrokeThickness = 1.5, Parent = choice })
 corner(0.5).Parent = choiceCount

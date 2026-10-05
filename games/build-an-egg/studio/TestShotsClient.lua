@@ -6,7 +6,8 @@ local player = Players.LocalPlayer
 local controllers = player:WaitForChild("PlayerScripts"):WaitForChild("Client"):WaitForChild("Controllers")
 local PanelController = require(controllers.PanelController)
 
-local order = { "Shop", "Upgrades", "Pets", "Incubator", "Settings", "Codes", "StarterOffer", "Daily" }
+local custom = workspace:GetAttribute("ShotsOrder")
+local order = custom and string.split(custom, ",") or { "Shop", "Upgrades", "Pets", "Incubator", "Settings", "Codes", "StarterOffer", "Daily" }
 task.wait(tonumber(workspace:GetAttribute("ShotsLead")) or 12)
 for index, name in order do
 	PanelController:Open(name)
