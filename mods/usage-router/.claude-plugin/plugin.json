@@ -1,0 +1,6 @@
+{
+  "name": "usage-router",
+  "version": "0.1.0",
+  "description": "Usage meter with burn-rate ETA, auto model/effort router, and a write/review/test agent pipeline for Roblox Luau",
+  "types": "./types/index.d.ts"
+}

@@ -1,0 +1,5 @@
+{
+  "name": "work-example-mods",
+  "owner": { "name": "justinofrfr" },
+  "plugins": [{ "name": "usage-router", "source": "./mods/usage-router" }]
+}
